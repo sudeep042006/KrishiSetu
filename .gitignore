@@ -1,0 +1,150 @@
+# =========================
+# ROOT / GENERAL
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+.env
+!.env.example
+
+.DS_Store
+Thumbs.db
+*.log
+logs/
+*.tmp
+*.temp
+.vscode/
+.idea/
+
+# =========================
+# BACKEND (Node / Express)
+# =========================
+backend/node_modules/
+backend/.env
+backend/.env.*
+
+backend/uploads/
+backend/tmp/
+backend/logs/
+backend/*.log
+
+# Optional build folders
+backend/dist/
+backend/build/
+
+# Coverage / testing
+backend/coverage/
+backend/.nyc_output/
+
+# =========================
+# FRONTEND (React Native)
+# =========================
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Metro / React Native
+frontend/.metro-health-check*
+frontend/.expo/
+frontend/expo-env.d.ts
+
+# Tests / coverage
+frontend/coverage/
+frontend/jest-cache/
+
+# =========================
+# ANDROID (React Native Android)
+# =========================
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/local.properties
+frontend/android/captures/
+frontend/android/.idea/
+frontend/android/*.iml
+
+# Keystore / signing files (VERY IMPORTANT)
+frontend/android/*.keystore
+frontend/android/*.jks
+frontend/android/app/*.keystore
+frontend/android/app/*.jks
+
+# Native build
+frontend/android/.cxx/
+frontend/android/app/.cxx/
+
+# =========================
+# IOS (if present in future)
+# =========================
+frontend/ios/build/
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/DerivedData/
+frontend/ios/*.xcworkspace
+frontend/ios/*.xcodeproj/project.xcworkspace/
+frontend/ios/*.xcodeproj/xcuserdata/
+frontend/ios/*.xcuserstate
+
+# =========================
+# REACT NATIVE CACHE
+# =========================
+frontend/.bundle/
+frontend/.gradle/
+frontend/.idea/
+frontend/.vscode/
+frontend/tmp/
+frontend/temp/
+
+# Hermes / bundle / sourcemaps
+frontend/*.hbc
+frontend/*.bundle
+frontend/*.map
+
+# =========================
+# MONGODB / DATABASE RELATED
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+dump/
+mongodb-data/
+
+# =========================
+# FILE UPLOADS / GENERATED FILES
+# =========================
+uploads/
+public/uploads/
+storage/
+temp/
+tmp/
+
+# =========================
+# BUILD / RELEASE FILES
+# =========================
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# =========================
+# SECURITY / SECRET FILES
+# =========================
+secret.key
+firebase-adminsdk.json
+google-services.json
+GoogleService-Info.plist
+serviceAccountKey.json
+
+# =========================
+# MISC
+# =========================
+*.swp
+*.swo
+*.bak
+*.orig
