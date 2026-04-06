@@ -1,343 +1,227 @@
-🌾 KrishiSetu
+<div align="center">
 
-Bridging Farmers and Buyers Through Smart Digital Contract Farming
+<img src="https://raw.githubusercontent.com/sudeep042006/KrishiSetu/refs/heads/main/assets/logo.png" alt="KrishiSetu Logo" width="120" height="120" />
 
-<p align="center">
-<img src="https://img.shields.io/badge/Project-Micro%20Project%20%7C%20Semester%204-green?style=for-the-badge" alt="Project Badge" />
-<img src="https://img.shields.io/badge/Domain-Agriculture-success?style=for-the-badge" alt="Domain Badge" />
-<img src="https://img.shields.io/badge/Type-Major%20Learning%20Project-blue?style=for-the-badge" alt="Type Badge" />
-<img src="https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge" alt="Status Badge" />
-</p>
+# 🌾 KrishiSetu
 
-📌 About KrishiSetu
+### *Bridging Farmers and Buyers Through Smart Digital Contract Farming*
 
-KrishiSetu is a digital platform designed to modernize and simplify the contract farming ecosystem by creating a trusted bridge between farmers, buyers/offtakers, and administrators.
+[![Project](https://img.shields.io/badge/Semester%204-Micro%20Project-green?style=for-the-badge)](https://github.com/sudeep042006/KrishiSetu)
+[![Domain](https://img.shields.io/badge/Domain-Agriculture-brightgreen?style=for-the-badge&logo=leaf)](https://github.com/sudeep042006/KrishiSetu)
+[![Status](https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge)](https://github.com/sudeep042006/KrishiSetu)
+[![License](https://img.shields.io/badge/License-Academic-blue?style=for-the-badge)](https://github.com/sudeep042006/KrishiSetu)
 
-In many parts of the agricultural sector, farmers face challenges such as uncertain pricing, lack of direct market access, middlemen dependency, delayed payments, and limited transparency in agreements. On the other hand, buyers often struggle to find verified farmers, ensure crop quality, and manage procurement efficiently.
+</div>
 
-KrishiSetu aims to solve this gap by building a system where farmers can create their profiles, showcase crop details, receive proposals, and enter structured agreements with buyers in a more transparent and organized way.
+---
 
-This project is being developed as a Fourth Semester Micro Project, but it is also a serious learning-based product development project focused on understanding the real-world agricultural market, digital contract farming, and farmer–buyer relationship workflows.
+## 📌 What is KrishiSetu?
 
-🎯 Problem Statement
+**KrishiSetu** (Hindi: *Krishi* = Agriculture, *Setu* = Bridge) is a mobile-first digital platform that modernizes contract farming by creating a trusted, transparent bridge between **farmers**, **buyers/offtakers**, and **administrators**.
 
-The traditional agricultural market system often lacks transparency, structure, and trust. Farmers usually do not have a direct and efficient way to:
+> Farmers today face uncertain pricing, middlemen dependency, and zero digital presence. Buyers struggle to find verified farmers and manage procurement. KrishiSetu solves both sides of this broken chain.
 
-connect with serious buyers,
+---
 
-negotiate fair contracts,
+## 🎯 Problem → Solution
 
-track agreements and milestones,
+| Problem | KrishiSetu's Solution |
+|---|---|
+| Farmers lack direct market access | Digital farmer–buyer marketplace |
+| No transparent contract system | Structured contract & milestone tracking |
+| Middlemen exploitation | Direct proposal & negotiation flow |
+| No verified farmer profiles | Profile-based trust & review system |
+| Disorganized payments | Wallet & payment milestone tracking |
+| No admin oversight | Admin panel with full moderation control |
 
-maintain verified records,
+---
 
-and receive organized support in one place.
+## 🧩 Core Modules
 
-Similarly, buyers and procurement agencies face issues like:
+<details>
+<summary><b>👨‍🌾 Farmer Module</b></summary>
 
-difficulty finding the right farmers,
+- Create and manage professional agricultural profiles
+- List current or upcoming crops with details
+- Receive and respond to buyer proposals
+- Track active contracts and milestones
 
-lack of proper crop and land details,
+</details>
 
-poor communication systems,
+<details>
+<summary><b>🏢 Buyer / Offtaker Module</b></summary>
 
-and no centralized contract handling platform.
+- Register and browse verified farmer listings
+- Discover crops by category, quantity, and region
+- Send structured proposals to farmers
+- Manage procurement and contract workflows
 
-KrishiSetu addresses these problems by offering:
+</details>
 
-a digital farmer–buyer marketplace
+<details>
+<summary><b>📄 Contract & Milestone Management</b></summary>
 
-profile-based trust system
+- Structured contract creation between two parties
+- Track contract status, terms, and delivery milestones
+- Maintain records of all agreements
 
-crop listing and proposal management
+</details>
 
-contract-based workflow
+<details>
+<summary><b>💰 Payment & Wallet</b></summary>
 
-payment and milestone tracking
+- Wallet-based transaction logic
+- Payment milestone tracking per contract
+- Structured financial flow with future scalability
 
-and an admin-supervised ecosystem
+</details>
 
-💡 Our Vision
+<details>
+<summary><b>🛠️ Admin Panel</b></summary>
 
-KrishiSetu is built with the vision of making agriculture more accessible, organized, and technology-driven.
+- Monitor all users, contracts, and proposals
+- Verify accounts and moderate platform activity
+- Maintain system integrity and logs
 
-We believe that farmers should not just be producers — they should be empowered participants in a fair digital economy.
+</details>
 
-Our goal is to create a system where:
+---
 
-farmers can confidently connect with the market,
+## 🚀 Tech Stack
 
-buyers can source produce efficiently,
+<div align="center">
 
-and the entire contract farming process becomes more secure and transparent.
+| Layer | Technology |
+|---|---|
+| 📱 Frontend | React Native · JavaScript |
+| 🖥️ Backend | Node.js · Express.js |
+| 🗄️ Database | MongoDB · Mongoose |
+| 🔐 Auth | JWT · Bcrypt |
+| 🛠️ Dev Tools | Git · GitHub · Postman · VS Code |
 
-This project is not only a software solution but also a step toward understanding how technology can support rural development and agricultural growth.
+</div>
 
-🚀 Key Objectives
+---
 
-KrishiSetu is designed with the following objectives:
+## 🏗️ Project Architecture
 
-To reduce dependency on unstructured middlemen-based communication
+```
+KrishiSetu/
+├── frontend/              # React Native mobile app
+│   ├── screens/
+│   ├── components/
+│   └── navigation/
+├── backend/               # Node.js + Express REST API
+│   ├── models/            # Mongoose schemas
+│   ├── routes/            # API route handlers
+│   ├── controllers/
+│   └── middleware/        # Auth & validation
+└── README.md
+```
 
-To create a transparent platform for farmer–buyer interaction
+**Database Modules:** `User` · `FarmerProfile` · `BuyerProfile` · `Crop` · `Proposal` · `Contract` · `Milestone` · `Payment` · `Wallet` · `Review` · `AdminLog`
 
-To digitize the process of crop listing and proposal exchange
+---
 
-To support basic contract farming workflow management
+## ⚙️ Getting Started
 
-To provide structured records for agreements, payments, and reviews
+### Prerequisites
 
-To help students understand how technology can solve real-world agricultural problems
+Make sure you have the following installed:
 
-🧩 Core Features
+- [Node.js](https://nodejs.org/) (v18+)
+- [MongoDB](https://www.mongodb.com/) (local or Atlas)
+- [Git](https://git-scm.com/)
+- [React Native CLI](https://reactnative.dev/docs/environment-setup)
 
-👨‍🌾 Farmer Module
+### 1. Clone the Repository
 
-Farmers can create and manage their professional profile with relevant agricultural details such as personal information, land information, crop details, production capacity, and availability. They can also post crops and interact with buyer proposals.
-
-🏢 Buyer / Offtaker Module
-
-Buyers or offtakers can register on the platform, browse farmer listings, review crop availability, send proposals, and participate in contract-based procurement workflows.
-
-📦 Crop Listing System
-
-Farmers can list crops they are currently growing or planning to grow. This allows buyers to discover available produce based on category, quantity, and location-related relevance.
-
-🤝 Proposal Management
-
-Buyers can send proposals to farmers based on crop listings, and farmers can review, accept, or reject them. This creates the initial layer of structured communication before formal agreements.
-
-📄 Contract Management
-
-Once both parties agree, the platform supports the creation and tracking of contract-related data such as parties involved, crop information, expected terms, and workflow status.
-
-💰 Payment & Wallet Tracking
-
-The system is designed to maintain payment-related records and wallet-based transaction logic for structured financial flow and future scalability.
-
-⭐ Review & Trust Layer
-
-Users can leave reviews and ratings after transactions or completed agreements, helping build trust and credibility within the ecosystem.
-
-🛠️ Admin Panel
-
-Admins can monitor users, contracts, proposals, and platform activity to ensure system moderation, verification, and platform integrity.
-
-🏗️ Project Architecture
-
-KrishiSetu follows a modular full-stack application structure consisting of:
-
-Frontend (Mobile / User Interface)
-
-Backend API
-
-Database Layer
-
-Authentication & User Management
-
-Role-Based Functional Modules
-
-The system is designed in such a way that it can be expanded in the future into a production-ready agriculture marketplace platform.
-
-🧪 Tech Stack
-
-Frontend
-
-React Native
-
-JavaScript
-
-Mobile-first UI/UX Design
-
-Backend
-
-Node.js
-
-Express.js
-
-Database
-
-MongoDB
-
-Mongoose
-
-Authentication & Security
-
-JWT Authentication
-
-Password Hashing (Bcrypt)
-
-Development Tools
-
-Git & GitHub
-
-Postman
-
-VS Code
-
-📚 Educational & Research Purpose
-
-KrishiSetu is not just a coding project — it is also a domain learning project.
-
-Through this project, we are trying to understand:
-
-how the agriculture market actually works
-
-what challenges farmers face in the current system
-
-how contract farming can be made more organized
-
-and how software systems can improve trust, efficiency, and accessibility in agriculture
-
-This makes KrishiSetu both a technical implementation project and a market understanding initiative.
-
-📁 Project Modules (Current Development Scope)
-
-The current implementation and schema design are focused on the following main modules:
-
-User
-
-Farmer Profile
-
-Buyer / Offtaker Profile
-
-Crop
-
-Proposal
-
-Contract
-
-Milestone
-
-Payment
-
-Wallet
-
-Review
-
-Admin Log
-
-These modules together represent the foundation of a contract farming management ecosystem.
-
-⚙️ How to Run the Project
-
-Make sure you have Node.js, MongoDB, and Git installed before starting.
-
-1️⃣ Clone the Repository
-
-git clone [https://github.com/your-username/KrishiSetu.git](https://github.com/your-username/KrishiSetu.git)
+```bash
+git clone https://github.com/sudeep042006/KrishiSetu.git
 cd KrishiSetu
+```
 
+### 2. Setup Backend
 
-2️⃣ Setup Backend
-
+```bash
 cd backend
 npm install
+```
 
+Create a `.env` file inside `/backend`:
 
-Create a .env file inside the backend folder and add:
-
+```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-
+JWT_SECRET=your_jwt_secret_key
+```
 
 Start the backend server:
 
+```bash
 npm run dev
+```
 
+> Backend will be running at `http://localhost:5000`
 
-3️⃣ Setup Frontend
+### 3. Setup Frontend
 
 Open a new terminal:
 
+```bash
 cd frontend
 npm install
+npx react-native start
+```
 
+Run on device/emulator:
 
-Run the React Native project:
+```bash
+# Android
+npx react-native run-android
 
-npm start
+# iOS (macOS only)
+npx react-native run-ios
+```
 
+---
 
-For Android:
+## 🔮 Roadmap & Future Enhancements
 
-npm run android
+- [ ] 📍 Location-based farmer discovery
+- [ ] 💬 In-app chat between farmers and buyers
+- [ ] 🪪 Farmer verification system
+- [ ] 📈 Crop analytics and demand forecasting
+- [ ] 🌦️ Weather and agricultural advisory integration
+- [ ] 🧠 AI-based crop recommendations
+- [ ] 📄 Smart digital contracts
+- [ ] 💳 Secure payment gateway integration
+- [ ] 🌐 Multi-language support for rural accessibility
 
+---
 
-For iOS (if supported):
+## 🌍 Why KrishiSetu Matters
 
-npm run ios
+Agriculture drives the economy, yet millions of farmers remain disconnected from the digital market. KrishiSetu is an attempt to bridge traditional farming with modern digital infrastructure — making the contract farming process **secure**, **transparent**, and **accessible** for everyone in the value chain.
 
+---
 
-📸 Screens / UI Scope
+## 👨‍💻 About the Project
 
-KrishiSetu is being designed as a mobile-first agriculture platform, with focus on:
+This project is developed as a **4th Semester Micro Project** at [Your Institute Name], with a focus on real-world problem solving through technology. It serves as both a **technical prototype** and a **domain research initiative** into agricultural markets and contract farming workflows.
 
-clean farmer dashboard
+---
 
-crop listing cards
+## 📜 License
 
-proposal and contract views
+This project is developed for **academic and educational purposes**. See [`LICENSE`](./LICENSE) for details.
 
-profile-based trust system
+---
 
-minimal and practical user experience
+<div align="center">
 
-Future updates may include screenshots, design previews, and workflow visuals.
+Made with ❤️ for Indian Farmers
 
-🔐 Future Enhancements
+⭐ Star this repo if you find it useful!
 
-KrishiSetu has strong potential for future improvement and expansion. Planned or possible future enhancements include:
-
-📍 Location-based farmer discovery
-
-📈 Crop analytics and demand forecasting
-
-🧠 AI-based crop recommendations
-
-📄 Smart digital contracts
-
-💬 In-app chat between farmers and buyers
-
-🪪 Farmer verification system
-
-🛰️ Weather and agricultural advisory integration
-
-💳 Secure payment gateway integration
-
-🌐 Multi-language support for rural accessibility
-
-🌍 Real-World Relevance
-
-Agriculture is one of the most important sectors of the economy, yet many farmers still lack access to digital systems that can improve their opportunities.
-KrishiSetu is an attempt to create a bridge between traditional farming practices and modern digital infrastructure.
-This project reflects how software engineering can contribute to real-world sectors like agriculture by solving actual communication, trust, and transaction-related challenges.
-
-👨‍💻 Project Type
-
-KrishiSetu is developed as:
-
-a Fourth Semester Micro Project
-
-a Major Learning Project
-
-a Real-World Problem Solving Prototype
-
-and a domain exploration project in agriculture and contract farming
-
-🤝 Contribution
-
-This project is currently being developed as part of an academic and learning journey.
-
-Future improvements, architecture refinement, UI enhancement, and module expansion are part of the ongoing development process.
-
-📜 License
-
-This project is created for academic, educational, and prototype development purposes.
-You may customize the license section later depending on whether you want to keep it open-source or private.
-
-✨ Final Note
-
-KrishiSetu represents more than just a software build — it is an effort to understand and digitally improve the connection between farmers and the market.
-By combining technology, market understanding, and agriculture-focused problem solving, this project aims to create a meaningful and scalable foundation for a smarter farming ecosystem.
+</div>
