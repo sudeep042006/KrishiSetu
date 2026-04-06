@@ -208,7 +208,7 @@ Agriculture drives the economy, yet millions of farmers remain disconnected from
 
 ## 👨‍💻 About the Project
 
-This project is developed as a **4th Semester Micro Project** at [Your Institute Name], with a focus on real-world problem solving through technology. It serves as both a **technical prototype** and a **domain research initiative** into agricultural markets and contract farming workflows.
+This project is developed as a **4th Semester Micro Project** at **ST. Vincent Pallotti College of Engineering and Technology, Nagpur** by **Sudeep Kuralkar** and **Himanshu Sherje** , with a focus on real-world problem solving through technology. It serves as both a **technical prototype** and a **domain research initiative** into agricultural markets and contract farming workflows.
 
 ---
 
