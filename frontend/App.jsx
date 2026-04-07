@@ -30,7 +30,6 @@ export default function App() {
             <Stack.Screen name="Landing" component={LandingPage} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="HomeScreen" component={HomeScreen} />
           </>
         )}
 

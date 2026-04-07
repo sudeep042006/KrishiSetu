@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import FarmerProfile from "../models/FarmerProfile.js";
 import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
+import cloudinary from "../config/cloudinary.js";
 
 const registerFarmer = async (req,res) =>{
     try{
@@ -113,6 +114,59 @@ const searchFarmer = async (req, res) =>{
         console.log("Error in searching farmer",error);
     }
 }
+const uploadFarmerPhoto = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ success: false, message: "Photo is required" });
+        }
+
+        const profile = await FarmerProfile.findOne({ userId });
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Farmer profile not found" });
+        }
+
+        // Delete old profile photo if it exists
+        if (profile.profilePhotoPublicId) {
+            await cloudinary.uploader.destroy(profile.profilePhotoPublicId);
+        }
+
+        // Upload new photo to Cloudinary
+        const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    folder: "farmer_profiles",
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+
+            stream.end(file.buffer);
+        });
+
+        // Update profile
+        profile.profilePhoto = result.secure_url;
+        profile.profilePhotoPublicId = result.public_id;
+        await profile.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile photo uploaded successfully",
+            profilePhoto: profile.profilePhoto
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error uploading profile photo",
+            error: error.message,
+        });
+    }
+};
 
 const updateFarmer = async (req,res) =>{
     try{
@@ -132,4 +186,4 @@ const updateFarmer = async (req,res) =>{
     }
 }
 
-export default {registerFarmer,getData,searchFarmer,updateFarmer,farmerProfile};
+export default {registerFarmer,getData,searchFarmer,updateFarmer,farmerProfile,uploadFarmerPhoto};
