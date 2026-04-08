@@ -40,8 +40,9 @@ export default function LoginScreen({ navigation }) {
 
         setLoading(true);
         try {
-            await authService.loginUser(formData);
-            
+            const response = await authService.loginUser(formData);
+            console.log("Login Response FULL:", JSON.stringify(response, null, 2));
+
             // On success, update global auth state
             if (authContext && authContext.login) {
                 authContext.login(formData.role);

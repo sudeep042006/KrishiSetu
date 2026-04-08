@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ---------------------------------------------------------
 // API CONFIGURATION
@@ -59,18 +60,33 @@ export const authService = {
   },
 
   loginUser: async (credentials) => {
-    try {
-      // Map frontend fields
-      const payload = {
-        email: credentials.mobileOrEmail, // The form takes mobile/email, but backend expects 'email'
-        password: credentials.password,
-        role: credentials.role === 'Farmer' ? 'farmer' : 'offtaker',
-      };
-      
-      const response = await apiClient.post('/auth/login', payload);
-      return response.data;
-    } catch (error) {
-      console.error("API Error logging in:", error?.response?.data || error);
+  try {
+    const payload = {
+      email: credentials.mobileOrEmail,
+      password: credentials.password,
+      role: credentials.role === 'Farmer' ? 'farmer' : 'offtaker',
+    };
+
+    const response = await apiClient.post('/auth/login', payload);
+    console.log('LOGIN RESPONSE:', JSON.stringify(response.data));
+
+    // ✅ NEW: Save token and role to permanent storage
+    const token = response.data?.token;       // adjust if your backend uses different key
+    const role = credentials.role;
+
+    if (token) {
+      await AsyncStorage.setItem('authToken', token);
+      await AsyncStorage.setItem('userRole', role);
+      if (response.data?.user) {
+        await AsyncStorage.setItem('userId', String(response.data.user._id));
+        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+      }
+    }
+
+    return response.data;
+
+    }  catch (error) {
+     console.error("API Error logging in:", error?.response?.data || error);
       throw error;
     }
   }
@@ -105,6 +121,11 @@ export const farmerService = {
     const response = await apiClient.post('/farmer/profile-photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return response.data;
+  },
+
+  getProfilePhotobyId: async (farmerId) => {
+    const response = await apiClient.get(`/farmer/profile-photo/${farmerId}`);
     return response.data;
   }
 };

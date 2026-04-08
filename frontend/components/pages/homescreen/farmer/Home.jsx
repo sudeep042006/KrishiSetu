@@ -2,6 +2,10 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useState } from 'react';
+import { useEffect } from 'react';
+
 import { 
     Menu, 
     Bell, 
@@ -15,9 +19,37 @@ import {
     ChevronRight,
     TrendingUp
 } from 'lucide-react-native';
-
+import { getProfilePhotobyId } from '../../service/api';
 export default function Home() {
     const navigation = useNavigation();
+    const [farmer, setFarmer] = useState(null);
+    const [profilePhoto, setProfilePhoto] = useState('');
+
+    useEffect(() => {
+        fetchFarmerData();
+    }, []);
+
+    const fetchFarmerData = async () => {
+        try {
+            const userDataStr = await AsyncStorage.getItem('userData');
+            console.log("Stored user data in Home:", userDataStr ? "Found" : "Not Found");
+
+            if (userDataStr) {
+                const userData = JSON.parse(userDataStr);
+                setFarmer(userData);
+                
+                // Fetch profile photo using the ID
+                if (userData._id) {
+                    const photoData = await getProfilePhotobyId(userData._id);
+                    setProfilePhoto(photoData?.profilePhoto || '');
+                }
+            } else {
+                console.log('No user data found in storage');
+            }
+        } catch (error) {
+            console.log('Error fetching farmer data:', error);
+        }
+    };
 
     return (
         <View className="flex-1 bg-[#123524]">
@@ -36,8 +68,12 @@ export default function Home() {
                             className="w-10 h-10 rounded-full bg-white/20"
                         />
                         <View className="ml-3">
+                            <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                             <Text className="text-white/80 text-xs">Welcome back</Text>
-                            <Text className="text-white text-base font-bold">Anil Singh</Text>
+                            <Text className="text-white text-base font-bold">
+                                {farmer?.name || 'Loading...'}
+                            </Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                     <TouchableOpacity className="bg-white/10 p-2 rounded-full">
