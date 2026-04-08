@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../../common/Header';
-import { AuthContext } from '../../../../../App';
+import { AuthContext } from '../../../../App';
 
 export default function ProfileScreen() {
     const authContext = useContext(AuthContext);

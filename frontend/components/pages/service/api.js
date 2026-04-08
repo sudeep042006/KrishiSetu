@@ -12,9 +12,9 @@ const getBaseUrl = () => {
   // Example: return 'http://192.168.1.100:5000/api/v1';
   
   if (Platform.OS === 'android') {
-    return 'http://192.168.49.104:5000/api/v1';
+    return 'http://192.168.49.117:5000/api/v1';
   } else {
-    return 'http://192.168.49.104:5000/api/v1';
+    return 'http://192.168.49.117:5000/api/v1';
   }
 };
 

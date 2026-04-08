@@ -25,8 +25,7 @@ logs/
 # BACKEND (Node / Express)
 # =========================
 backend/node_modules/
-backend/.env
-backend/.env.*
+
 
 backend/uploads/
 backend/tmp/
@@ -64,7 +63,6 @@ frontend/jest-cache/
 frontend/android/.gradle/
 frontend/android/build/
 frontend/android/app/build/
-frontend/android/local.properties
 frontend/android/captures/
 frontend/android/.idea/
 frontend/android/*.iml
@@ -81,15 +79,7 @@ frontend/android/app/.cxx/
 
 # =========================
 # IOS (if present in future)
-# =========================
-frontend/ios/build/
-frontend/ios/Pods/
-frontend/ios/.symlinks/
-frontend/ios/DerivedData/
-frontend/ios/*.xcworkspace
-frontend/ios/*.xcodeproj/project.xcworkspace/
-frontend/ios/*.xcodeproj/xcuserdata/
-frontend/ios/*.xcuserstate
+
 
 # =========================
 # REACT NATIVE CACHE
@@ -97,7 +87,7 @@ frontend/ios/*.xcuserstate
 frontend/.bundle/
 frontend/.gradle/
 frontend/.idea/
-frontend/.vscode/
+
 frontend/tmp/
 frontend/temp/
 
@@ -127,10 +117,7 @@ tmp/
 # =========================
 # BUILD / RELEASE FILES
 # =========================
-*.apk
-*.aab
-*.ap_
-*.dex
+
 
 # =========================
 # SECURITY / SECRET FILES

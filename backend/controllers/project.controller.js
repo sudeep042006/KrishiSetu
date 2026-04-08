@@ -23,7 +23,7 @@ const CreateProject = async (req,res) =>{
 
 const uploadProjectPhoto = async (req, res) => {
     try {
-        const projectId = req.user.id; 
+        const projectId = req.project.id; 
         const file = req.file;
 
         if (!file) {
@@ -44,7 +44,7 @@ const uploadProjectPhoto = async (req, res) => {
         const result = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {
-                    folder: "farmer_profiles",
+                    folder: "project_photos",
                 },
                 (error, result) => {
                     if (error) reject(error);
@@ -62,8 +62,8 @@ const uploadProjectPhoto = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Profile photo uploaded successfully",
-            projectPhoto: profile.projectPhoto
+            message: "Project photo uploaded successfully",
+            projectPhoto: project.projectPhoto
         });
 
     } catch (error) {
@@ -75,4 +75,47 @@ const uploadProjectPhoto = async (req, res) => {
     }
 };
 
-export default {CreateProject,uploadProjectPhoto};
+const getProject = async (req,res) =>{
+    try{
+        const project = await project.find();
+        return res.status(200).json({message:"Projects fetched successfully",project});
+    }catch(error){
+        console.log("Error in fetching projects",error);
+    }
+}
+
+const getProjectSearch = async (req,res) =>{
+    try{
+        const {search} = req.query;
+        const project = await project.find({
+            name:{$regex:search,$options:"i"}
+        });
+        return res.status(200).json({message:"Projects fetched successfully",project});
+    }catch(error){
+        console.log("Error in fetching projects",error);
+    }
+}
+
+const updateProject = async (req, res) =>{
+    try{
+        const {id} = req.params;
+        const project = await project.findByIdAndUpdate(id);
+        return res.status(200).json({message:"Project updated successfully",project});
+    }catch(error){
+        console.log("Error in updating project",error);
+    }
+}
+
+const deleteProject = async (req,res) =>{
+    try{
+        const {id} = req.params;
+        const project = await project.findByIdAndDelete(id);
+        return res.status(200).json({message:"Project deleted successfully",project});
+    }catch(error){
+        console.log("Error in deleting project",error);
+    }
+}
+
+
+
+export default {CreateProject,uploadProjectPhoto,getProject,getProjectSearch,deleteProject};
