@@ -7,8 +7,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './components/pages/auth/login';
 import RegisterScreen from './components/pages/auth/register';
 import LandingPage from './components/pages/main/LandingPage';
-import FarmerHome from './components/pages/homescreen/farmer/Home';
+import FarmerDrawerNavigator from './components/navigation/FarmerDrawerNavigator';
 import OfftakerHome from './components/pages/homescreen/offtaker/home';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export const AuthContext = createContext();
 
@@ -30,28 +31,30 @@ export default function App() {
   };
 
   return (
-    <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <SafeAreaProvider>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
 
-          {isAuthenticated ? (
-            /* Protected Route */
-            userRole === 'Farmer' ? (
-              <Stack.Screen name="FarmerHome" component={FarmerHome} />
+            {isAuthenticated ? (
+              /* Protected Route */
+              userRole === 'Farmer' ? (
+                <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
+              ) : (
+                <Stack.Screen name="OfftakerHome" component={OfftakerHome} />
+              )
             ) : (
-              <Stack.Screen name="OfftakerHome" component={OfftakerHome} />
-            )
-          ) : (
-            /* Public Auth Screens */
-            <>
-              <Stack.Screen name="Landing" component={LandingPage} />
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Register" component={RegisterScreen} />
-            </>
-          )}
+              /* Public Auth Screens */
+              <>
+                <Stack.Screen name="Landing" component={LandingPage} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+              </>
+            )}
 
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthContext.Provider>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </SafeAreaProvider>
   );
 }

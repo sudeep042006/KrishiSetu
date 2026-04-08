@@ -31,6 +31,16 @@ const projectSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    cropPhoto: {
+      type: String,
+      required: true,
+      default:"",
+    },
+    cropPhotoPublicId: {
+      type: String,
+      required: true,
+      default:"",
+    },
 
     quantityRequired: {
       type: Number,
