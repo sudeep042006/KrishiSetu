@@ -14,6 +14,7 @@ import OfftakerProfilesScreen from '../pages/homescreen/farmer/offtakerProfiles'
 import WalletScreen from '../pages/homescreen/farmer/wallet';
 import ProfileScreen from '../pages/homescreen/farmer/profile';
 import SettingsScreen from '../pages/homescreen/farmer/settings';
+import WeatherScreen from '../pages/homescreen/farmer/weather';
 
 const Drawer = createDrawerNavigator();
 
@@ -50,6 +51,7 @@ export default function FarmerDrawerNavigator() {
             <Drawer.Screen name="Wallet" component={WalletScreen} />
             <Drawer.Screen name="Profile" component={ProfileScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
+            <Drawer.Screen name="Weather" component={WeatherScreen} />
         </Drawer.Navigator>
     );
 }

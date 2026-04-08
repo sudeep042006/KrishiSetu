@@ -89,15 +89,18 @@ export default function Home() {
                 >
                     {/* Top Cards Row */}
                     <View className="flex-row justify-between px-5 mb-4">
-                        <View className="bg-white/10 p-4 rounded-3xl flex-1 mr-2 border border-white/5 shadow-sm">
+                        <TouchableOpacity onPress={() => navigation.navigate('Crop List')}>
+                        <View className="bg-white/10 p-4 rounded-3xl w-35 flex-1 mr-2 border border-white/5 shadow-sm">
                             <Text className="text-white/80 text-xs mb-1">Crops to Harvest</Text>
                             <Text className="text-white text-lg font-bold">3 Crops</Text>
                             <View className="mt-4 flex-row justify-end">
                                 <Leaf color="#86efac" size={24} />
                             </View>
                         </View>
+                        </TouchableOpacity>
 
-                        <View className="bg-white/10 p-4 rounded-3xl flex-1 ml-2 border border-white/5 shadow-sm">
+                        <TouchableOpacity onPress={() => navigation.navigate('Weather')}>
+                        <View className="bg-white/10 p-4 rounded-3xl w-60 flex-1 ml-2 border border-white/5 shadow-sm">
                             <View className="flex-row justify-between items-start mb-1">
                                 <Text className="text-white/80 text-xs">Weather</Text>
                                 <CloudSun color="#fef08a" size={24} />
@@ -105,6 +108,8 @@ export default function Home() {
                             <Text className="text-white text-lg font-bold mb-1">35°C</Text>
                             <Text className="text-white/80 text-sm">Sunny</Text>
                         </View>
+                        </TouchableOpacity>
+
                     </View>
 
                     {/* AI Insight Card */}
@@ -132,19 +137,19 @@ export default function Home() {
                                 </View>
                                 <Text className="text-gray-600 text-xs font-semibold">Q&A</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity className="items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('Marketplace')} className="items-center">
                                 <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
                                     <Store color="#16a34a" size={26} />
                                 </View>
                                 <Text className="text-gray-600 text-xs font-semibold">Sell Produce</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity className="items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('Fertilizer')} className="items-center">
                                 <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
                                     <FlaskConical color="#16a34a" size={26} />
                                 </View>
                                 <Text className="text-gray-600 text-xs font-semibold">Fertilizer</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity className="items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('Weather')} className="items-center">
                                 <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
                                     <CloudSun color="#16a34a" size={26} />
                                 </View>
