@@ -42,11 +42,11 @@ const registerFarmer = async (req,res) =>{
 }
 
 
- const farmerProfile = async (req, res) => {
+ const CompleteFarmerProfile = async (req, res) => {
     try {
         const userId = req.user.id; // from auth middleware
 
-        const { name, email, phone, address } = req.body;
+        const { name,  phone, aadhaar, village, district, state, landArea, crops } = req.body;
 
         // check if profile already exists
         let profile = await FarmerProfile.findOne({ userId });
@@ -54,9 +54,13 @@ const registerFarmer = async (req,res) =>{
         if (profile) {
             // UPDATE existing profile
             profile.name = name || profile.name;
-            profile.email = email || profile.email;
             profile.phone = phone || profile.phone;
-            profile.address = address || profile.address;
+            profile.aadhaar = aadhaar || profile.aadhaar;
+            profile.village = village || profile.village;
+            profile.district = district || profile.district;
+            profile.state = state || profile.state;
+            profile.landArea = landArea || profile.landArea;
+            profile.crops = crops || profile.crops;
 
             await profile.save();
 
@@ -71,9 +75,13 @@ const registerFarmer = async (req,res) =>{
         profile = new FarmerProfile({
             userId,
             name,
-            email,
             phone,
-            address
+            aadhaar,
+            village,
+            district,
+            state,
+            landArea,
+            crops
         });
 
         await profile.save();
@@ -186,4 +194,4 @@ const updateFarmer = async (req,res) =>{
     }
 }
 
-export default {registerFarmer,getData,searchFarmer,updateFarmer,farmerProfile,uploadFarmerPhoto};
+export default {registerFarmer,getData,searchFarmer,updateFarmer,CompleteFarmerProfile,uploadFarmerPhoto};

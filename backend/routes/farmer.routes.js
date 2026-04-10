@@ -9,7 +9,7 @@ router.post("/register",farmerController.registerFarmer);
 router.get("/get",farmerController.getData);
 router.post("/search",farmerController.searchFarmer);
 router.put("/update/:id",farmerController.updateFarmer);
-router.post("/profile",farmerController.farmerProfile);
+router.post("/profile",authenticate,farmerController.CompleteFarmerProfile);
 router.post("/profile-photo", authenticate, upload.single("photo"), farmerController.uploadFarmerPhoto);
 
 export default router;

@@ -31,11 +31,19 @@ const apiClient = axios.create({
 });
 
 // Interceptor for JWT tokens (Optional later)
-apiClient.interceptors.request.use(async (config) => {
+/* apiClient.interceptors.request.use(async (config) => {
   // const token = await AsyncStorage.getItem('token');
   // if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
+}, (error) => Promise.reject(error)); */
+
+// In api.js
+apiClient.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem('authToken'); // Changed from 'token' to 'authToken'
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
 }, (error) => Promise.reject(error));
+
 
 // ---------------------------------------------------------
 // AUTHENTICATION SERVICES
@@ -95,9 +103,28 @@ export const authService = {
 // ---------------------------------------------------------
 // FARMER SERVICES
 // ---------------------------------------------------------
+
+export const CompleteFarmerProfile = async (farmerData) => {
+  const response = await apiClient.post('/farmer/profile', farmerData);
+  return response.data;
+}
+
 export const farmerService = {
   getFarmers: async () => {
     const response = await apiClient.get('/farmer/get');
+    return response.data;
+  },
+
+  uploadProfilePhoto: async (imageUri, fileType = 'image/jpeg', fileName = 'profile.jpg') => {
+    const formData = new FormData();
+    formData.append('photo', {
+      uri: imageUri,
+      type: fileType,
+      name: fileName,
+    });
+    const response = await apiClient.post('/farmer/profile-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 

@@ -25,6 +25,26 @@ const FarmerProfileSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    aadhaar: {
+        type: String,
+    },
+    //location
+    village: {
+        type: String,
+    },
+    district: {
+        type: String,
+    },
+    state: {
+        type: String,
+    },
+    //farm Details
+    landArea: {
+        type: String,
+    },
+    crops: {
+        type: [String],
+    },
     isVerified: {
         type: Boolean,
         default: false
