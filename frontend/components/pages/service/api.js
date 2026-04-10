@@ -13,9 +13,9 @@ const getBaseUrl = () => {
   // Example: return 'http://192.168.1.100:5000/api/v1';
   
   if (Platform.OS === 'android') {
-    return 'http://192.168.49.117:5000/api/v1';
+    return 'http://192.168.49.67:5000/api/v1';
   } else {
-    return 'http://192.168.49.117:5000/api/v1';
+    return 'http://192.168.49.67:5000/api/v1';
   }
 };
 
@@ -109,9 +109,15 @@ export const CompleteFarmerProfile = async (farmerData) => {
   return response.data;
 }
 
+
 export const farmerService = {
   getFarmers: async () => {
     const response = await apiClient.get('/farmer/get');
+    return response.data;
+  },
+
+  getProfile: async () => {
+    const response = await apiClient.get('/farmer/profile');
     return response.data;
   },
 
@@ -122,10 +128,24 @@ export const farmerService = {
       type: fileType,
       name: fileName,
     });
-    const response = await apiClient.post('/farmer/profile-photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    
+    // We use fetch here because React Native's FormData works best with native fetch
+    // when dealing with multipart/form-data boundaries, avoiding multer backend crashes.
+    const token = await AsyncStorage.getItem('authToken');
+    const response = await fetch(`${BASE_URL}/farmer/profile-photo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
     });
-    return response.data;
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${errorText}`);
+    }
+    
+    return await response.json();
   },
 
   searchFarmer: async (searchQueries) => {
@@ -138,18 +158,7 @@ export const farmerService = {
     return response.data;
   },
 
-  uploadProfilePhoto: async (imageUri, fileType = 'image/jpeg', fileName = 'profile.jpg') => {
-    const formData = new FormData();
-    formData.append('photo', {
-      uri: imageUri,
-      type: fileType,
-      name: fileName,
-    });
-    const response = await apiClient.post('/farmer/profile-photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return response.data;
-  },
+
 
   getProfilePhotobyId: async (farmerId) => {
     const response = await apiClient.get(`/farmer/profile-photo/${farmerId}`);

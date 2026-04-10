@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../../common/Header';
 import { AuthContext } from '../../../../App';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { CompleteFarmerProfil, farmerService } from '../../service/api';
+import { CompleteFarmerProfile, farmerService } from '../../service/api';
 
 // ─── Replace these with your actual imports ───────────────────────────────────
 // import * as ImagePicker from 'expo-image-picker';       // if using Expo
@@ -93,21 +93,21 @@ export default function ProfileScreen() {
     try {
         setUploading(true);
 
-        // 1. Upload Photo if selected
-        if (profileImage && !profileImage.startsWith('http')) {
-            const uploadRes = await farmerService.uploadProfilePhoto(profileImage);
-            console.log("Upload response", uploadRes.profileData.profilePhoto);
-            setProfileImage(uploadRes.profileData.profilePhoto);
-        }
-
-        // 2. Prepare data (map cropTypes to crops as expected by backend)
+        // 1. Prepare data (map cropTypes to crops as expected by backend)
         const dataToSave = {
             ...profileData,
             crops: profileData.cropTypes.split(',').map(crop => crop.trim()) // Backend expects 'crops'
         };
 
-        // 3. Save Profile Data
+        // 2. Save Profile Data
         await CompleteFarmerProfile(dataToSave);
+		
+		// 3. Upload Photo if selected
+        if (profileImage && !profileImage.startsWith('http')) {
+            const uploadRes = await farmerService.uploadProfilePhoto(profileImage);
+            console.log("Upload response", uploadRes.profilePhoto);
+            setProfileImage(uploadRes.profilePhoto);
+        }
 
         Alert.alert('Success', 'Profile updated successfully!');
         setModalVisible(false);

@@ -19,11 +19,11 @@ import {
     ChevronRight,
     TrendingUp
 } from 'lucide-react-native';
-import { getProfilePhotobyId } from '../../service/api';
+import { farmerService } from '../../service/api';
 export default function Home() {
     const navigation = useNavigation();
     const [farmer, setFarmer] = useState(null);
-    const [profilePhoto, setProfilePhoto] = useState('');
+    const [getProfilePhotobyId, setProfilePhoto] = useState('');
 
     useEffect(() => {
         fetchFarmerData();
@@ -40,7 +40,7 @@ export default function Home() {
                 
                 // Fetch profile photo using the ID
                 if (userData._id) {
-                    const photoData = await getProfilePhotobyId(userData._id);
+                    const photoData = await farmerService.getProfilePhotobyId(userData._id);
                     setProfilePhoto(photoData?.profilePhoto || '');
                 }
             } else {
@@ -64,7 +64,7 @@ export default function Home() {
                             <Menu color="#ffffff" size={24} />
                         </TouchableOpacity>
                         <Image 
-                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' }} 
+                            source={{ uri: getProfilePhotobyId }} 
                             className="w-10 h-10 rounded-full bg-white/20"
                         />
                         <View className="ml-3">

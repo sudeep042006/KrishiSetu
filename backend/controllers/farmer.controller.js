@@ -110,6 +110,28 @@ const getData = async (req,res) =>{
     }
 }
 
+const getFarmerProfile = async (req, res) => {
+    try {
+        const userId = req.user._id; // Use _id from req.user
+        const profile = await FarmerProfile.findOne({ userId });
+        if (!profile) return res.status(404).json({ success: false, message: "Profile not found" });
+        return res.status(200).json({ success: true, data: profile });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+const getProfilePhotobyId = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await FarmerProfile.findOne({ userId: id });
+        if (!profile) return res.status(404).json({ success: false, message: "Profile not found" });
+        return res.status(200).json({ success: true, profilePhoto: profile.profilePhoto });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
 const searchFarmer = async (req, res) =>{
     try{
         const {name} = req.body;
@@ -194,4 +216,4 @@ const updateFarmer = async (req,res) =>{
     }
 }
 
-export default {registerFarmer,getData,searchFarmer,updateFarmer,CompleteFarmerProfile,uploadFarmerPhoto};
+export default {registerFarmer,getData,searchFarmer,updateFarmer,CompleteFarmerProfile,uploadFarmerPhoto, getFarmerProfile, getProfilePhotobyId};

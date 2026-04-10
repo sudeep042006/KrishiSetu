@@ -11,5 +11,7 @@ router.post("/search",farmerController.searchFarmer);
 router.put("/update/:id",farmerController.updateFarmer);
 router.post("/profile",authenticate,farmerController.CompleteFarmerProfile);
 router.post("/profile-photo", authenticate, upload.single("photo"), farmerController.uploadFarmerPhoto);
+router.get("/profile", authenticate, farmerController.getFarmerProfile);
+router.get("/profile-photo/:id", farmerController.getProfilePhotobyId);
 
 export default router;
