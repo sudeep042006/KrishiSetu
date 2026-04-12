@@ -13,9 +13,9 @@ const getBaseUrl = () => {
   // Example: return 'http://192.168.1.100:5000/api/v1';
   
   if (Platform.OS === 'android') {
-    return 'http://192.168.49.67:5000/api/v1';
+    return 'http://192.168.49.105:5000/api/v1';
   } else {
-    return 'http://192.168.49.67:5000/api/v1';
+    return 'http://192.168.49.105:5000/api/v1';
   }
 };
 
@@ -39,8 +39,12 @@ const apiClient = axios.create({
 
 // In api.js
 apiClient.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('authToken'); // Changed from 'token' to 'authToken'
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const token = await AsyncStorage.getItem('authToken'); 
+  console.log('Interpreting token for:', config.url, 'Token found:', !!token);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+    // console.log('Auth Header set:', config.headers.Authorization);
+  }
   return config;
 }, (error) => Promise.reject(error));
 
@@ -165,5 +169,14 @@ export const farmerService = {
     return response.data;
   }
 };
+
+// ---------------------------------------------------------
+// OFFTAKER SERVICES
+// ---------------------------------------------------------
+
+// ---------------------------------------------------------
+// PROJECT SERVICES
+// ---------------------------------------------------------
+
 
 export default apiClient;

@@ -44,7 +44,7 @@ const registerFarmer = async (req,res) =>{
 
  const CompleteFarmerProfile = async (req, res) => {
     try {
-        const userId = req.user.id; // from auth middleware
+        const userId = req.user._id; // from auth middleware
 
         const { name,  phone, aadhaar, village, district, state, landArea, crops } = req.body;
 
@@ -112,7 +112,7 @@ const getData = async (req,res) =>{
 
 const getFarmerProfile = async (req, res) => {
     try {
-        const userId = req.user._id; // Use _id from req.user
+        const userId = req.user.id; // Use _id from req.user
         const profile = await FarmerProfile.findOne({ userId });
         if (!profile) return res.status(404).json({ success: false, message: "Profile not found" });
         return res.status(200).json({ success: true, data: profile });
@@ -146,7 +146,7 @@ const searchFarmer = async (req, res) =>{
 }
 const uploadFarmerPhoto = async (req, res) => {
     try {
-        const userId = req.user.id; 
+        const userId = req.user._id; 
         const file = req.file;
 
         if (!file) {
