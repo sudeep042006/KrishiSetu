@@ -13,9 +13,11 @@ const authenticate = async (req, res, next) => {
         const { data, error } = await supabase.auth.getUser(token);
 
         if (error || !data.user) {
+            console.log("=== Auth Error ===");
+            console.log("Token:", token.substring(0, 20) + "...");
+            console.log("Error from supabase:", error);
             return res.status(401).json({ message: "Invalid or expired token" });
         }
-
         const mongoUser = await User.findOne({ supabaseId: data.user.id });
 
         if (!mongoUser) {

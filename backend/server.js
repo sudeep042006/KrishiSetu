@@ -7,6 +7,7 @@ dotenv.config();
 // Import routes
 import farmerRoutes from "./routes/farmer.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import projectRoutes from "./routes/project.routes.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ import supabase from './config/supabase.js';
 // API routes
 app.use("/api/v1/auth",authRoutes);
 app.use("/api/v1/farmer", farmerRoutes);
+app.use("/api/v1/project", projectRoutes);
 
 
 app.get("/",(req,res)=>{

@@ -43,15 +43,23 @@ export default function FarmerDrawerNavigator() {
                 options={{ drawerLabel: 'Home' }} 
             />
             
-            <Drawer.Screen name="Crop List" component={CropListScreen} />
-            <Drawer.Screen name="Crop Project" component={CropProjectScreen} />
-            <Drawer.Screen name="Crop Disease" component={CropDiseaseScreen} />
+            <Drawer.Screen name="Crops" component={CropListScreen} />
+            <Drawer.Screen 
+                name="Add Crops" 
+                component={CropProjectScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen name="Crop Diseases" component={CropDiseaseScreen} />
             <Drawer.Screen name="Orders" component={OrdersScreen} />
             <Drawer.Screen name="Offtaker Profiles" component={OfftakerProfilesScreen} />
             <Drawer.Screen name="Wallet" component={WalletScreen} />
             <Drawer.Screen name="Profile" component={ProfileScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
-            <Drawer.Screen name="Weather" component={WeatherScreen} />
+            <Drawer.Screen 
+                name="Weather" 
+                component={WeatherScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
         </Drawer.Navigator>
     );
 }

@@ -89,7 +89,7 @@ export default function Home() {
                 >
                     {/* Top Cards Row */}
                     <View className="flex-row justify-between px-5 mb-4">
-                        <TouchableOpacity onPress={() => navigation.navigate('Crop List')}>
+                        <TouchableOpacity onPress={() => navigation.navigate('Crops')}>
                         <View className="bg-white/10 p-4 rounded-3xl w-35 flex-1 mr-2 border border-white/5 shadow-sm">
                             <Text className="text-white/80 text-xs mb-1">Crops to Harvest</Text>
                             <Text className="text-white text-lg font-bold">3 Crops</Text>

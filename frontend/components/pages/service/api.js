@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@env';
 
 // ---------------------------------------------------------
 // API CONFIGURATION
@@ -13,9 +14,9 @@ const getBaseUrl = () => {
   // Example: return 'http://192.168.1.100:5000/api/v1';
   
   if (Platform.OS === 'android') {
-    return 'http://192.168.49.105:5000/api/v1';
+    return API_BASE_URL;
   } else {
-    return 'http://192.168.49.105:5000/api/v1';
+    return API_BASE_URL;
   }
 };
 
@@ -47,6 +48,23 @@ apiClient.interceptors.request.use(async (config) => {
   }
   return config;
 }, (error) => Promise.reject(error));
+
+// Catch 401 Unauthorized errors globally
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn("401 Unauthorized caught globally. Session might be expired.");
+      // Optional: uncomment below to auto-logout on 401
+      // await AsyncStorage.removeItem('authToken');
+      // await AsyncStorage.removeItem('userId');
+      // await AsyncStorage.removeItem('userData');
+      // await AsyncStorage.removeItem('userRole');
+      // Alert.alert("Session Expired", "Please log in again.");
+    }
+    return Promise.reject(error);
+  }
+);
 
 
 // ---------------------------------------------------------
@@ -177,6 +195,75 @@ export const farmerService = {
 // ---------------------------------------------------------
 // PROJECT SERVICES
 // ---------------------------------------------------------
+export const CropService = {
+  getProjects: async () => {
+    const response = await apiClient.get('/project/get');
+    return response.data;
+  },
+
+  getCategories: async () => {
+    const response = await apiClient.get('/project/getCategories');
+    return response.data;
+  },
+
+  getProjectByCropName: async (cropName) => {
+    const response = await apiClient.get(`/project/getProjectByCropName?cropName=${cropName}`);
+    return response.data;
+  },
+
+  getProjectByLocation: async (location) => {
+    const response = await apiClient.get(`/project/getProjectByLocation?location=${location}`);
+    return response.data;
+  },
+
+  getProjectPhotoById: async (projectId) => {
+    const response = await apiClient.get(`/project/getPhoto/${projectId}`);
+    return response.data;
+  },
+
+  updateProject: async (projectId, updateData) => {
+    const response = await apiClient.post(`/project/update/${projectId}`, updateData);
+    return response.data;
+  },
+
+  deleteProject: async (projectId) => {
+    const response = await apiClient.post(`/project/deleteProject/${projectId}`);
+    return response.data;
+  },
+
+  uploadProjectPhoto: async (projectId, imageUri, fileType = 'image/jpeg', fileName = 'project.jpg') => {
+    const formData = new FormData();
+    formData.append('projectId', projectId);
+    formData.append('photo', {
+      uri: imageUri,
+      type: fileType,
+      name: fileName,
+    });
+    
+    // We use fetch here because React Native's FormData works best with native fetch
+    // when dealing with multipart/form-data boundaries, avoiding multer backend crashes.
+    const token = await AsyncStorage.getItem('authToken');
+    const response = await fetch(`${BASE_URL}/project/upload-photo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${errorText}`);
+    }
+    
+    return await response.json();
+  },
+
+  createProject: async (projectData) => {
+    const response = await apiClient.post('/project/create', projectData);
+    return response.data;
+  },
+};
 
 
 export default apiClient;

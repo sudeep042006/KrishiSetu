@@ -33,13 +33,27 @@ const projectSchema = new mongoose.Schema(
     },
     cropPhoto: {
       type: String,
-      required: true,
       default:"",
     },
     cropPhotoPublicId: {
       type: String,
-      required: true,
       default:"",
+    },
+
+    cropCategory:{
+      type: String,
+      required: true,
+      trim: true,
+      enum: ["Grains", "Vegetables", "Fruits", "Pulses","Spices", "Oilseeds","Cotton", "Herbs", "Other"],
+      default: "Grains",
+    },
+
+    organicFarming:{
+      type: String,
+      required: false,
+      trim: true,
+      enum: ["Yes", "No"],
+      default: "No",
     },
 
     quantityRequired: {
@@ -50,7 +64,7 @@ const projectSchema = new mongoose.Schema(
 
     quantityUnit: {
       type: String,
-      enum: ["kg", "quintal", "ton", "bag", "crate"],
+      enum: ["kg", "quintal", "ton", "bag"],
       default: "kg",
     },
 
@@ -62,8 +76,14 @@ const projectSchema = new mongoose.Schema(
 
     priceUnit: {
       type: String,
-      enum: ["per_kg", "per_quintal", "per_ton", "total"],
-      default: "total",
+      default: "per_unit",
+    },
+
+    QualityGrade:{
+      type: String,
+      required: true,
+      trim: true,
+      enum: ["premium", "standard", "economy"],
     },
 
     location: {
@@ -82,11 +102,7 @@ const projectSchema = new mongoose.Schema(
       },
     },
 
-    startDate: {
-      type: Date,
-    },
-
-    expectedDeliveryDate: {
+    expectedHarvestDate: {
       type: Date,
     },
 

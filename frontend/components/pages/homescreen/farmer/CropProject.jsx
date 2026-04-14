@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../../common/Header';
 import { launchImageLibrary } from 'react-native-image-picker';
-// import { cropService } from '../../service/api';
+import { CropService } from '../../service/api';
 
 const CATEGORIES = ['Grain', 'Vegetable', 'Fruit', 'Pulse', 'Spice', 'Oilseed', 'Cotton', 'Other'];
 const UNITS = ['Quintal', 'Kg', 'Ton', 'Bag (50kg)'];
@@ -17,7 +17,7 @@ const GRADES = [
     { key: 'C', label: 'Grade C', sub: 'Economy' },
 ];
 
-export default function CropProjectScreen() {
+export default function CropProjectScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [saving, setSaving] = useState(false);
     const [cropImage, setCropImage] = useState(null);
@@ -36,36 +36,39 @@ export default function CropProjectScreen() {
         ? (parseFloat(form.quantity) * parseFloat(form.pricePerUnit)).toLocaleString('en-IN')
         : null;
 
-    const pickImage = () => {
+    const HandlepickImage = () => {
         launchImageLibrary({ mediaType: 'photo', quality: 0.8 }, (res) => {
             if (!res.didCancel && res.assets?.[0]) setCropImage(res.assets[0].uri);
         });
     };
 
     const handleSave = async () => {
-        if (!form.cropName.trim() || !form.quantity || !form.pricePerUnit) {
-            Alert.alert('Missing Fields', 'Crop name, quantity and price are required.');
+        if (!form.cropName.trim() || !form.quantity || !form.pricePerUnit || !form.location.trim() || !form.description.trim()) {
+            Alert.alert('Missing Fields', 'Crop name, description, location, quantity and price are required.');
             return;
         }
         try {
             setSaving(true);
-            let imageUrl = null;
-            if (cropImage && !cropImage.startsWith('http')) {
-                // const res = await cropService.uploadCropPhoto(cropImage);
-                // imageUrl = res.imageUrl;
-            }
             const payload = {
                 ...form,
-                crops: [form.cropName],
-                cropImage: imageUrl,
             };
-            // await cropService.createProject(payload);
+            const response = await CropService.createProject(payload);
+            
+            if (cropImage && !cropImage.startsWith('http') && response?.project?._id) {
+                 await CropService.uploadProjectPhoto(response.project._id, cropImage);
+            }
+            
             console.log('Payload:', payload);
             Alert.alert('Listed!', `${form.cropName} is now live for buyers.`, [
-                { text: 'OK', onPress: () => { setModalVisible(false); resetForm(); } },
+                { text: 'OK', onPress: () => { 
+                    setModalVisible(false); 
+                    resetForm(); 
+                    if(navigation) navigation.navigate('Crops'); 
+                } },
             ]);
         } catch (e) {
-            Alert.alert('Error', 'Could not publish. Try again.');
+            console.error("Project Create Error: ", e);
+            Alert.alert('Error', 'Could not publish. Try again. ' + (e.message || ""));
         } finally {
             setSaving(false);
         }
@@ -141,7 +144,7 @@ export default function CropProjectScreen() {
 
                                 {/* ── Photo Upload ──────────────────────── */}
                                 <TouchableOpacity
-                                    onPress={pickImage}
+                                    onPress={HandlepickImage}
                                     className="rounded-2xl overflow-hidden mb-5 border border-dashed border-[#c7ded0] bg-[#f7faf8]"
                                     style={{ height: 150 }}
                                 >
