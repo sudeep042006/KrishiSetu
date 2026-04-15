@@ -8,6 +8,7 @@ dotenv.config();
 import farmerRoutes from "./routes/farmer.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/project.routes.js";
+import weatherRoutes from "./routes/weather.routes.js"; // New weather route
 
 const app = express();
 
@@ -26,6 +27,7 @@ import supabase from './config/supabase.js';
 app.use("/api/v1/auth",authRoutes);
 app.use("/api/v1/farmer", farmerRoutes);
 app.use("/api/v1/project", projectRoutes);
+app.use("/api/v1/weather", weatherRoutes); // Mounted weather routes
 
 
 app.get("/",(req,res)=>{

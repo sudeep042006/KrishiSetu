@@ -1,33 +1,114 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import WeatherCard from '../../../CreatedComponents/weatherCard';
 
-import { 
-    Menu, 
-    Bell, 
-    Leaf, 
-    CloudSun, 
-    Sparkles, 
-    MessageCircleQuestion, 
-    Store, 
-    FlaskConical, 
+import {
+    Menu,
+    Bell,
+    Leaf,
+    CloudSun,
+    Sparkles,
+    MessageCircleQuestion,
+    Store,
+    FlaskConical,
     Tractor,
     ChevronRight,
     TrendingUp
 } from 'lucide-react-native';
-import { farmerService } from '../../service/api';
+import { PermissionsAndroid } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
+import { WEATHER_API } from '@env';
+import { farmerService, CropService } from '../../service/api';
+
 export default function Home() {
     const navigation = useNavigation();
     const [farmer, setFarmer] = useState(null);
     const [getProfilePhotobyId, setProfilePhoto] = useState('');
+    const [weatherData, setWeatherData] = useState(null);
+    const [loadingWeather, setLoadingWeather] = useState(true);
+    const [cropCount, setCropCount] = useState(0);
+
 
     useEffect(() => {
         fetchFarmerData();
+        initializeWeather();
+        fetchCrops();
     }, []);
+
+    const requestLocationPermission = async () => {
+        if (Platform.OS === 'android') {
+            try {
+                const granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                    {
+                        title: 'KrishiSetu Location Permission',
+                        message: 'We need your location to show accurate farm weather and alerts.',
+                        buttonNeutral: 'Ask Me Later',
+                        buttonNegative: 'Cancel',
+                        buttonPositive: 'OK',
+                    },
+                );
+                if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                    loadLiveWeather();
+                } else {
+                    setLoadingWeather(false);
+                }
+            } catch (err) {
+                console.warn(err);
+            }
+        }
+    };
+
+    const loadLiveWeather = () => {
+        Geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${WEATHER_API}`);
+                    const data = await res.json();
+                    if (data && data.cod === 200) {
+                        setWeatherData(data);
+                        await AsyncStorage.setItem('farm_weather_cache', JSON.stringify({ current: data }));
+                    }
+                } catch (error) {
+                    console.error('Home Weather Fetch Error:', error);
+                } finally {
+                    setLoadingWeather(false);
+                }
+            },
+            (error) => {
+                console.log(error);
+                setLoadingWeather(false);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+        );
+    };
+
+    const initializeWeather = async () => {
+        setLoadingWeather(true);
+        const cached = await AsyncStorage.getItem('farm_weather_cache');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed.current) setWeatherData(parsed.current);
+        }
+        requestLocationPermission();
+    };
+
+
+    const fetchCrops = async () => {
+        try {
+            const res = await CropService.getProjects();
+            setCropCount(res.projects?.length || 0);
+        } catch (error) {
+            console.log('Error fetching crops for home:', error);
+        }
+    };
+
 
     const fetchFarmerData = async () => {
         try {
@@ -37,7 +118,7 @@ export default function Home() {
             if (userDataStr) {
                 const userData = JSON.parse(userDataStr);
                 setFarmer(userData);
-                
+
                 // Fetch profile photo using the ID
                 if (userData._id) {
                     const photoData = await farmerService.getProfilePhotobyId(userData._id);
@@ -52,27 +133,27 @@ export default function Home() {
     };
 
     return (
-        <View className="flex-1 bg-[#123524]">
+        <View className="flex-1 bg-gradient-to-b from-green-900 to-green-700">
             <SafeAreaView edges={['top']} className="flex-1">
                 {/* Custom Rich Header */}
                 <View className="flex-row items-center justify-between px-5 pt-4 pb-6">
                     <View className="flex-row items-center">
-                        <TouchableOpacity 
-                            className="mr-3" 
+                        <TouchableOpacity
+                            className="mr-3"
                             onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
                         >
                             <Menu color="#ffffff" size={24} />
                         </TouchableOpacity>
-                        <Image 
-                            source={{ uri: getProfilePhotobyId }} 
+                        <Image
+                            source={{ uri: getProfilePhotobyId }}
                             className="w-10 h-10 rounded-full bg-white/20"
                         />
                         <View className="ml-3">
                             <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                            <Text className="text-white/80 text-xs">Welcome back</Text>
-                            <Text className="text-white text-base font-bold">
-                                {farmer?.name || 'Loading...'}
-                            </Text>
+                                <Text className="text-white/80 text-xs">Welcome back</Text>
+                                <Text className="text-white text-base font-bold">
+                                    {farmer?.name || 'Loading...'}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -82,39 +163,47 @@ export default function Home() {
                 </View>
 
                 {/* Main Scrollable Content */}
-                <ScrollView 
+                <ScrollView
                     className="flex-1"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 100 }}
                 >
                     {/* Top Cards Row */}
                     <View className="flex-row justify-between px-5 mb-4">
-                        <TouchableOpacity onPress={() => navigation.navigate('Crops')}>
-                        <View className="bg-white/10 p-4 rounded-3xl w-35 flex-1 mr-2 border border-white/5 shadow-sm">
-                            <Text className="text-white/80 text-xs mb-1">Crops to Harvest</Text>
-                            <Text className="text-white text-lg font-bold">3 Crops</Text>
-                            <View className="mt-4 flex-row justify-end">
-                                <Leaf color="#86efac" size={24} />
+                        <TouchableOpacity onPress={() => navigation.navigate('Crops')} className="flex-1">
+                            <View className="bg-gray-800 rounded-3xl mr-2 overflow-hidden items-center justify-center border border-white/5 shadow-sm h-[160px]">
+                                <Image 
+                                    source={{ uri: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop' }} 
+                                    style={StyleSheet.absoluteFillObject}
+                                    className="opacity-40"
+                                />
+                                <View className="p-4 w-full h-full justify-between">
+                                    <View>
+                                        <Text className="text-white/80 text-xs mb-1">Crops to Harvest</Text>
+                                        <Text className="text-white text-lg font-extrabold">{cropCount} Crops</Text>
+                                    </View>
+                                    <View className="flex-row justify-end">
+                                        <Leaf color="#86efac" size={28} />
+                                    </View>
+                                </View>
                             </View>
-                        </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => navigation.navigate('Weather')}>
-                        <View className="bg-white/10 p-4 rounded-3xl w-60 flex-1 ml-2 border border-white/5 shadow-sm">
-                            <View className="flex-row justify-between items-start mb-1">
-                                <Text className="text-white/80 text-xs">Weather</Text>
-                                <CloudSun color="#fef08a" size={24} />
-                            </View>
-                            <Text className="text-white text-lg font-bold mb-1">35°C</Text>
-                            <Text className="text-white/80 text-sm">Sunny</Text>
-                        </View>
+                        <TouchableOpacity onPress={() => navigation.navigate('Weather')} activeOpacity={0.9} className="flex-[1.4]">
+                            <WeatherCard 
+                                weather={weatherData} 
+                                loading={loadingWeather && !weatherData} 
+                                isCompact={true}
+                                containerStyle={{ marginHorizontal: 0, marginVertical: 0, height: 160, marginLeft: 4 }}
+                            />
                         </TouchableOpacity>
-
                     </View>
+
+
 
                     {/* AI Insight Card */}
                     <View className="px-5 mb-6">
-                        <View className="bg-gradient-to-r bg-[#1e4a3b] p-4 rounded-3xl flex-row items-center border border-[#2d6a54] shadow-sm">
+                        <View className="bg-gradient-to-r bg-[#1e4a3b] p-4 rounded- flex-row items-center border border-[#2d6a54] shadow-sm">
                             <View className="bg-[#4ade80]/20 p-3 rounded-full mr-4">
                                 <Sparkles color="#4ade80" size={24} />
                             </View>
