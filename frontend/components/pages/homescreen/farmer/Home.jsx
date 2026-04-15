@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
+
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
@@ -133,7 +135,11 @@ export default function Home() {
     };
 
     return (
-        <View className="flex-1 bg-gradient-to-b from-green-900 to-green-700">
+        <LinearGradient 
+            colors={['#1b3324ff','#26540fc1', '#5ca774ff', '#5c9464ff']} 
+            style={{ flex: 1 }}
+        >
+
             <SafeAreaView edges={['top']} className="flex-1">
                 {/* Custom Rich Header */}
                 <View className="flex-row items-center justify-between px-5 pt-4 pb-6">
@@ -142,7 +148,7 @@ export default function Home() {
                             className="mr-3"
                             onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
                         >
-                            <Menu color="#ffffff" size={24} />
+                            <Menu color="#ffffffff" size={24} />
                         </TouchableOpacity>
                         <Image
                             source={{ uri: getProfilePhotobyId }}
@@ -216,7 +222,13 @@ export default function Home() {
                     </View>
 
                     {/* Lower White Section */}
-                    <View className="flex-1 bg-[#f8fafc] rounded-t-[32px] pt-6 px-5 min-h-screen shadow-lg shadow-black/20">
+                    
+                    <LinearGradient 
+                        colors={['#ffffffff','#95d38bff', '#5c9464ff']} // Placeholder: Deep farmer-green gradient
+                        style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, borderTopWidth: 3, borderColor: 'rgba(0, 0, 0, 1)' }}
+                        className="flex-1 pt-6 px-5 min-h-screen shadow-lg shadow-black/20"
+                    >
+
                         {/* Quick Actions */}
                         <Text className="text-[#1e4a3b] text-base font-bold mb-4">Quick Actions</Text>
                         <View className="flex-row justify-between mb-8">
@@ -261,9 +273,11 @@ export default function Home() {
                                 <TrendingUp color="#16a34a" size={40} />
                             </View>
                         </View>
-                    </View>
+                    </LinearGradient>
+
                 </ScrollView>
             </SafeAreaView>
-        </View>
+        </LinearGradient>
     );
 }
+
