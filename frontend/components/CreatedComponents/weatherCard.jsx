@@ -17,8 +17,9 @@ const WEATHER_IMAGES = {
   night:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281231/Night_jlsjex.png'},
 };
 
-// Weather condition emoji map (replaces broken vector icons)
+// Weather condition emoji map
 const WEATHER_EMOJI = {
+  // OpenWeatherMap descriptions (kept for backward compat)
   'clear sky': '☀️',
   'few clouds': '🌤️',
   'scattered clouds': '⛅',
@@ -30,10 +31,38 @@ const WEATHER_EMOJI = {
   'thunderstorm': '⛈️',
   'snow': '❄️',
   'mist': '🌫️',
-  'haze': '🌫️',
+  'haze': '',
   'fog': '🌫️',
   'smoke': '🌫️',
   'dust': '🌫️',
+  // WeatherAPI.com condition texts
+  'sunny': '☀️',
+  'clear': '🌙',
+  'partly cloudy': '⛅',
+  'cloudy': '☁️',
+  'overcast': '☁️',
+  'mist': '🌫️',
+  'patchy rain possible': '🌦️',
+  'light rain shower': '🌦️',
+  'moderate rain at times': '🌧️',
+  'light drizzle': '🌦️',
+  'freezing drizzle': '🌨️',
+  'heavy rain': '⛈️',
+  'heavy freezing drizzle': '🌨️',
+  'blizzard': '❄️',
+  'blowing snow': '🌨️',
+  'thundery outbreaks possible': '⛈️',
+  'patchy light drizzle': '🌦️',
+  'patchy light rain': '🌦️',
+  'moderate or heavy rain shower': '⛈️',
+  'torrential rain shower': '⛈️',
+  'patchy snow possible': '🌨️',
+  'patchy sleet possible': '🌨️',
+  'fog': '🌫️',
+  'freezing fog': '🌫️',
+  'smoke': '🌫️',
+  'dust': '🌫️',
+  'haze': '🌫️',
 };
 
 const getWeatherKey = (condition, isDay) => {
@@ -78,12 +107,13 @@ const WeatherCard = ({ weather, loading, containerStyle, isCompact }) => {
   const isDay = weather.weather[0].icon?.includes('d') ?? true;
   const conditionMain = weather.weather[0].main || '';
   const descriptionText = weather.weather[0].description || '';
-  const tempC = Math.round(weather.main.temp);
-  const tempHigh = Math.round(weather.main.temp_max);
-  const tempLow = Math.round(weather.main.temp_min);
-  const humidity = weather.main.humidity;
-  const windKph = Math.round((weather.wind?.speed || 0) * 3.6);
-  const feelsLike = Math.round(weather.main.feels_like);
+  const tempC = Math.round(weather.main.temp ?? 0);
+  const tempHigh = Math.round(weather.main.temp_max ?? weather.main.temp ?? 0);
+  const tempLow = Math.round(weather.main.temp_min ?? weather.main.temp ?? 0);
+  const humidity = weather.main.humidity ?? 0;
+  // wind.speed is stored in m/s, so *3.6 gives km/h
+  const windKph = Math.round((weather.wind != null ? weather.wind.speed ?? 0 : 0) * 3.6);
+  const feelsLike = Math.round(weather.main.feels_like ?? weather.main.temp ?? 0);
 
   const weatherKey = getWeatherKey(conditionMain, isDay);
   const gradientColors = getGradient(conditionMain, isDay);
@@ -119,7 +149,7 @@ const WeatherCard = ({ weather, loading, containerStyle, isCompact }) => {
             <Text style={[styles.conditionLabel, isCompact && { fontSize: 13 }]}>{capitalize(descriptionText)}</Text>
             {!isCompact && <Text style={styles.hiLow}>H: {tempHigh}°C  •  L: {tempLow}°C</Text>}
           </View>
-          <Text style={[styles.weatherEmoji, isCompact && { fontSize: 48, lineHeight: 54 }]}>☁️</Text>
+          
         </View>
 
         {/* Stats */}
@@ -132,7 +162,7 @@ const WeatherCard = ({ weather, loading, containerStyle, isCompact }) => {
             </View>
             <View style={[styles.divider, { backgroundColor: accentColor + '40' }]} />
             <View style={styles.statItem}>
-              <Text style={styles.statIcon}>💨</Text>
+              <Text style={styles.statIcon}></Text>
               <Text style={styles.statValue}>{windKph} km/h</Text>
               <Text style={styles.statLabel}>Wind</Text>
             </View>

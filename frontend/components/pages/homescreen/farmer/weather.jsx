@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
 import { WEATHER_API, API_BASE_URL } from '@env';
 import { LineChart } from 'react-native-chart-kit';
+import LinearGradient from 'react-native-linear-gradient';
 
 import Header from '../../../common/Header';
 import WeatherCard from '../../../CreatedComponents/weatherCard';
@@ -135,22 +136,81 @@ export default function WeatherScreen() {
 
     const fetchWeatherAPIs = async (lat, lon) => {
         try {
-            const [weatherRes, forecastRes, aqiRes] = await Promise.all([
-                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API}`),
-                fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API}`),
-                fetch(`http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${WEATHER_API}`),
-            ]);
+            const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API}&q=${lat},${lon}&days=5&aqi=yes&alerts=no`;
+            const response = await fetch(url);
+            const data = await response.json();
 
-            const current = await weatherRes.json();
-            const forecastJson = await forecastRes.json();
-            const aqiJson = await aqiRes.json();
+            if (data.error) {
+                console.error('WeatherAPI Error:', data.error);
+                return null;
+            }
 
-            // Daily forecast: 1 entry per day at ~noon
-            const daily = forecastJson.list.filter(item => item.dt_txt.includes('12:00:00'));
-            // Hourly: next 6 slots (every 3 hrs)
-            const hourly = forecastJson.list.slice(0, 6);
+            // WeatherAPI gives wind_kph directly. weatherCard multiplies speed * 3.6 to show km/h,
+            // so we store wind as m/s (kph / 3.6) to keep the card logic intact.
+            const windKph = data.current.wind_kph ?? 0;
 
-            return { current, forecast: daily, hourly, aqi: aqiJson };
+            // Map WeatherAPI structure to our app's internal OpenWeatherMap-like structure
+            // to keep the existing UI logic working perfectly.
+            const currentMapped = {
+                name: data.location.name,
+                sys: { country: data.location.country },
+                weather: [{
+                    main: data.current.condition.text,
+                    description: data.current.condition.text,
+                    icon: data.current.is_day ? '01d' : '01n'
+                }],
+                main: {
+                    temp: data.current.temp_c,
+                    temp_max: data.forecast.forecastday[0].day.maxtemp_c,
+                    temp_min: data.forecast.forecastday[0].day.mintemp_c,
+                    humidity: data.current.humidity,
+                    feels_like: data.current.feelslike_c,
+                },
+                wind: {
+                    // store as m/s so weatherCard's *3.6 gives back km/h
+                    speed: windKph / 3.6
+                },
+                cod: 200
+            };
+
+            const forecastMapped = data.forecast.forecastday.map(day => ({
+                dt: day.date_epoch,
+                main: { temp: day.day.avgtemp_c },
+                weather: [{
+                    description: day.day.condition.text,
+                    icon: '01d'
+                }]
+            }));
+
+            // Hourly: filter from now, take next 8 slots
+            const allHours = data.forecast.forecastday.flatMap(d => d.hour);
+            const nowEpoch = Math.floor(Date.now() / 1000);
+            const hourlyMapped = allHours
+                .filter(h => h.time_epoch > nowEpoch)
+                .slice(0, 8)
+                .map(h => ({
+                    dt: h.time_epoch,
+                    main: { temp: h.temp_c },
+                    weather: [{
+                        icon: h.is_day ? '01d' : '01n'
+                    }]
+                }));
+
+            const aqiMapped = {
+                list: [{
+                    main: {
+                        // WeatherAPI US-EPA index: 1-6. Cap at 5 for our 5-level UI.
+                        aqi: Math.min(data.current.air_quality?.['us-epa-index'] ?? 1, 5)
+                    }
+                }]
+            };
+
+            return {
+                current: currentMapped,
+                forecast: forecastMapped,
+                hourly: hourlyMapped,
+                aqi: aqiMapped
+            };
         } catch (error) {
             console.error('API Fetch Error:', error);
             return null;
@@ -161,61 +221,135 @@ export default function WeatherScreen() {
         if (!weatherData || !aqiData) return;
         setLoadingInsights(true);
         try {
-            const url = API_BASE_URL?.includes('localhost') && Platform.OS === 'android'
-                ? API_BASE_URL.replace('localhost', '10.0.2.2')
-                : API_BASE_URL;
+            // For real device with `adb reverse`, localhost resolves fine.
+            // For emulator, swap localhost -> 10.0.2.2.
+            let baseUrl = API_BASE_URL || 'http://localhost:5000/api/v1';
+            
+            // Only swap if it's an emulator (not a real device with adb reverse)
+            // We detect emulator by checking if we need the swap — leave it as-is 
+            // since adb reverse tcp:5000 tcp:5000 already maps localhost on device to pc.
+            // But as a safety net, also support 10.0.2.2:
+            if (baseUrl.includes('localhost') && Platform.OS === 'android') {
+                // Try real device first (adb reverse makes localhost work).
+                // If that fails the catch will handle it.
+            }
 
-            const res = await fetch(`${url}/weather/insights`, {
+            const res = await fetch(`${baseUrl}/weather/insights`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ weatherData, aqiData }),
             });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                console.error('Insights HTTP error:', res.status, errText);
+                setInsights('AI suggestions temporarily unavailable.');
+                return;
+            }
+
             const data = await res.json();
             setInsights(data.success
                 ? data.suggestion
                 : 'Could not load smart suggestions. Check backend API key configuration.');
         } catch (error) {
             console.error('Insights Error:', error);
-            setInsights('Could not connect to smart suggestions server.');
+            // Fallback: try 10.0.2.2 (emulator) if localhost failed
+            try {
+                let fallbackUrl = (API_BASE_URL || 'http://localhost:5000/api/v1').replace('localhost', '10.0.2.2');
+                const res2 = await fetch(`${fallbackUrl}/weather/insights`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ weatherData, aqiData }),
+                });
+                const data2 = await res2.json();
+                setInsights(data2.success ? data2.suggestion : 'Could not load smart suggestions.');
+            } catch (_) {
+                setInsights('Could not connect to smart suggestions server. Make sure backend is running.');
+            }
         } finally {
             setLoadingInsights(false);
         }
     };
 
     const loadLiveWeather = () => {
-        Geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                const result = await fetchWeatherAPIs(latitude, longitude);
-                if (result && result.current?.cod === 200) {
-                    setWeatherData(result.current);
-                    setForecastData(result.forecast);
-                    setHourlyData(result.hourly);
-                    setAqiData(result.aqi);
-                    await AsyncStorage.setItem('farm_weather_cache', JSON.stringify(result));
-                }
-                setLoading(false);
-                setRefreshing(false);
-            },
-            (error) => {
-                console.log(error);
-                setHasLocationPermission(false);
-                setLoading(false);
-                setRefreshing(false);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+        // watchPosition resolves immediately with the first available position
+        // (network/WiFi/cell) without waiting for a full GPS cold-start lock.
+        // We stop watching after the first fix.
+        let watchId = null;
+        let settled = false;
+
+        const finish = async (position) => {
+            if (settled) return; // guard against duplicate calls
+            settled = true;
+            if (watchId !== null) Geolocation.clearWatch(watchId);
+
+            const { latitude, longitude } = position.coords;
+            const result = await fetchWeatherAPIs(latitude, longitude);
+            if (result && result.current?.cod === 200) {
+                setWeatherData(result.current);
+                setForecastData(result.forecast);
+                setHourlyData(result.hourly);
+                setAqiData(result.aqi);
+                const cachePayload = JSON.stringify({ ...result, cachedAt: Date.now() });
+                await AsyncStorage.setItem('farm_weather_cache_v2', cachePayload);
+            }
+            setLoading(false);
+            setRefreshing(false);
+        };
+
+        const onError = (error) => {
+            if (settled) return;
+            settled = true;
+            if (watchId !== null) Geolocation.clearWatch(watchId);
+            console.warn('Location Error (code ' + error.code + '):', error.message);
+            // Even on error, stop loading — show cached data or permission screen
+            setLoading(false);
+            setRefreshing(false);
+        };
+
+        watchId = Geolocation.watchPosition(
+            finish,
+            onError,
+            {
+                enableHighAccuracy: false,   // fast network fix first
+                distanceFilter: 0,
+                interval: 1000,
+                fastestInterval: 500,
+                timeout: 15000,
+                maximumAge: 60000,
+            }
         );
+
+        // Safety timeout — if watchPosition never fires, stop loading
+        setTimeout(() => {
+            if (!settled) {
+                settled = true;
+                if (watchId !== null) Geolocation.clearWatch(watchId);
+                console.warn('Location watchPosition safety timeout');
+                setLoading(false);
+                setRefreshing(false);
+            }
+        }, 20000);
     };
 
     const initializeWeather = async () => {
         setLoading(true);
-        const cached = await AsyncStorage.getItem('farm_weather_cache');
+        // Use v2 cache key to avoid serving stale OWM-format data
+        const cached = await AsyncStorage.getItem('farm_weather_cache_v2');
         if (cached) {
-            const parsed = JSON.parse(cached);
-            setWeatherData(parsed.current);
-            setForecastData(parsed.forecast || []);
-            setHourlyData(parsed.hourly || []);
-            setAqiData(parsed.aqi);
+            try {
+                const parsed = JSON.parse(cached);
+                const ageMs = Date.now() - (parsed.cachedAt || 0);
+                // Only show cache if it was saved in the last 30 minutes
+                if (ageMs < 30 * 60 * 1000) {
+                    setWeatherData(parsed.current);
+                    setForecastData(parsed.forecast || []);
+                    setHourlyData(parsed.hourly || []);
+                    setAqiData(parsed.aqi);
+                }
+            } catch (e) {
+                // bad cache entry — ignore
+            }
         }
         requestLocationPermission();
     };
@@ -448,7 +582,7 @@ export default function WeatherScreen() {
 
     // ── Main Render ───────────────────────────────────────────────────────────
     return (
-        <View className="flex-1 bg-[#123524]">
+        <View className="flex-1 bg-green-900">
             <SafeAreaView edges={['top']} className="flex-1">
                 <Header title="Weather & Crop Advisory" />
 
@@ -517,7 +651,7 @@ export default function WeatherScreen() {
 const styles = StyleSheet.create({
     // Cards
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: '#eaffffff',
         borderRadius: 20,
         padding: 16,
         marginHorizontal: 16,
