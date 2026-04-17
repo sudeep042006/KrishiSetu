@@ -73,6 +73,11 @@ export default function Home() {
                 try {
                     const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${WEATHER_API}`);
                     const data = await res.json();
+                    
+                    console.log('--- HOME WEATHER FETCH START ---');
+                    console.log('RAW JSON:', JSON.stringify(data, null, 2));
+                    console.log('--- HOME WEATHER FETCH END ---');
+
                     if (data && data.cod === 200) {
                         setWeatherData(data);
                         await AsyncStorage.setItem('farm_weather_cache', JSON.stringify({ current: data }));
@@ -136,7 +141,7 @@ export default function Home() {
 
     return (
         <LinearGradient 
-            colors={['#1b3324ff','#26540fc1', '#5ca774ff', '#5c9464ff']} 
+            colors={['#042b13ff','#415c2fc1', '#ffffffff', '#ffffffff']} 
             style={{ flex: 1 }}
         >
 
@@ -224,7 +229,7 @@ export default function Home() {
                     {/* Lower White Section */}
                     
                     <LinearGradient 
-                        colors={['#ffffffff','#95d38bff', '#5c9464ff']} // Placeholder: Deep farmer-green gradient
+                        colors={['#ffffffff','#afcaaaff', '#5c9464ff']} // Placeholder: Deep farmer-green gradient
                         style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, borderTopWidth: 3, borderColor: 'rgba(0, 0, 0, 1)' }}
                         className="flex-1 pt-6 px-5 min-h-screen shadow-lg shadow-black/20"
                     >

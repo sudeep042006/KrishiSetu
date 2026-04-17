@@ -15,6 +15,7 @@ const WEATHER_IMAGES = {
   cloudy: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281237/overCast_hgh8xu.png'},
   rainy:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281234/Rainy_sokhvw.png'},
   night:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281231/Night_jlsjex.png'},
+  mist: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776416632/ChatGPT_Image_Apr_17_2026_02_23_37_PM_asqukv.png'},
 };
 
 // Weather condition emoji map
@@ -182,7 +183,7 @@ const WeatherCard = ({ weather, loading, containerStyle, isCompact }) => {
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    height: 220,
+    height: 225,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 24,
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
-    height: 220,
+    height: 233,
   },
   bgImage: {
     ...StyleSheet.absoluteFillObject,

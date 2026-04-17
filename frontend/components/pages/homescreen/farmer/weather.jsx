@@ -140,6 +140,11 @@ export default function WeatherScreen() {
             const response = await fetch(url);
             const data = await response.json();
 
+            console.log('--- WEATHER FETCH START ---');
+            console.log('URL:', url);
+            console.log('RAW JSON:', JSON.stringify(data, null, 2));
+            console.log('--- WEATHER FETCH END ---');
+
             if (data.error) {
                 console.error('WeatherAPI Error:', data.error);
                 return null;
@@ -248,6 +253,10 @@ export default function WeatherScreen() {
             }
 
             const data = await res.json();
+            console.log('--- AI INSIGHTS START ---');
+            console.log('RAW JSON:', JSON.stringify(data, null, 2));
+            console.log('--- AI INSIGHTS END ---');
+            
             setInsights(data.success
                 ? data.suggestion
                 : 'Could not load smart suggestions. Check backend API key configuration.');
