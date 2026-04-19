@@ -49,6 +49,14 @@ const FarmerProfileSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    latitude: {
+        type: Number,
+         // Default for reference area
+    },
+    longitude: {
+        type: Number,
+        // Default for reference area
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -13,7 +13,8 @@ import {
     Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X } from 'lucide-react-native';
+import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
+import { Linking } from 'react-native';
 import Header from '../../../common/Header';
 import Geolocation from 'react-native-geolocation-service';
 
@@ -39,6 +40,7 @@ const BUYERS = [
         verified: true,
         verifiedColor: '#1e4a3b',
         location: 'Ahmednagar, MH',
+        region: 'Ahmednagar',
         lat: 19.2183,
         lng: 74.7378,
         rating: 4.8,
@@ -46,9 +48,11 @@ const BUYERS = [
         deals: 156,
         distance: '2.3 km',
         price: 2280,
-        crops: ['Wheat', 'Soybean'],
-        tags: [{ label: 'Wheat', highlight: false }, { label: 'Soybean', highlight: false }, { label: 'Bulk Buyer', highlight: true }],
+        crops: ['Wheat', 'Soybean', 'Maize'],
+        tags: [{ label: 'ISO Certified', highlight: true }, { label: 'Bulk Buyer', highlight: true }, { label: 'Cash Payment', highlight: false }],
         markerColor: '#1e4a3b',
+        phone: '+919876543210',
+        description: 'Primary exporter of premium quality grains across Maharashtra. We offer competitive rates and immediate spot payments for bulk quantities.',
     },
     {
         id: '2',
@@ -60,16 +64,19 @@ const BUYERS = [
         verified: true,
         verifiedColor: '#3b82f6',
         location: 'Pune, MH',
-        lat: 19.2050,
-        lng: 74.7200,
+        region: 'Pune',
+        lat: 18.5204,
+        lng: 73.8567,
         rating: 4.5,
         reviews: 89,
         deals: 98,
         distance: '4.1 km',
         price: 2150,
-        crops: ['Rice', 'Maize'],
-        tags: [{ label: 'Rice', highlight: false }, { label: 'Maize', highlight: false }, { label: 'Fast Payment', highlight: true }],
+        crops: ['Rice', 'Maize', 'Sugarcane'],
+        tags: [{ label: 'Fast Payment', highlight: true }, { label: 'Local Market', highlight: false }],
         markerColor: '#7c3aed',
+        phone: '+919876543211',
+        description: 'Trusted local trader in the Pune region for over 15 years. Specializing in retail and wholesale grain distribution.',
     },
     {
         id: '3',
@@ -81,16 +88,19 @@ const BUYERS = [
         verified: true,
         verifiedColor: '#1e4a3b',
         location: 'Nashik, MH',
-        lat: 19.1950,
-        lng: 74.7550,
+        region: 'Nashik',
+        lat: 19.9975,
+        lng: 73.7898,
         rating: 4.7,
         reviews: 203,
         deals: 267,
         distance: '6.2 km',
         price: 2310,
-        crops: ['Tomato', 'Onion'],
-        tags: [{ label: 'Tomato', highlight: false }, { label: 'Onion', highlight: false }, { label: 'Pickup Available', highlight: true }],
+        crops: ['Tomato', 'Onion', 'Grapes'],
+        tags: [{ label: 'Pickup Available', highlight: true }, { label: 'Direct Agency', highlight: false }],
         markerColor: '#ea580c',
+        phone: '+919876543212',
+        description: 'Large scale food processing unit. We buy seasonal vegetables and fruits directly from farm gates with specialized transport.',
     },
     {
         id: '4',
@@ -102,17 +112,28 @@ const BUYERS = [
         verified: false,
         verifiedColor: '#1e4a3b',
         location: 'Kolhapur, MH',
-        lat: 19.2300,
-        lng: 74.7100,
+        region: 'Kolhapur',
+        lat: 16.7050,
+        lng: 74.2433,
         rating: 4.2,
         reviews: 56,
         deals: 71,
         distance: '8.9 km',
         price: 2190,
-        crops: ['Wheat', 'Jowar'],
-        tags: [{ label: 'Wheat', highlight: false }, { label: 'Jowar', highlight: false }],
+        crops: ['Wheat', 'Jowar', 'Bajra'],
+        tags: [{ label: 'Reliable', highlight: false }],
         markerColor: '#1e4a3b',
+        phone: '+919876543213',
+        description: 'General grain merchants offering fair transparency and quality-based pricing for diversified crop types.',
     },
+];
+
+const REGIONS = [
+    { label: 'All Regions', center: [74.7378, 19.2183], zoom: 7 },
+    { label: 'Pune', center: [73.8567, 18.5204], zoom: 11 },
+    { label: 'Nashik', center: [73.7898, 19.9975], zoom: 11 },
+    { label: 'Ahmednagar', center: [74.7496, 19.0948], zoom: 11 },
+    { label: 'Kolhapur', center: [74.2433, 16.7050], zoom: 11 },
 ];
 
 const CROP_CHIPS = ['Wheat', 'Rice', 'Tomato', 'Soybean', 'Near Me'];
@@ -120,13 +141,20 @@ const CROP_CHIPS = ['Wheat', 'Rice', 'Tomato', 'Soybean', 'Near Me'];
 // ─── MapLibre setup (called inside component, not at module level) ─────────────
 
 // ─── MAP SECTION ──────────────────────────────────────────────────────────────
-const MapSection = memo(({ onMarkerPress }) => {
+const MapSection = memo(({ onMarkerPress, externalCenter }) => {
     const [userCoords, setUserCoords] = useState(null);
     const [mapCenter, setMapCenter] = useState([74.7378, 19.2183]); // default fallback
     const [isMapLoaded, setIsMapLoaded] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [fsSelectedBuyer, setFsSelectedBuyer] = useState(null);
     const cameraRef = useRef(null);
+
+    // Update map center when external center changes (from region selection)
+    useEffect(() => {
+        if (externalCenter && isMapLoaded) {
+            setMapCenter(externalCenter);
+        }
+    }, [externalCenter, isMapLoaded]);
 
     useEffect(() => {
         let watchId = null;
@@ -254,9 +282,9 @@ const MapSection = memo(({ onMarkerPress }) => {
                         mapStyle="https://tiles.openfreemap.org/styles/liberty"
                         logo={false}
                         attribution={false}
-                        scrollEnabled={false}  // Prevent map from capturing scroll gestures
-                        pitchEnabled={false}
-                        rotateEnabled={false}
+                        scrollEnabled={true}  // Enabled panning as requested
+                        pitchEnabled={true}
+                        rotateEnabled={true}
                         onDidFinishLoadingStyle={() => setIsMapLoaded(true)}
                     >
                         <Camera
@@ -432,34 +460,131 @@ const BuyerCard = memo(({ item, onPress }) => {
     );
 });
 
-// ─── SELECTED BUYER POPUP ─────────────────────────────────────────────────────
-const BuyerPopup = memo(({ buyer, onClose }) => {
+// ─── DETAILED BUYER MODAL ─────────────────────────────────────────────────────
+const BuyerDetailModal = memo(({ buyer, onClose }) => {
     if (!buyer) return null;
+
+    const handleCall = () => {
+        Linking.openURL(`tel:${buyer.phone}`);
+    };
+
+    const handleWhatsApp = () => {
+        const message = `Hello ${buyer.name}, I found your profile on KrishiSetu and I'm interested in selling my produce.`;
+        Linking.openURL(`whatsapp://send?phone=${buyer.phone}&text=${encodeURIComponent(message)}`);
+    };
+
     return (
-        <TouchableOpacity
-            className="absolute inset-0 justify-end"
-            style={{ backgroundColor: 'rgba(0,0,0,0.28)', zIndex: 100 }}
-            activeOpacity={1}
-            onPress={onClose}
+        <Modal
+            visible={!!buyer}
+            animationType="slide"
+            transparent
+            onRequestClose={onClose}
         >
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <View
-                    className="bg-white mx-4 mb-5 rounded-2xl p-4 flex-row items-center"
-                    style={{ gap: 12, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 16, elevation: 10 }}
+            <TouchableOpacity 
+                className="flex-1 bg-black/60 justify-end" 
+                activeOpacity={1} 
+                onPress={onClose}
+            >
+                <View 
+                    className="bg-[#f8fafc] rounded-t-[32px] overflow-hidden" 
+                    onPress={(e) => e.stopPropagation()}
+                    style={{ height: '80%' }}
                 >
-                    <View className="w-12 h-12 rounded-xl items-center justify-center" style={{ backgroundColor: buyer.avatarBg }}>
-                        <Text className="text-lg font-bold" style={{ color: buyer.avatarText }}>{buyer.shortName}</Text>
+                    {/* Draggable indicator */}
+                    <View className="items-center py-4">
+                        <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
                     </View>
-                    <View className="flex-1">
-                        <Text className="text-[15px] font-bold text-gray-900">{buyer.name}</Text>
-                        <Text className="text-[12px] text-gray-400 mt-0.5">★ {buyer.rating} • {buyer.distance} • ₹{buyer.price}/qtl</Text>
+
+                    <ScrollView showsVerticalScrollIndicator={false} className="px-6">
+                        {/* Header Section */}
+                        <View className="flex-row items-center mb-6">
+                            <View className="w-20 h-20 rounded-[24px] items-center justify-center shadow-sm" style={{ backgroundColor: buyer.avatarBg }}>
+                                <Text className="text-3xl font-extrabold" style={{ color: buyer.avatarText }}>{buyer.shortName}</Text>
+                            </View>
+                            <View className="ml-4 flex-1">
+                                <View className="flex-row items-center" style={{ gap: 6 }}>
+                                    <Text className="text-2xl font-bold text-gray-900">{buyer.name}</Text>
+                                    {buyer.verified && <ShieldCheck size={20} color="#1e4a3b" fill="#dcf0e3" />}
+                                </View>
+                                <View className="flex-row items-center mt-1" style={{ gap: 4 }}>
+                                    <MapPin size={14} color="#64748b" />
+                                    <Text className="text-gray-500 font-medium">{buyer.location} • {buyer.distance} away</Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Quick Stats Grid */}
+                        <View className="flex-row mb-6" style={{ gap: 12 }}>
+                            <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
+                                <Star size={18} color="#f59e0b" fill="#f59e0b" />
+                                <Text className="text-gray-900 font-bold mt-1">{buyer.rating}</Text>
+                                <Text className="text-[10px] text-gray-400">Rating</Text>
+                            </View>
+                            <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
+                                <TrendingUp size={18} color="#10b981" />
+                                <Text className="text-gray-900 font-bold mt-1">{buyer.deals}</Text>
+                                <Text className="text-[10px] text-gray-400">Deals Done</Text>
+                            </View>
+                            <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
+                                <Zap size={18} color="#3b82f6" />
+                                <Text className="text-gray-900 font-bold mt-1">98%</Text>
+                                <Text className="text-[10px] text-gray-400">Response</Text>
+                            </View>
+                        </View>
+
+                        {/* Pricing Highlight */}
+                        <View className="bg-white p-5 rounded-3xl mb-6 shadow-sm border border-green-50">
+                            <Text className="text-gray-400 font-bold text-[11px] tracking-widest uppercase">Current Buying Price</Text>
+                            <View className="flex-row items-baseline mt-1" style={{ gap: 4 }}>
+                                <Text className="text-3xl font-extrabold text-[#123524]">₹{buyer.price.toLocaleString('en-IN')}</Text>
+                                <Text className="text-gray-500 font-bold">/ quintal</Text>
+                            </View>
+                            <View className="mt-3 flex-row items-center bg-green-50 self-start px-2 py-1 rounded-lg" style={{ gap: 4 }}>
+                                <TrendingUp size={12} color="#16a34a" />
+                                <Text className="text-[11px] text-green-700 font-bold">+2.3% from yesterday</Text>
+                            </View>
+                        </View>
+
+                        {/* About Section */}
+                        <View className="mb-6">
+                            <Text className="text-lg font-bold text-gray-900 mb-2">About Business</Text>
+                            <Text className="text-gray-600 leading-6 text-[14px]">{buyer.description}</Text>
+                        </View>
+
+                        {/* Crops Section */}
+                        <View className="mb-8">
+                            <Text className="text-lg font-bold text-gray-900 mb-3">Crops they Buy</Text>
+                            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                                {buyer.crops.map((crop) => (
+                                    <View key={crop} className="bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm flex-row items-center" style={{ gap: 6 }}>
+                                        <Sprout size={14} color="#16a34a" />
+                                        <Text className="text-gray-800 font-bold">{crop}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    </ScrollView>
+
+                    {/* Action Footer */}
+                    <View className="px-6 pt-4 pb-10 bg-white border-t border-gray-100 flex-row" style={{ gap: 12 }}>
+                        <TouchableOpacity 
+                            onPress={handleWhatsApp}
+                            className="w-14 h-14 bg-gray-50 rounded-2xl items-center justify-center border border-gray-100"
+                        >
+                            <MessageSquare size={24} color="#123524" />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            onPress={handleCall}
+                            className="flex-1 h-14 bg-[#123524] rounded-2xl flex-row items-center justify-center shadow-lg"
+                            style={{ gap: 8 }}
+                        >
+                            <Phone size={20} color="#fff" />
+                            <Text className="text-white font-bold text-lg">Call Now</Text>
+                        </TouchableOpacity>
                     </View>
-                    <TouchableOpacity className="bg-[#123524] rounded-xl px-4 py-2.5" onPress={onClose}>
-                        <Text className="text-white text-[13px] font-bold">Contact</Text>
-                    </TouchableOpacity>
                 </View>
             </TouchableOpacity>
-        </TouchableOpacity>
+        </Modal>
     );
 });
 
@@ -470,16 +595,25 @@ export default function MarketplaceScreen() {
     const [isFarmer, setIsFarmer] = useState(true);
     const [selectedBuyer, setSelectedBuyer] = useState(null);
     const [sortBy, setSortBy] = useState('Distance');
+    const [selectedRegion, setSelectedRegion] = useState(REGIONS[0]);
+    const [isRegionModalVisible, setIsRegionModalVisible] = useState(false);
 
     const filteredBuyers = useCallback(() => {
-        if (!search.trim()) return BUYERS;
+        let buyers = BUYERS;
+        
+        // Region filtering
+        if (selectedRegion && selectedRegion.label !== 'All Regions') {
+            buyers = buyers.filter(b => b.region === selectedRegion.label);
+        }
+
+        if (!search.trim()) return buyers;
         const q = search.toLowerCase();
-        return BUYERS.filter(b =>
+        return buyers.filter(b =>
             b.name.toLowerCase().includes(q) ||
             b.tags.some(t => t.label.toLowerCase().includes(q)) ||
             b.location.toLowerCase().includes(q)
         );
-    }, [search]);
+    }, [search, selectedRegion]);
 
     const renderBuyer = useCallback(({ item }) => (
         <BuyerCard item={item} onPress={setSelectedBuyer} />
@@ -491,7 +625,7 @@ export default function MarketplaceScreen() {
     const ListHeader = useCallback(() => (
         <View>
             {/* ── Search row ── */}
-            <View className="flex-row items-center px-4 pt-4 pb-3" style={{ gap: 10 }}>
+            <View className="flex-row items-center px-4 pt-6 pb-8" style={{ gap: 5 }}>
                 <View
                     className="flex-1 flex-row items-center bg-white rounded-full px-4"
                     style={{ paddingVertical: Platform.OS === 'ios' ? 12 : 8, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, gap: 8 }}
@@ -583,7 +717,25 @@ export default function MarketplaceScreen() {
             </View>
 
             {/* ── Map ── */}
-            <MapSection onMarkerPress={setSelectedBuyer} />
+            <MapSection onMarkerPress={setSelectedBuyer} externalCenter={selectedRegion.center} />
+
+            {/* ── Region Selection UI ── */}
+            <View className="px-4 pb-3">
+                <TouchableOpacity 
+                    onPress={() => setIsRegionModalVisible(true)}
+                    className="bg-white rounded-xl p-3 flex-row items-center justify-between border border-gray-100"
+                    style={{ shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 }}
+                >
+                    <View className="flex-row items-center" style={{ gap: 8 }}>
+                        <Locate size={16} color="#1e4a3b" />
+                        <View>
+                            <Text className="text-[10px] text-gray-400 font-medium">SELECTED REGION</Text>
+                            <Text className="text-[14px] font-bold text-gray-900">{selectedRegion.label}</Text>
+                        </View>
+                    </View>
+                    <ChevronDown size={18} color="#9ca3af" />
+                </TouchableOpacity>
+            </View>
 
             {/* ── Nearby Buyers header ── */}
             <View className="flex-row items-center justify-between px-4 mb-3">
@@ -620,34 +772,11 @@ export default function MarketplaceScreen() {
         <View className="flex-1 bg-[#123524]">
             <SafeAreaView edges={['top']} className="flex-1">
 
-                {/* ── Header sub-section (subtitle + farmer toggle) ── */}
-                <View className="px-4 pb-4 bg-[#123524]">
-                    {/* Re-use your existing Header for the top bar */}
-                    <Header
-                        title="Marketplace"
-                        showNotification={true}
-                    />
-
-                    {/* Subtitle row */}
-                    <View className="flex-row items-center justify-between mt-3">
-                        <View>
-                            <Text className="text-[18px] font-bold text-white">Find Buyers Near You</Text>
-                            <Text className="text-[12px] text-white/60 mt-0.5">Connect, Negotiate & Sell Your Produce</Text>
-                        </View>
-                        <TouchableOpacity
-                            className="flex-row items-center rounded-full px-4 py-2 border"
-                            style={{
-                                backgroundColor: isFarmer ? '#2d6a4f' : 'rgba(255,255,255,0.12)',
-                                borderColor: isFarmer ? '#52b788' : 'rgba(255,255,255,0.2)',
-                                gap: 6,
-                            }}
-                            onPress={() => setIsFarmer(f => !f)}
-                        >
-                            <Text className="text-[13px]">🌿</Text>
-                            <Text className="text-white text-[13px] font-semibold">I'm a Farmer</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                {/* ── Header ── */}
+                <Header
+                    title="Marketplace"
+                    showNotification={true}
+                />
 
                 {/* ── Scrollable body ── */}
                 <View className="flex-1 bg-[#f0f4f0] rounded-t-3xl overflow-hidden">
@@ -663,8 +792,43 @@ export default function MarketplaceScreen() {
                 </View>
             </SafeAreaView>
 
-            {/* ── Buyer popup (shown on marker / card press) ── */}
-            <BuyerPopup buyer={selectedBuyer} onClose={() => setSelectedBuyer(null)} />
+            {/* ── Buyer Profile Detail Modal ── */}
+            <BuyerDetailModal buyer={selectedBuyer} onClose={() => setSelectedBuyer(null)} />
+
+            {/* ── Region Selector Modal ── */}
+            <Modal visible={isRegionModalVisible} transparent animationType="fade" onRequestClose={() => setIsRegionModalVisible(false)}>
+                <TouchableOpacity 
+                    className="flex-1 bg-black/50 justify-center items-center p-6" 
+                    activeOpacity={1} 
+                    onPress={() => setIsRegionModalVisible(false)}
+                >
+                    <View className="bg-white w-full rounded-2xl overflow-hidden shadow-xl" onPress={(e) => e.stopPropagation()}>
+                        <View className="bg-[#123524] p-4 flex-row items-center justify-between">
+                            <Text className="text-white font-bold text-lg">Select Region</Text>
+                            <TouchableOpacity onPress={() => setIsRegionModalVisible(false)}>
+                                <X size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                        <View className="p-2">
+                            {REGIONS.map((region) => (
+                                <TouchableOpacity 
+                                    key={region.label}
+                                    onPress={() => {
+                                        setSelectedRegion(region);
+                                        setIsRegionModalVisible(false);
+                                    }}
+                                    className="p-4 flex-row items-center justify-between border-b border-gray-50 last:border-b-0"
+                                >
+                                    <Text className={`text-[15px] ${selectedRegion.label === region.label ? 'font-bold text-[#1e4a3b]' : 'text-gray-600'}`}>
+                                        {region.label}
+                                    </Text>
+                                    {selectedRegion.label === region.label && <CheckCircle2 size={18} color="#1e4a3b" />}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 }

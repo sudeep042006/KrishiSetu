@@ -190,7 +190,7 @@ export default function Home() {
 
     return (
         <LinearGradient 
-            colors={['#042b13ff','#415c2fc1', '#ffffffff', '#ffffffff']} 
+            colors={['#011a03ff','#022d09e9', '#2d863fff', '#18a133ff', '#18a133ff','#18a133ff','#18a133ff', '#17ac42ff']} 
             style={{ flex: 1 }}
         >
 
@@ -278,7 +278,7 @@ export default function Home() {
                     {/* Lower White Section */}
                     
                     <LinearGradient 
-                        colors={['#ffffffff','#afcaaaff', '#5c9464ff']} // Placeholder: Deep farmer-green gradient
+                        colors={['#ffffffff','#ffffffff', '#ffffffff']} // Placeholder: Deep farmer-green gradient
                         style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, borderTopWidth: 3, borderColor: 'rgba(0, 0, 0, 1)' }}
                         className="flex-1 pt-6 px-5 min-h-screen shadow-lg shadow-black/20"
                     >

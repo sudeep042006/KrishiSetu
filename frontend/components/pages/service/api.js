@@ -192,6 +192,43 @@ export const farmerService = {
 // OFFTAKER SERVICES
 // ---------------------------------------------------------
 
+export const offtakerService = {
+  getProfile: async () => {
+    const response = await apiClient.get('/offtaker/profile');
+    return response.data;
+  },
+
+  updateProfile: async (profileData) => {
+    const response = await apiClient.post('/offtaker/profile', profileData);
+    return response.data;
+  },
+
+  uploadPhoto: async (imageUri, fileType = 'image/jpeg', fileName = 'profile.jpg') => {
+    const formData = new FormData();
+    formData.append('photo', {
+      uri: imageUri,
+      type: fileType,
+      name: fileName,
+    });
+    
+    const token = await AsyncStorage.getItem('authToken');
+    const response = await fetch(`${BASE_URL}/offtaker/profile-photo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Upload failed: ${errorText}`);
+    }
+    
+    return await response.json();
+  }
+};
+
 // ---------------------------------------------------------
 // PROJECT SERVICES
 // ---------------------------------------------------------

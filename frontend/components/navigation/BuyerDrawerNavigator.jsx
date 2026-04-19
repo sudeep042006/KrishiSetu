@@ -1,23 +1,25 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { View, Text } from 'react-native';
 
 // Import local navigators
 import BuyerBottomTabs from './BuyerBottomTabs';
 
-// Import Screens from Buyer
-import dashboard from '../pages/homescreen/offtaker/dashboard';
+// Import Screens from Offtaker
+import OfftakerWallet from '../pages/homescreen/offtaker/wallet';
+import FarmerProfilesScreen from '../pages/homescreen/offtaker/FarmerProfiles';
+import ProfileScreen from '../pages/homescreen/offtaker/profile';
+import SettingsScreen from '../pages/homescreen/farmer/settings'; // Settings is shared
 
 const Drawer = createDrawerNavigator();
 
 export default function BuyerDrawerNavigator() {
     return (
         <Drawer.Navigator
-            initialRouteName="FarmerMainTabs"
+            initialRouteName="BuyerMainTabs"
             screenOptions={{
                 headerShown: false,
-                drawerActiveBackgroundColor: '#e9f5ef',
-                drawerActiveTintColor: '#1e4a3b',
+                drawerActiveBackgroundColor: '#e0f2fe',
+                drawerActiveTintColor: '#1e4e8c',
                 drawerInactiveTintColor: '#4b5563',
                 drawerStyle: {
                     backgroundColor: '#ffffff',
@@ -32,25 +34,29 @@ export default function BuyerDrawerNavigator() {
             <Drawer.Screen 
                 name="BuyerMainTabs" 
                 component={BuyerBottomTabs} 
-                options={{ drawerLabel: 'Home' }} 
+                options={{ drawerLabel: 'Market Home' }} 
             />
             
-            <Drawer.Screen name="Crops" component={CropListScreen} />
+            {/* <Drawer.Screen 
+                name="Sellers" 
+                component={FarmerProfilesScreen} 
+                options={{ drawerLabel: 'Trusted Sellers' }}
+            /> */}
+            
             <Drawer.Screen 
-                name="Add Crops" 
-                component={CropProjectScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+                name="Wallet" 
+                component={OfftakerWallet} 
+                options={{ drawerLabel: 'Billing & Wallet' }}
             />
-            <Drawer.Screen name="Crop Diseases" component={CropDiseaseScreen} />
-            <Drawer.Screen name="Orders" component={OrdersScreen} />
-            <Drawer.Screen name="Offtaker Profiles" component={OfftakerProfilesScreen} />
-            <Drawer.Screen name="Wallet" component={WalletScreen} />
-            <Drawer.Screen name="Profile" component={ProfileScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
+            
             <Drawer.Screen 
-                name="Weather" 
-                component={WeatherScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+                name="Profile" 
+                component={ProfileScreen} 
+            />
+            
+            <Drawer.Screen 
+                name="Settings" 
+                component={SettingsScreen} 
             />
         </Drawer.Navigator>
     );

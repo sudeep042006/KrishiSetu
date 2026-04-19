@@ -1,24 +1,24 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
-import { LayoutDashboard, Home, ShoppingBag } from 'lucide-react-native';
+import { LayoutDashboard, Home, Search, Users } from 'lucide-react-native';
 
-// Import Screens from Farmer
-import DashboardScreen from '../pages/homescreen/farmer/dashboard';
-import HomeScreen from '../pages/homescreen/farmer/Home';
-import MarketplaceScreen from '../pages/homescreen/farmer/marketPlace';
+// Import Screens from Offtaker
+import OfftakerHome from '../pages/homescreen/offtaker/home';
+import OfftakerMarketplace from '../pages/homescreen/offtaker/marketPlace';
+import OfftakerDashboard from '../pages/homescreen/offtaker/dashboard';
 
 const Tab = createBottomTabNavigator();
 
-export default function FarmerBottomTabs() {
+export default function BuyerBottomTabs() {
     return (
         <Tab.Navigator
             initialRouteName="Home"
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarShowLabel: true,
-                tabBarActiveTintColor: '#1e4a3b', // Deep green
-                tabBarInactiveTintColor: '#9ca3af', // Gray
+                tabBarActiveTintColor: '#1e4e8c', // Offtaker Blue
+                tabBarInactiveTintColor: '#9ca3af',
                 tabBarStyle: styles.tabBar,
                 tabBarLabelStyle: styles.tabBarLabel,
                 tabBarItemStyle: styles.tabBarItem,
@@ -28,19 +28,19 @@ export default function FarmerBottomTabs() {
 
                     if (route.name === 'Dashboard') IconComponent = LayoutDashboard;
                     else if (route.name === 'Home') IconComponent = Home;
-                    else if (route.name === 'Marketplace') IconComponent = ShoppingBag;
+                    else if (route.name === 'Marketplace') IconComponent = Users; // Find local farmers
 
                     return (
-                        <View className={`items-center justify-center p-2 rounded-full ${focused ? 'bg-[#e9f5ef]' : 'bg-transparent'}`}>
+                        <View className={`items-center justify-center p-2 rounded-full ${focused ? 'bg-[#e0f2fe]' : 'bg-transparent'}`}>
                             <IconComponent color={color} size={size} strokeWidth={focused ? 2.5 : 2} />
                         </View>
                     );
                 },
             })}
         >
-            <Tab.Screen name="Dashboard" component={DashboardScreen} />
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Marketplace" component={MarketplaceScreen} />
+            <Tab.Screen name="Home" component={OfftakerHome} />
+            <Tab.Screen name="Marketplace" component={OfftakerMarketplace} options={{ tabBarLabel: 'Sellers' }} />
+            <Tab.Screen name="Dashboard" component={OfftakerDashboard} />
         </Tab.Navigator>
     );
 }

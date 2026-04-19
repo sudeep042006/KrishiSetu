@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
 import { authService } from '../service/api';
 import { AuthContext } from '../../../App';
 
@@ -63,25 +64,33 @@ export default function LoginScreen({ navigation }) {
 
     return (
         <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-            <StatusBar barStyle="dark-content" backgroundColor="#eaf4ec" />
+            <StatusBar barStyle="light-content" backgroundColor="#14243eff" />
             
-            {/* Top Visual Area */}
-            <View className="bg-[#eaf4ec] w-full pt-6 pb-24 px-6 rounded-b-[60px] relative overflow-hidden items-center z-0">
-                <View className="absolute -top-10 -left-10 w-40 h-40 bg-[#dcfce7] rounded-full opacity-50" />
-                <View className="absolute bottom-[-20px] -right-10 w-24 h-24 bg-[#bbf7d0] rounded-full opacity-60" />
+            {/* Top Visual Area with Vibrant Green-Blue Gradient */}
+            <View className="w-full pt-6 pb-24 px-6  relative overflow-hidden items-center z-0">
+                <LinearGradient
+                    colors={['#059669', '#10b981', '#3b82f6', '#1e4e8c']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    className="absolute inset-0"
+                />
+                
+                <View className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
+                <View className="absolute bottom-[-20px] -right-10 w-24 h-24 bg-white/10 rounded-full" />
                 
                 <View className="flex-row items-center mb-6">
-                    <Text className="text-2xl">🌿</Text>
-                    <Text className="text-xl font-black text-[#1e4a3b] ml-2 tracking-tight">KrishiSetu</Text>
+                    <Text className="text-2xl font-bold">🌾</Text>
+                    <Text className="text-xl font-black text-white ml-2 tracking-tight">KrishiSetu</Text>
                 </View>
 
-                <Text className="text-[28px] font-extrabold text-[#113123] text-center mb-2 mt-2">
+                <Text className="text-[28px] font-extrabold text-white text-center mb-2 mt-2">
                     Welcome Back!
                 </Text>
-                <Text className="text-[14px] text-[#2c5b43] text-center font-medium opacity-90">
-                    Login to manage and sell your produce
+                <Text className="text-[14px] text-white/70 text-center font-medium opacity-90">
+                    The bridge to smarter agricultural trade
                 </Text>
             </View>
+
 
             {/* Form Area */}
             <ScrollView 
@@ -92,30 +101,30 @@ export default function LoginScreen({ navigation }) {
                 <View className="pb-10">
                     {/* Role Selector */}
                     <View className="mb-6">
-                        <Text className="text-[#346c53] text-[13px] font-bold mb-3 ml-1 text-center">Login As</Text>
+                        <Text className="text-slate-400 text-[11px] font-black mb-4 ml-1 text-center uppercase tracking-widest">Identify Yourself</Text>
                         <View className="flex-row justify-center space-x-4">
                             <TouchableOpacity 
                                 activeOpacity={0.8}
                                 onPress={() => handleInput('role', 'Farmer')}
-                                className={`w-[45%] py-3 rounded-xl items-center border flex-row justify-center ${
-                                    formData.role === 'Farmer' ? 'bg-[#eef8f1] border-[#346c53]' : 'bg-white border-gray-200'
+                                className={`w-[45%] py-4 rounded-2xl items-center border flex-row justify-center ${
+                                    formData.role === 'Farmer' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100'
                                 }`}
                             >
-                                <Text className="mr-2">👨‍🌾</Text>
-                                <Text className={`font-semibold ${formData.role === 'Farmer' ? 'text-[#346c53]' : 'text-gray-500'}`}>
+                                <Text className="mr-2 text-lg">👨‍🌾</Text>
+                                <Text className={`font-bold ${formData.role === 'Farmer' ? 'text-blue-600' : 'text-slate-400'}`}>
                                     Farmer
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
                                 activeOpacity={0.8}
                                 onPress={() => handleInput('role', 'Buyer')}
-                                className={`w-[45%] py-3 rounded-xl items-center border mx-2 flex-row justify-center ${
-                                    formData.role === 'Buyer' ? 'bg-[#eef8f1] border-[#346c53]' : 'bg-white border-gray-200'
+                                className={`w-[45%] py-4 rounded-2xl items-center border mx-2 flex-row justify-center ${
+                                    formData.role === 'Buyer' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100'
                                 }`}
                             >
-                                <Text className="mr-2">🤝</Text>
-                                <Text className={`font-semibold ${formData.role === 'Buyer' ? 'text-[#346c53]' : 'text-gray-500'}`}>
-                                    Buyer
+                                <Text className="mr-2 text-lg">🤝</Text>
+                                <Text className={`font-bold ${formData.role === 'Buyer' ? 'text-blue-600' : 'text-slate-400'}`}>
+                                    Offtaker
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -137,37 +146,44 @@ export default function LoginScreen({ navigation }) {
 
                     <View className="mb-6">
                         <TextInput 
-                            className={`w-full bg-[#f9fafb] border ${errors.password ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-[16px] text-[#113123]`}
+                            className={`w-full bg-slate-50 border ${errors.password ? 'border-red-400' : 'border-slate-100'} rounded-2xl px-5 py-[18px] text-slate-900 font-medium`}
                             placeholder="Password"
-                            placeholderTextColor="#9ca3af"
+                            placeholderTextColor="#94a3b8"
                             secureTextEntry={true}
                             value={formData.password}
                             onChangeText={(t) => handleInput('password', t)}
                         />
                         {errors.password && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.password}</Text>}
                         
-                        <TouchableOpacity className="mt-3 w-full items-end pr-2">
-                            <Text className="text-[#346c53] font-semibold text-xs">Forgot password?</Text>
+                        <TouchableOpacity className="mt-4 w-full items-end pr-2">
+                            <Text className="text-blue-600 font-bold text-xs">Forgot password?</Text>
                         </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity
                         activeOpacity={0.9}
-                        className="w-full bg-[#346c53] rounded-[24px] py-[16px] items-center justify-center shadow-md shadow-[#346c53]/30 mt-2"
                         onPress={handleLogin}
                         disabled={loading}
+                        style={{ width: '100%' }}
                     >
-                        {loading ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text className="text-white font-bold text-lg">Login</Text>
-                        )}
+                        <LinearGradient
+                            colors={['#10b981', '#1e4e8c']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={{ borderRadius: 24, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', shadowColor: '#10b981', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 4 }}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text className="text-white font-black text-lg uppercase tracking-widest">Login to Portal</Text>
+                            )}
+                        </LinearGradient>
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center mt-10 mb-8">
-                        <Text className="text-gray-500 font-medium">Don't have an account? </Text>
+                        <Text className="text-slate-400 font-medium">Don't have an account? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                            <Text className="text-[#346c53] font-bold">Register</Text>
+                            <Text className="text-blue-600 font-bold">Register</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

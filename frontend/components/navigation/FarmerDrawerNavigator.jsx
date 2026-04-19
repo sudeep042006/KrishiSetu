@@ -15,6 +15,7 @@ import WalletScreen from '../pages/homescreen/farmer/wallet';
 import ProfileScreen from '../pages/homescreen/farmer/profile';
 import SettingsScreen from '../pages/homescreen/farmer/settings';
 import WeatherScreen from '../pages/homescreen/farmer/weather';
+import LandDetailsScreen from '../pages/homescreen/farmer/LandDetails';
 
 const Drawer = createDrawerNavigator();
 
@@ -58,6 +59,11 @@ export default function FarmerDrawerNavigator() {
             <Drawer.Screen 
                 name="Weather" 
                 component={WeatherScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="LandDetails" 
+                component={LandDetailsScreen} 
                 options={{ drawerItemStyle: { display: 'none' } }} 
             />
         </Drawer.Navigator>

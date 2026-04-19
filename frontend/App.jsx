@@ -10,7 +10,8 @@ import LoginScreen from './components/pages/auth/login';
 import RegisterScreen from './components/pages/auth/register';
 import LandingPage from './components/pages/main/LandingPage';
 import FarmerDrawerNavigator from './components/navigation/FarmerDrawerNavigator';
-import OfftakerHome from './components/pages/homescreen/offtaker/home';
+import BuyerDrawerNavigator from './components/navigation/BuyerDrawerNavigator';
+import LandDetailsScreen from './components/pages/homescreen/farmer/LandDetails';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export const AuthContext = createContext();
@@ -93,13 +94,14 @@ export default function App() {
               userRole === 'Farmer' ? (
                 <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
               ) : (
-                <Stack.Screen name="OfftakerHome" component={OfftakerHome} />
+                <Stack.Screen name="OfftakerApp" component={BuyerDrawerNavigator} />
               )
             ) : (
               <>
                 <Stack.Screen name="Landing" component={LandingPage} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="LandDetails" component={LandDetailsScreen} />
               </>
             )}
 
