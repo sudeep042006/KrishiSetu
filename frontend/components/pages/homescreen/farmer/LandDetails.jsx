@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     View,
     Text,
@@ -22,6 +22,7 @@ import {
     Droplets,
     X,
     Locate,
+    RouteIcon,
 } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Geolocation from 'react-native-geolocation-service';
@@ -33,9 +34,8 @@ import {
     UserLocation,
 } from '@maplibre/maplibre-react-native';
 
-const { height: SCREEN_H } = Dimensions.get('window');
+const { height: SCREEN_H, width: SCREEN_W } = Dimensions.get('window');
 
-// ─── Colour tokens ─────────────────────────────────────────────────────────────
 const C = {
     bg: '#011a03',
     accent: '#10b981',
@@ -46,37 +46,101 @@ const C = {
     border: '#e5e7eb',
 };
 
+// ─── Geocode an address string via Nominatim ───────────────────────────────────
+async function geocodeAddress(query) {
+    try {
+        const encoded = encodeURIComponent(query);
+        const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`;
+        const res = await fetch(url, {
+            headers: { 'User-Agent': 'KrishiSetuApp/1.0' },
+        });
+        const json = await res.json();
+        if (json && json.length > 0) {
+            return {
+                lat: parseFloat(json[0].lat),
+                lng: parseFloat(json[0].lon),
+                displayName: json[0].display_name,
+            };
+        }
+        return null;
+    } catch (e) {
+        console.warn('Geocoding error:', e.message);
+        return null;
+    }
+}
+
+// ─── Build a GeoJSON LineString from two [lng,lat] points ─────────────────────
+function buildRouteLine(from, to) {
+    return {
+        type: 'Feature',
+        geometry: {
+            type: 'LineString',
+            coordinates: [from, to],
+        },
+        properties: {},
+    };
+}
+
+// ─── Compute bounds that contain both points ────────────────────────────────────
+function boundsFromPoints(points) {
+    const lngs = points.map(p => p[0]);
+    const lats = points.map(p => p[1]);
+    const sw = [Math.min(...lngs), Math.min(...lats)];
+    const ne = [Math.max(...lngs), Math.max(...lats)];
+    return { ne, sw };
+}
+
 export default function LandDetailsScreen() {
     const navigation = useNavigation();
     const route = useRoute();
     const profileData = route.params?.profileData || {};
 
-    const farmLat = profileData.latitude ?? null;
-    const farmLng = profileData.longitude ?? null;
-    const hasFarmCoords = farmLat !== null && farmLng !== null;
+    // ── Farm coordinates (may be null) ────────────────────────────────────────
+    const [farmCoord, setFarmCoord] = useState(
+        (profileData.latitude && profileData.longitude)
+            ? [profileData.longitude, profileData.latitude]
+            : null
+    );
+    const [geocoding, setGeocoding] = useState(false);
 
-    // GeoJSON for farm marker (only render if coords exist)
-    const farmGeoJSON = hasFarmCoords ? {
-        type: 'FeatureCollection',
-        features: [{
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [farmLng, farmLat] },
-            properties: {},
-        }],
-    } : null;
-
-    // ── State ──────────────────────────────────────────────────────────────────
-    const [googleLoading, setGoogleLoading] = useState(false);
-    const [inAppNavVisible, setInAppNavVisible] = useState(false);
-    const [userCoords, setUserCoords] = useState(null);   // [lng, lat]
+    // ── User live location ────────────────────────────────────────────────────
+    const [userCoords, setUserCoords] = useState(null);  // [lng, lat]
     const [mapReady, setMapReady] = useState(false);
+    const [inAppNavVisible, setInAppNavVisible] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const cameraRef = useRef(null);
     const watchRef = useRef(null);
 
+    // ── Geocode address if no saved coords ────────────────────────────────────
+    useEffect(() => {
+        if (farmCoord) return; // already have coords
+
+        const parts = [profileData.village, profileData.district, profileData.state].filter(Boolean);
+        if (parts.length === 0) return; // nothing to geocode
+
+        setGeocoding(true);
+        geocodeAddress(parts.join(', ') + ', India').then(result => {
+            if (result) {
+                setFarmCoord([result.lng, result.lat]);
+            }
+            setGeocoding(false);
+        });
+    }, []);
+
+    const hasFarmCoord = !!farmCoord;
+
+    // ── GeoJSON objects ────────────────────────────────────────────────────────
+    const farmGeoJSON = hasFarmCoord ? {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: farmCoord }, properties: {} }],
+    } : null;
+
+    const routeGeoJSON = (hasFarmCoord && userCoords) ? buildRouteLine(userCoords, farmCoord) : null;
+
     // ── Permission helper ──────────────────────────────────────────────────────
-    const requestLocationPermission = async () => {
+    const requestPermission = useCallback(async () => {
         if (Platform.OS !== 'android') return true;
-        const result = await PermissionsAndroid.request(
+        const r = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
             {
                 title: 'Location Permission',
@@ -85,15 +149,15 @@ export default function LandDetailsScreen() {
                 buttonNegative: 'Deny',
             }
         );
-        return result === PermissionsAndroid.RESULTS.GRANTED;
-    };
+        return r === PermissionsAndroid.RESULTS.GRANTED;
+    }, []);
 
     // ── Google Maps handler ────────────────────────────────────────────────────
     const handleGoogleMaps = async () => {
         setGoogleLoading(true);
-        const granted = await requestLocationPermission();
+        const granted = await requestPermission();
         if (!granted) {
-            Alert.alert('Permission Denied', 'Location access is required for navigation.');
+            Alert.alert('Permission Denied', 'Location access is needed for navigation.');
             setGoogleLoading(false);
             return;
         }
@@ -101,14 +165,12 @@ export default function LandDetailsScreen() {
             ({ coords }) => {
                 const { latitude: myLat, longitude: myLng } = coords;
                 let url;
-                if (hasFarmCoords) {
-                    url = `https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${farmLat},${farmLng}&travelmode=driving`;
+                if (hasFarmCoord) {
+                    url = `https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLng}&destination=${farmCoord[1]},${farmCoord[0]}&travelmode=driving`;
                 } else {
-                    url = `https://www.google.com/maps/search/?api=1&query=${myLat},${myLng}`;
+                    url = `https://www.google.com/maps/?q=${myLat},${myLng}`;
                 }
-                Linking.openURL(url).catch(() =>
-                    Alert.alert('Error', 'Could not open Google Maps.')
-                );
+                Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open Google Maps.'));
                 setGoogleLoading(false);
             },
             (err) => {
@@ -122,15 +184,15 @@ export default function LandDetailsScreen() {
 
     // ── In-App navigation handler ──────────────────────────────────────────────
     const handleInAppNav = async () => {
-        const granted = await requestLocationPermission();
+        const granted = await requestPermission();
         if (!granted) {
-            Alert.alert('Permission Denied', 'Location access is required to show your position.');
+            Alert.alert('Permission Denied', 'Location access is needed to show your position.');
             return;
         }
         setInAppNavVisible(true);
     };
 
-    // Start live location watch when full-screen map opens
+    // ── Live location watch (active only when full-screen map is open) ─────────
     useEffect(() => {
         if (!inAppNavVisible) {
             if (watchRef.current !== null) {
@@ -140,20 +202,11 @@ export default function LandDetailsScreen() {
             setMapReady(false);
             return;
         }
-
         watchRef.current = Geolocation.watchPosition(
-            ({ coords }) => {
-                setUserCoords([coords.longitude, coords.latitude]);
-            },
+            ({ coords }) => setUserCoords([coords.longitude, coords.latitude]),
             (err) => console.warn('Watch error:', err.message),
-            {
-                enableHighAccuracy: true,
-                distanceFilter: 5,
-                interval: 3000,
-                fastestInterval: 2000,
-            }
+            { enableHighAccuracy: true, distanceFilter: 3, interval: 2000, fastestInterval: 1500 }
         );
-
         return () => {
             if (watchRef.current !== null) {
                 Geolocation.clearWatch(watchRef.current);
@@ -162,30 +215,35 @@ export default function LandDetailsScreen() {
         };
     }, [inAppNavVisible]);
 
-    // Fly camera to user when coords arrive and map is ready
+    // ── Auto-zoom: fit both user and farm when both are known ──────────────────
     useEffect(() => {
-        if (userCoords && mapReady && cameraRef.current) {
+        if (!mapReady || !cameraRef.current) return;
+
+        if (userCoords && hasFarmCoord) {
+            // Both points known → fit bounds to show both
+            const { ne, sw } = boundsFromPoints([userCoords, farmCoord]);
+            cameraRef.current.fitBounds(ne, sw, 80, 1200);
+        } else if (userCoords) {
+            // Only user known → fly to user
             cameraRef.current.flyTo(userCoords, 800);
+        } else if (hasFarmCoord) {
+            // Only farm known → fly to farm
+            cameraRef.current.flyTo(farmCoord, 800);
         }
     }, [userCoords, mapReady]);
 
-    const crops = profileData.cropTypes
-        || (profileData.crops?.join(', '))
-        || 'Not specified';
-
-    // Mini-map center: use farm if available, else null (show blank)
-    const miniCenter = hasFarmCoords ? [farmLng, farmLat] : null;
+    const crops = profileData.cropTypes || profileData.crops?.join(', ') || 'Not specified';
 
     return (
         <View style={{ flex: 1, backgroundColor: C.bg }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
 
-                {/* ── Header ─────────────────────────────────────────── */}
+                {/* ── Header ──────────────────────────────────────── */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                         <ChevronLeft color="#fff" size={22} />
                     </TouchableOpacity>
-                    <View style={{ marginLeft: 12 }}>
+                    <View style={{ marginLeft: 12, flex: 1 }}>
                         <Text style={{ color: '#fff', fontSize: 20, fontWeight: '800' }}>Land Details</Text>
                         <Text style={{ color: '#6ee7b7', fontSize: 12, marginTop: 1 }}>
                             {profileData.village
@@ -193,6 +251,12 @@ export default function LandDetailsScreen() {
                                 : 'Farm location & specifications'}
                         </Text>
                     </View>
+                    {geocoding && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <ActivityIndicator size="small" color="#6ee7b7" />
+                            <Text style={{ color: '#6ee7b7', fontSize: 11 }}>Locating…</Text>
+                        </View>
+                    )}
                 </View>
 
                 <ScrollView
@@ -200,10 +264,9 @@ export default function LandDetailsScreen() {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 60 }}
                 >
-
-                    {/* ── Mini Preview Map ─────────────────────────────── */}
+                    {/* ── Mini Preview Map ──────────────────────────── */}
                     <View style={styles.mapContainer}>
-                        {miniCenter ? (
+                        {hasFarmCoord ? (
                             <Map
                                 style={{ flex: 1 }}
                                 mapStyle="https://tiles.openfreemap.org/styles/liberty"
@@ -213,19 +276,15 @@ export default function LandDetailsScreen() {
                                 pitchEnabled={false}
                                 rotateEnabled={false}
                             >
-                                <Camera
-                                    zoomLevel={12}
-                                    centerCoordinate={miniCenter}
-                                    animationMode="none"
-                                />
-                                <GeoJSONSource id="farmGlow" data={farmGeoJSON}>
-                                    <Layer id="farmGlowL" type="circle" paint={{
+                                <Camera zoomLevel={12} centerCoordinate={farmCoord} animationMode="none" />
+                                <GeoJSONSource id="mGlow" data={farmGeoJSON}>
+                                    <Layer id="mGlowL" type="circle" paint={{
                                         'circle-radius': 22,
                                         'circle-color': 'rgba(16,185,129,0.18)',
                                     }} />
                                 </GeoJSONSource>
-                                <GeoJSONSource id="farmDot" data={farmGeoJSON}>
-                                    <Layer id="farmDotL" type="circle" paint={{
+                                <GeoJSONSource id="mDot" data={farmGeoJSON}>
+                                    <Layer id="mDotL" type="circle" paint={{
                                         'circle-radius': 10,
                                         'circle-color': '#10b981',
                                         'circle-stroke-width': 3,
@@ -235,28 +294,22 @@ export default function LandDetailsScreen() {
                             </Map>
                         ) : (
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#d1fae5' }}>
-                                <Text style={{ fontSize: 30 }}>📍</Text>
+                                <Text style={{ fontSize: 32 }}>📍</Text>
                                 <Text style={{ color: C.textPrimary, fontWeight: '700', marginTop: 8, fontSize: 13 }}>
-                                    No coordinates saved
+                                    {geocoding ? 'Finding your farm location…' : 'No farm location saved'}
                                 </Text>
-                                <Text style={{ color: C.textMuted, fontSize: 11, marginTop: 4 }}>
-                                    Update profile with GPS location
+                                <Text style={{ color: C.textMuted, fontSize: 11, marginTop: 4, textAlign: 'center', paddingHorizontal: 20 }}>
+                                    {geocoding ? 'Using address from your profile' : 'Update your profile with a village/district address'}
                                 </Text>
                             </View>
                         )}
 
-                        {/* ── Two Navigate Buttons ── */}
+                        {/* Two navigation buttons */}
                         <View style={styles.navButtonsRow}>
-                            {/* In-App MapLibre navigation */}
-                            <TouchableOpacity
-                                onPress={handleInAppNav}
-                                style={styles.inAppNavBtn}
-                            >
-                                <Locate size={15} color="#fff" />
-                                <Text style={styles.navBtnText}>In-App Navigation</Text>
+                            <TouchableOpacity onPress={handleInAppNav} style={styles.inAppNavBtn}>
+                                <Locate size={14} color="#fff" />
+                                <Text style={styles.navBtnText}>In-App Nav</Text>
                             </TouchableOpacity>
-
-                            {/* Google Maps */}
                             <TouchableOpacity
                                 onPress={handleGoogleMaps}
                                 disabled={googleLoading}
@@ -264,16 +317,16 @@ export default function LandDetailsScreen() {
                             >
                                 {googleLoading
                                     ? <ActivityIndicator size="small" color="#4285F4" />
-                                    : <Text style={{ fontSize: 15 }}>G</Text>
+                                    : <Text style={{ fontSize: 14, fontWeight: '900', color: '#4285F4' }}>G</Text>
                                 }
                                 <Text style={styles.googleNavBtnText}>
-                                    {googleLoading ? 'Loading...' : 'Google Maps'}
+                                    {googleLoading ? 'Loading…' : 'Google Maps'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
 
-                    {/* ── Location Banner ──────────────────────────────── */}
+                    {/* ── Location banner ───────────────────────────── */}
                     <View style={styles.locationBanner}>
                         <Text style={styles.bannerLabel}>Farm Location</Text>
                         <Text style={styles.bannerAddress}>
@@ -281,18 +334,19 @@ export default function LandDetailsScreen() {
                                 ? `Village ${profileData.village}, District ${profileData.district}, ${profileData.state}`
                                 : 'Location not set — update your profile'}
                         </Text>
-                        {hasFarmCoords && (
+                        {hasFarmCoord && (
                             <Text style={styles.bannerCoords}>
-                                {farmLat.toFixed(5)}° N,  {farmLng.toFixed(5)}° E
+                                {farmCoord[1].toFixed(5)}° N,  {farmCoord[0].toFixed(5)}° E
+                                {!profileData.latitude && '  (geocoded from address)'}
                             </Text>
                         )}
                     </View>
 
-                    {/* ── Farm Specifications ───────────────────────────── */}
+                    {/* ── Farm Specifications ───────────────────────── */}
                     <View style={styles.section}>
                         <SectionLabel title="Farm Specifications" />
                         <View style={styles.specCard}>
-                            <SpecRow icon={<Sprout size={18} color={C.accent} />} label="Total Land Area" value={`${profileData.landArea || '0.0'} Hectares`} />
+                            <SpecRow icon={<Sprout size={18} color={C.accent} />} label="Total Land Area" value={`${profileData.landArea || '—'} Hectares`} />
                             <Divider />
                             <SpecRow icon={<MapPin size={18} color={C.accent} />} label="Location" value={profileData.village ? `${profileData.village}, ${profileData.district}, ${profileData.state}` : 'Not specified'} />
                             <Divider />
@@ -302,7 +356,7 @@ export default function LandDetailsScreen() {
                         </View>
                     </View>
 
-                    {/* ── Soil & Crop Info ─────────────────────────────── */}
+                    {/* ── Soil & Crop Info ────────────────────────────── */}
                     <View style={styles.section}>
                         <SectionLabel title="Soil & Crop Info" />
                         <InfoTile emoji="🪨" title="Soil Type" badge="Black Cotton Soil" desc="Ideal for cotton, wheat, and soybean. Retains moisture well during dry seasons." />
@@ -311,9 +365,9 @@ export default function LandDetailsScreen() {
                 </ScrollView>
             </SafeAreaView>
 
-            {/* ════════════════════════════════════════════════════════════
+            {/* ══════════════════════════════════════════════════════════
                 FULL-SCREEN IN-APP NAVIGATION MODAL
-            ════════════════════════════════════════════════════════════ */}
+            ══════════════════════════════════════════════════════════ */}
             <Modal
                 visible={inAppNavVisible}
                 animationType="slide"
@@ -321,7 +375,6 @@ export default function LandDetailsScreen() {
                 onRequestClose={() => setInAppNavVisible(false)}
             >
                 <View style={{ flex: 1, backgroundColor: '#000' }}>
-                    {/* Map */}
                     <Map
                         style={{ flex: 1 }}
                         mapStyle="https://tiles.openfreemap.org/styles/liberty"
@@ -331,17 +384,21 @@ export default function LandDetailsScreen() {
                     >
                         <Camera
                             ref={cameraRef}
-                            zoomLevel={15}
-                            centerCoordinate={userCoords || (hasFarmCoords ? [farmLng, farmLat] : [74.7378, 19.2183])}
+                            zoomLevel={14}
+                            centerCoordinate={
+                                userCoords
+                                || farmCoord
+                                || [78.9629, 20.5937] // fallback centre of India
+                            }
                             animationMode="flyTo"
-                            animationDuration={1000}
+                            animationDuration={600}
                         />
 
-                        {/* Live user location dot (blue) - built-in MapLibre component */}
+                        {/* Built-in live user dot (blue) */}
                         <UserLocation visible renderMode="normal" />
 
-                        {/* Farm destination marker (green) */}
-                        {hasFarmCoords && farmGeoJSON && (
+                        {/* Farm marker (green) */}
+                        {hasFarmCoord && farmGeoJSON && (
                             <>
                                 <GeoJSONSource id="fsGlow" data={farmGeoJSON}>
                                     <Layer id="fsGlowL" type="circle" paint={{
@@ -359,58 +416,92 @@ export default function LandDetailsScreen() {
                                 </GeoJSONSource>
                             </>
                         )}
+
+                        {/* Route dashed line between user and farm */}
+                        {routeGeoJSON && (
+                            <GeoJSONSource id="routeLine" data={routeGeoJSON}>
+                                <Layer
+                                    id="routeLineL"
+                                    type="line"
+                                    paint={{
+                                        'line-color': '#10b981',
+                                        'line-width': 3,
+                                        'line-dasharray': [2, 2],
+                                        'line-opacity': 0.85,
+                                    }}
+                                    layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+                                />
+                            </GeoJSONSource>
+                        )}
                     </Map>
 
-                    {/* ── Top overlay bar ─────────────────────────── */}
+                    {/* Top bar */}
                     <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
                         <View style={styles.fsHeader}>
-                            <TouchableOpacity
-                                onPress={() => setInAppNavVisible(false)}
-                                style={styles.fsCloseBtn}
-                            >
+                            <TouchableOpacity onPress={() => setInAppNavVisible(false)} style={styles.fsCloseBtn}>
                                 <X size={20} color="#fff" />
                             </TouchableOpacity>
-                            <View style={styles.fsTitleBox}>
+                            <View style={{ flex: 1 }}>
                                 <Text style={styles.fsTitleText}>Live Navigation</Text>
                                 <Text style={styles.fsSubText}>
-                                    {hasFarmCoords ? 'Green dot = Farm   •   Blue dot = You' : 'Showing your live location'}
+                                    {hasFarmCoord && userCoords
+                                        ? '🔵 You  →  🟢 Farm'
+                                        : hasFarmCoord
+                                            ? '🟢 Farm shown — waiting for GPS…'
+                                            : 'Showing your live location'}
                                 </Text>
                             </View>
                         </View>
                     </SafeAreaView>
 
-                    {/* ── Bottom overlay ─────────────────────────── */}
+                    {/* Bottom action bar */}
                     <View style={styles.fsBottomBar}>
-                        {/* Re-centre on user button */}
+                        {/* Re-centre on me */}
                         <TouchableOpacity
+                            style={styles.recentreBtn}
                             onPress={() => {
                                 if (userCoords && cameraRef.current) {
-                                    cameraRef.current.flyTo(userCoords, 600);
+                                    cameraRef.current.flyTo(userCoords, 500);
                                 }
                             }}
-                            style={styles.recentreBtn}
                         >
-                            <Locate size={20} color="#10b981" />
+                            <Locate size={18} color="#10b981" />
                             <Text style={styles.recentreBtnText}>My Location</Text>
                         </TouchableOpacity>
 
-                        {/* Fly to farm button */}
-                        {hasFarmCoords && (
+                        {/* Fit both in view */}
+                        {hasFarmCoord && userCoords && (
                             <TouchableOpacity
+                                style={styles.fitBtn}
                                 onPress={() => {
                                     if (cameraRef.current) {
-                                        cameraRef.current.flyTo([farmLng, farmLat], 800);
+                                        const { ne, sw } = boundsFromPoints([userCoords, farmCoord]);
+                                        cameraRef.current.fitBounds(ne, sw, 80, 900);
                                     }
                                 }}
+                            >
+                                <NavIcon size={18} color="#fff" />
+                                <Text style={styles.fitBtnText}>Show Route</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Fly to farm */}
+                        {hasFarmCoord && (
+                            <TouchableOpacity
                                 style={styles.farmBtn}
+                                onPress={() => {
+                                    if (cameraRef.current) {
+                                        cameraRef.current.flyTo(farmCoord, 700);
+                                    }
+                                }}
                             >
                                 <Text style={{ fontSize: 16 }}>🌾</Text>
-                                <Text style={styles.farmBtnText}>Go to Farm</Text>
+                                <Text style={styles.farmBtnText}>Farm</Text>
                             </TouchableOpacity>
                         )}
                     </View>
 
-                    {/* Loading indicator before user location arrives */}
+                    {/* GPS lock indicator */}
                     {!userCoords && (
                         <View style={styles.gpsLoader}>
                             <ActivityIndicator color="#10b981" size="small" />
@@ -423,7 +514,7 @@ export default function LandDetailsScreen() {
     );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function SectionLabel({ title }) {
     return (
@@ -483,8 +574,6 @@ const styles = {
         overflow: 'hidden',
     },
     mapContainer: { height: 290, backgroundColor: '#b7ddb0', position: 'relative' },
-
-    // Two nav buttons row
     navButtonsRow: {
         position: 'absolute',
         bottom: 14,
@@ -520,42 +609,54 @@ const styles = {
         shadowRadius: 5,
     },
     googleNavBtnText: { color: '#1a1a1a', fontWeight: '700', fontSize: 12 },
-
-    locationBanner: { backgroundColor: '#022c22', paddingHorizontal: 20, paddingVertical: 14 },
+    locationBanner: {
+        backgroundColor: '#022c22',
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+    },
     bannerLabel: { color: '#6ee7b7', fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.2 },
     bannerAddress: { color: '#fff', fontSize: 13, fontWeight: '600', marginTop: 4, lineHeight: 20 },
     bannerCoords: { color: '#6ee7b7', fontSize: 11, marginTop: 4 },
     section: { paddingHorizontal: 16, paddingTop: 20 },
-    specCard: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: C.border, overflow: 'hidden', marginBottom: 4 },
-    infoTile: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: C.border },
+    specCard: {
+        backgroundColor: '#fff',
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: C.border,
+        overflow: 'hidden',
+        marginBottom: 4,
+    },
+    infoTile: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: C.border,
+    },
     badge: { backgroundColor: '#dcfce7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, maxWidth: 140 },
     badgeText: { fontSize: 11, fontWeight: '700', color: '#15803d' },
 
-    // Full-screen map overlay styles
+    // Full-screen nav overlay
     fsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 12,
         paddingBottom: 12,
-        backgroundColor: 'rgba(2,44,34,0.88)',
+        backgroundColor: 'rgba(2,44,34,0.9)',
         gap: 12,
     },
-    fsCloseBtn: {
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        padding: 8,
-        borderRadius: 12,
-    },
-    fsTitleBox: { flex: 1 },
+    fsCloseBtn: { backgroundColor: 'rgba(255,255,255,0.15)', padding: 8, borderRadius: 12 },
     fsTitleText: { color: '#fff', fontSize: 16, fontWeight: '800' },
     fsSubText: { color: '#6ee7b7', fontSize: 11, marginTop: 2 },
     fsBottomBar: {
         position: 'absolute',
         bottom: 30,
-        left: 16,
-        right: 16,
+        left: 14,
+        right: 14,
         flexDirection: 'row',
-        gap: 10,
+        gap: 8,
     },
     recentreBtn: {
         flex: 1,
@@ -565,10 +666,22 @@ const styles = {
         justifyContent: 'center',
         paddingVertical: 14,
         borderRadius: 18,
-        gap: 8,
+        gap: 6,
         elevation: 5,
     },
-    recentreBtnText: { color: '#10b981', fontWeight: '800', fontSize: 14 },
+    recentreBtnText: { color: '#10b981', fontWeight: '800', fontSize: 13 },
+    fitBtn: {
+        flex: 1,
+        backgroundColor: '#065f46',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        borderRadius: 18,
+        gap: 6,
+        elevation: 5,
+    },
+    fitBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
     farmBtn: {
         flex: 1,
         backgroundColor: '#10b981',
@@ -577,15 +690,15 @@ const styles = {
         justifyContent: 'center',
         paddingVertical: 14,
         borderRadius: 18,
-        gap: 8,
+        gap: 6,
         elevation: 5,
     },
-    farmBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+    farmBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
     gpsLoader: {
         position: 'absolute',
         top: SCREEN_H * 0.5 - 20,
         alignSelf: 'center',
-        backgroundColor: 'rgba(2,44,34,0.85)',
+        backgroundColor: 'rgba(2,44,34,0.9)',
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 18,
