@@ -8,7 +8,7 @@ export default function Header({ title, showNotification = false, rightIcon = nu
     const navigation = useNavigation();
 
     return (
-        <View className="flex-row items-center justify-between h-10 px-4 pt-12 pb-5 bg-green-950 rounded-b-3xl">
+        <View className="flex-row items-center justify-between h-10 px-4 pt-12 pb-5 bg-[#020f04e9] rounded-b-3xl">
             <TouchableOpacity 
                 className="mr-3 -mt-8"
                 activeOpacity={0.7}

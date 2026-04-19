@@ -190,7 +190,7 @@ export default function Home() {
 
     return (
         <LinearGradient 
-            colors={['#011a03ff','#022d09e9', '#2d863fff', '#18a133ff', '#18a133ff','#18a133ff','#18a133ff', '#17ac42ff']} 
+            colors={['#031a05ff','#020f04e9', '#031707ff', '#041407ff', '#042009ff','#041a08ff','#18a133ff', '#17ac42ff']} 
             style={{ flex: 1 }}
         >
 
