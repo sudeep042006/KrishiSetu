@@ -67,41 +67,90 @@ export default function Home() {
     };
 
     const loadLiveWeather = () => {
-        Geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${WEATHER_API}`);
-                    const data = await res.json();
-                    
-                    console.log('--- HOME WEATHER FETCH START ---');
-                    console.log('RAW JSON:', JSON.stringify(data, null, 2));
-                    console.log('--- HOME WEATHER FETCH END ---');
+        let watchId = null;
+        let settled = false;
 
-                    if (data && data.cod === 200) {
-                        setWeatherData(data);
-                        await AsyncStorage.setItem('farm_weather_cache', JSON.stringify({ current: data }));
-                    }
-                } catch (error) {
-                    console.error('Home Weather Fetch Error:', error);
-                } finally {
-                    setLoadingWeather(false);
+        const finish = async (position) => {
+            if (settled) return;
+            settled = true;
+            if (watchId !== null) Geolocation.clearWatch(watchId);
+
+            const { latitude, longitude } = position.coords;
+            try {
+                const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API}&q=${latitude},${longitude}&days=1&aqi=yes&alerts=no`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data && !data.error) {
+                    const windKph = data.current.wind_kph ?? 0;
+                    const mappedData = {
+                        name: data.location.name,
+                        sys: { country: data.location.country },
+                        weather: [{
+                            main: data.current.condition.text,
+                            description: data.current.condition.text,
+                            icon: data.current.is_day ? '01d' : '01n'
+                        }],
+                        main: {
+                            temp: data.current.temp_c,
+                            temp_max: data.forecast.forecastday[0].day.maxtemp_c,
+                            temp_min: data.forecast.forecastday[0].day.mintemp_c,
+                            humidity: data.current.humidity,
+                            feels_like: data.current.feelslike_c,
+                        },
+                        wind: {
+                            speed: windKph / 3.6 // store as m/s for WeatherCard compatibility
+                        },
+                        cod: 200
+                    };
+
+                    setWeatherData(mappedData);
+                    // Use v2 key to sync with Weather screen
+                    await AsyncStorage.setItem('farm_weather_cache_v2', JSON.stringify({ 
+                        current: mappedData, 
+                        cachedAt: Date.now() 
+                    }));
                 }
-            },
-            (error) => {
-                console.log(error);
+            } catch (error) {
+                console.error('Home Weather Fetch Error:', error);
+            } finally {
                 setLoadingWeather(false);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+            }
+        };
+
+        const onError = (error) => {
+            if (settled) return;
+            settled = true;
+            if (watchId !== null) Geolocation.clearWatch(watchId);
+            console.warn('Home Location Error:', error.message);
+            setLoadingWeather(false);
+        };
+
+        watchId = Geolocation.watchPosition(
+            finish,
+            onError,
+            {
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 60000,
+            }
         );
     };
 
     const initializeWeather = async () => {
         setLoadingWeather(true);
-        const cached = await AsyncStorage.getItem('farm_weather_cache');
+        // Sync with v2 cache from Weather screen
+        const cached = await AsyncStorage.getItem('farm_weather_cache_v2');
         if (cached) {
-            const parsed = JSON.parse(cached);
-            if (parsed.current) setWeatherData(parsed.current);
+            try {
+                const parsed = JSON.parse(cached);
+                const ageMs = Date.now() - (parsed.cachedAt || 0);
+                if (ageMs < 30 * 60 * 1000) {
+                    if (parsed.current) setWeatherData(parsed.current);
+                }
+            } catch (e) {
+                console.log('Error parsing weather cache in Home:', e);
+            }
         }
         requestLocationPermission();
     };
