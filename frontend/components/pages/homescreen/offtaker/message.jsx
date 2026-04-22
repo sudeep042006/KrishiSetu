@@ -74,15 +74,16 @@ export default function MessageScreen({ navigation }) {
     const [searchText, setSearchText] = useState('');
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
 
     useEffect(() => {
         loadChats();
     }, []);
 
-    const loadChats = async () => {
+    const loadChats = async (isRefresh = false) => {
         try {
-            setLoading(true);
+            if (!isRefresh) setLoading(true);
             const uid = await AsyncStorage.getItem('userId');
             setCurrentUserId(uid);
             
@@ -96,7 +97,13 @@ export default function MessageScreen({ navigation }) {
             console.error("Error loading chats:", error);
         } finally {
             setLoading(false);
+            if (isRefresh) setRefreshing(false);
         }
+    };
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        loadChats(true);
     };
 
     const filteredChats = chats.filter((chat) => {
@@ -166,6 +173,8 @@ export default function MessageScreen({ navigation }) {
                                 data={filteredChats}
                                 keyExtractor={(item) => item._id}
                                 estimatedItemSize={76}
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
                                 renderItem={({ item }) => (
                                     <ChatItem
                                         item={item}

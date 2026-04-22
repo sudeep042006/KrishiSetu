@@ -9,8 +9,10 @@ import socketService from '../../../../services/socket';
 // Avatar placeholder
 function AvatarPlaceholder({ name = "Unknown", size = 36 }) {
     const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+    const colors = ['#2D6A4F', '#40916C', '#52B788', '#1B4332', '#74C69D'];
+    const color = colors[name.charCodeAt(0) % colors.length];
     return (
-        <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#2D6A4F' }} className="justify-center items-center">
+        <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} className="justify-center items-center">
             <Text className="text-white font-bold" style={{ fontSize: size * 0.35 }}>{initials}</Text>
         </View>
     );
@@ -108,8 +110,8 @@ export default function MessageWindowScreen({ navigation, route }) {
             socketService.subscribeToMessages((err, msg) => {
                 if (err) return;
                 setMessages(prev => {
-                    // prevent duplicate due to fast UI append vs socket return
-                    if(prev.find(m => m._id === msg._id || m.tempId === msg.tempId)) return prev;
+                    // prevent duplicate due to fast UI append vs socket return. MUST check strictly.
+                    if(prev.find(m => (m._id && m._id === msg._id) || (m.tempId && msg.tempId && m.tempId === msg.tempId))) return prev;
                     return [...prev, msg];
                 });
                 scrollToBottom();

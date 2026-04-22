@@ -28,6 +28,7 @@ export const disconnectSocket = () => {
 
 export const subscribeToMessages = (cb) => {
     if (!socket) return true;
+    socket.off('receive_message');
     socket.on('receive_message', msg => {
         return cb(null, msg);
     });

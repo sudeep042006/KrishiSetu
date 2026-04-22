@@ -58,8 +58,8 @@ export const initializeSocket = (server) => {
                     id: newMessage._id.toString() 
                 };
 
-                // 3. Emit message to everyone in the chat room (including sender to ack)
-                io.to(chatId).emit("receive_message", messageData);
+                // 3. Emit message to everyone else in the chat room (excluding sender)
+                socket.to(chatId).emit("receive_message", messageData);
                 
             } catch (error) {
                 console.error("Socket error saving message:", error);

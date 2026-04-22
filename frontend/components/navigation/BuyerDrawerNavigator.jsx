@@ -9,6 +9,10 @@ import OfftakerWallet from '../pages/homescreen/offtaker/wallet';
 import FarmerProfilesScreen from '../pages/homescreen/offtaker/FarmerProfiles';
 import ProfileScreen from '../pages/homescreen/offtaker/profile';
 import SettingsScreen from '../pages/homescreen/farmer/settings'; // Settings is shared
+import MessageScreen from '../pages/homescreen/offtaker/message';
+import MessageWindowScreen from '../pages/homescreen/offtaker/messageWindow';
+import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
+
 
 const Drawer = createDrawerNavigator();
 
@@ -58,6 +62,22 @@ export default function BuyerDrawerNavigator() {
                 name="Settings" 
                 component={SettingsScreen} 
             />
+            <Drawer.Screen 
+                name="Message" 
+                component={MessageScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="MessageWindow" 
+                component={MessageWindowScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="FarmerProfileWindow" 
+                component={FarmerProfileWindowScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            
         </Drawer.Navigator>
     );
 }

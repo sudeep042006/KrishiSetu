@@ -70,6 +70,26 @@ export default function FarmerDrawerNavigator() {
                 component={LandDetailsScreen} 
                 options={{ drawerItemStyle: { display: 'none' } }} 
             />
+            <Drawer.Screen 
+                name="Message" 
+                component={MessageScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="MessageWindow" 
+                component={MessageWindowScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="OfftakerProfileWindow" 
+                component={OfftakerProfileWindowScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
+            <Drawer.Screen 
+                name="FarmerProfileWindow" 
+                component={FarmerProfileWindowScreen} 
+                options={{ drawerItemStyle: { display: 'none' } }} 
+            />
         </Drawer.Navigator>
     );
 }
