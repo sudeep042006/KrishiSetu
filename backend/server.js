@@ -10,8 +10,15 @@ import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 import weatherRoutes from "./routes/weather.routes.js";
 import offtakerRoutes from "./routes/offtaker.routes.js"; // New weather route
+import messageRoutes from "./routes/message.routes.js";
+import userRoutes from "./routes/user.routes.js";
+
+import http from 'http';
+import { initializeSocket } from './config/socket.js';
 
 const app = express();
+const server = http.createServer(app);
+initializeSocket(server);
 
 app.use(express.json());
 app.use(cors());
@@ -30,12 +37,14 @@ app.use("/api/v1/farmer", farmerRoutes);
 app.use("/api/v1/project", projectRoutes);
 app.use("/api/v1/weather", weatherRoutes);
 app.use("/api/v1/offtaker", offtakerRoutes); // Mounted weather routes
+app.use("/api/v1/chat", messageRoutes);
+app.use("/api/v1/user", userRoutes);
 
 
 app.get("/",(req,res)=>{
     res.send("KrishiSetu is Running");
 })
 
-app.listen(process.env.PORT,()=>{
+server.listen(process.env.PORT,()=>{
     console.log(`Server is running on port http://localhost:${process.env.PORT}`);
 })

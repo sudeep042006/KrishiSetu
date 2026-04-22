@@ -1,12 +1,16 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
-import { LayoutDashboard, Home, ShoppingBag } from 'lucide-react-native';
+import { LayoutDashboard, Home, ShoppingBag, MessageSquare } from 'lucide-react-native';
 
 // Import Screens from Farmer
 import DashboardScreen from '../pages/homescreen/farmer/dashboard';
 import HomeScreen from '../pages/homescreen/farmer/Home';
 import MarketplaceScreen from '../pages/homescreen/farmer/marketPlace';
+import MessageScreen from '../pages/homescreen/farmer/message';
+import MessageWindowScreen from '../pages/homescreen/farmer/messageWindow';
+import OfftakerProfileWindowScreen from '../pages/homescreen/farmer/offtakerProfilewindow';
+import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,6 +33,7 @@ export default function FarmerBottomTabs() {
                     if (route.name === 'Dashboard') IconComponent = LayoutDashboard;
                     else if (route.name === 'Home') IconComponent = Home;
                     else if (route.name === 'Marketplace') IconComponent = ShoppingBag;
+                    else if (route.name === 'Message') IconComponent = MessageSquare;
 
                     return (
                         <View className={`items-center justify-center p-2 rounded-full ${focused ? 'bg-[#e9f5ef]' : 'bg-transparent'}`}>
@@ -41,6 +46,7 @@ export default function FarmerBottomTabs() {
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Marketplace" component={MarketplaceScreen} />
+            <Tab.Screen name="Message" component={MessageScreen} />
         </Tab.Navigator>
     );
 }

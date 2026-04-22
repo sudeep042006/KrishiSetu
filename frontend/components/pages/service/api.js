@@ -193,6 +193,11 @@ export const farmerService = {
 // ---------------------------------------------------------
 
 export const offtakerService = {
+  getAllOfftakers: async () => {
+    const response = await apiClient.get('/offtaker/all');
+    return response.data;
+  },
+
   getProfile: async () => {
     const response = await apiClient.get('/offtaker/profile');
     return response.data;

@@ -12,10 +12,10 @@ import LinearGradient from 'react-native-linear-gradient';
 const WEATHER_IMAGES = {
   sunny: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281240/Partly_Cloud_Image_xfpkea.png'},
   haze:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281241/Haze_wsscho.png'},
-  cloudy: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281237/overCast_hgh8xu.png'},
+  cloudy: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776416632/ChatGPT_Image_Apr_17_2026_02_23_37_PM_asqukv.png'},
   rainy:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281234/Rainy_sokhvw.png'},
   night:  {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281231/Night_jlsjex.png'},
-  mist: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776416632/ChatGPT_Image_Apr_17_2026_02_23_37_PM_asqukv.png'},
+  mist: {uri: 'https://res.cloudinary.com/dwji50nl9/image/upload/v1776281237/overCast_hgh8xu.png'},
 };
 
 // Weather condition emoji map
@@ -70,8 +70,13 @@ const getWeatherKey = (condition, isDay) => {
   if (!isDay) return 'night';
   const c = condition?.toLowerCase() || '';
   if (c.includes('rain') || c.includes('drizzle') || c.includes('thunder')) return 'rainy';
-  if (c.includes('cloud')) return 'cloudy';
-  if (c.includes('haze') || c.includes('mist') || c.includes('fog') || c.includes('smoke') || c.includes('dust')) return 'haze';
+  
+  if (c.includes('partly')) return 'sunny'; // Show partly cloud image
+  if (c.includes('cloud') || c.includes('overcast') || c.includes('mostly') || c.includes('broken')) return 'cloudy'; // Full overcast
+  
+  if (c.includes('mist')) return 'mist';
+  if (c.includes('haze') || c.includes('fog') || c.includes('smoke') || c.includes('dust')) return 'haze';
+  
   if (c.includes('clear') || c.includes('sun')) return 'sunny';
   return 'sunny';
 };
@@ -86,7 +91,8 @@ const getAccent = (condition, isDay) => {
   if (!isDay) return '#7eb8f7';
   const c = condition?.toLowerCase() || '';
   if (c.includes('rain') || c.includes('thunder')) return '#74b9ff';
-  if (c.includes('cloud')) return '#cbd5e0';
+  if (c.includes('partly')) return '#f6d860'; // Sunny/Partly accent
+  if (c.includes('cloud') || c.includes('overcast') || c.includes('mostly') || c.includes('broken')) return '#cbd5e0';
   if (c.includes('haze') || c.includes('mist') || c.includes('fog')) return '#b8d4b0';
   return '#f6d860';
 };

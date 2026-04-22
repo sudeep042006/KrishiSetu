@@ -16,6 +16,10 @@ import ProfileScreen from '../pages/homescreen/farmer/profile';
 import SettingsScreen from '../pages/homescreen/farmer/settings';
 import WeatherScreen from '../pages/homescreen/farmer/weather';
 import LandDetailsScreen from '../pages/homescreen/farmer/LandDetails';
+import MessageScreen from '../pages/homescreen/farmer/message';
+import MessageWindowScreen from '../pages/homescreen/farmer/messageWindow';
+import OfftakerProfileWindowScreen from '../pages/homescreen/farmer/offtakerProfilewindow';
+import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
 
 const Drawer = createDrawerNavigator();
 

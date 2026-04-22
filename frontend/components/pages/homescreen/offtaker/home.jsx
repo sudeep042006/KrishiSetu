@@ -151,18 +151,24 @@ export default function OfftakerHome() {
                         >
                             <Menu color="#ffffff" size={24} />
                         </TouchableOpacity>
+
+                        
                         <View className="bg-white/20 p-0.5 rounded-full">
                             <Image
                                 source={profilePhoto ? { uri: profilePhoto } : null}
                                 className="w-10 h-10 rounded-full bg-white/20"
                             />
                         </View>
+                        <TouchableOpacity
+                        onPress={() => navigation.navigate('Profile')}
+                        >
                         <View className="ml-3">
                             <Text className="text-white/70 text-xs font-medium uppercase tracking-wider">Offtaker Portal</Text>
                             <Text className="text-white text-base font-bold">
                                 {user?.name || 'Authorized Buyer'}
                             </Text>
                         </View>
+                        </TouchableOpacity>
                     </View>
                     <View className="flex-row" style={{ gap: 12 }}>
                         <TouchableOpacity className="bg-white/10 p-2 rounded-full border border-white/5">

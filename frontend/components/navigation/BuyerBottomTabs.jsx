@@ -1,12 +1,16 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
-import { LayoutDashboard, Home, Search, Users } from 'lucide-react-native';
+import { LayoutDashboard, Home, Search, Users, MessageSquare } from 'lucide-react-native';
 
 // Import Screens from Offtaker
 import OfftakerHome from '../pages/homescreen/offtaker/home';
 import OfftakerMarketplace from '../pages/homescreen/offtaker/marketPlace';
 import OfftakerDashboard from '../pages/homescreen/offtaker/dashboard';
+import MessageScreen from '../pages/homescreen/offtaker/message';
+import MessageWindowScreen from '../pages/homescreen/offtaker/messageWindow';
+import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
+import OfftakerProfileWindowScreen from '../pages/homescreen/farmer/offtakerProfilewindow';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,7 +32,8 @@ export default function BuyerBottomTabs() {
 
                     if (route.name === 'Dashboard') IconComponent = LayoutDashboard;
                     else if (route.name === 'Home') IconComponent = Home;
-                    else if (route.name === 'Marketplace') IconComponent = Users; // Find local farmers
+                    else if (route.name === 'Marketplace') IconComponent = Users;
+                    else if (route.name === 'Message') IconComponent = MessageSquare;
 
                     return (
                         <View className={`items-center justify-center p-2 rounded-full ${focused ? 'bg-[#e0f2fe]' : 'bg-transparent'}`}>
@@ -41,6 +46,7 @@ export default function BuyerBottomTabs() {
             <Tab.Screen name="Home" component={OfftakerHome} />
             <Tab.Screen name="Marketplace" component={OfftakerMarketplace} options={{ tabBarLabel: 'Sellers' }} />
             <Tab.Screen name="Dashboard" component={OfftakerDashboard} />
+            <Tab.Screen name="Message" component={MessageScreen} />
         </Tab.Navigator>
     );
 }

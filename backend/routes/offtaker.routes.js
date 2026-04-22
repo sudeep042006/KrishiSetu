@@ -6,6 +6,7 @@ import authenticate from "../middlewares/auth.middleware.js";
 const router = Router();
 
 // Profile Routes
+router.get("/all", offtakerController.getAllOfftakers);
 router.get("/profile", authenticate, offtakerController.getOfftakerProfile);
 router.post("/profile", authenticate, offtakerController.completeOfftakerProfile);
 router.post("/profile-photo", authenticate, upload.single("photo"), offtakerController.uploadOfftakerPhoto);

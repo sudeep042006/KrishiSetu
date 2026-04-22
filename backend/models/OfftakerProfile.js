@@ -11,7 +11,6 @@ const offtakerProfileSchema = new mongoose.Schema(
 
     companyName: {
       type: String,
-      required: true,
       trim: true,
     },
 
@@ -27,7 +26,7 @@ const offtakerProfileSchema = new mongoose.Schema(
         "ngo",
         "other",
       ],
-      required: true,
+      default: "other",
     },
 
     industryCategory: {
@@ -53,13 +52,20 @@ const offtakerProfileSchema = new mongoose.Schema(
 
     companyPhone: {
       type: String,
-      required: true,
       trim: true,
     },
 
     alternatePhone: {
       type: String,
       trim: true,
+    },
+    
+    profilePhoto: {
+      type: String,
+    },
+    
+    profilePhotoPublicId: {
+      type: String,
     },
 
     website: {
@@ -112,7 +118,6 @@ const offtakerProfileSchema = new mongoose.Schema(
       },
       city: {
         type: String,
-        required: true,
         trim: true,
       },
       district: {
@@ -121,7 +126,6 @@ const offtakerProfileSchema = new mongoose.Schema(
       },
       state: {
         type: String,
-        required: true,
         trim: true,
       },
       country: {
