@@ -5,13 +5,15 @@ import {
     TextInput,
     TouchableOpacity,
     Image,
-    ActivityIndicator
+    ActivityIndicator,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/BHeader';
-import { getUserChats } from '../../../../services/chatApi';
+import { getUserChats, deleteChat } from '../../../../services/chatApi';
+import { Trash2, Search, MessageSquare } from 'lucide-react-native';
 
 const FILTERS = ['All', 'Farmers', 'Buyers', 'Orders'];
 
@@ -33,14 +35,16 @@ function AvatarPlaceholder({ name, size = 48 }) {
     );
 }
 
-function ChatItem({ item, onPress, currentUserId }) {
+function ChatItem({ item, onPress, onLongPress, currentUserId }) {
     // Determine the OTHER participant
     const otherUser = item.participants.find(p => p._id !== currentUserId) || item.participants[0];
     
     return (
         <TouchableOpacity
             onPress={() => onPress(item, otherUser)}
-            className="flex-row items-center px-4 py-3 bg-white border-b border-gray-100 active:bg-gray-50"
+            onLongPress={() => onLongPress(item, otherUser)}
+            activeOpacity={0.7}
+            className="flex-row items-center px-4 py-3 bg-white border-b border-gray-100"
         >
             {/* Avatar */}
             <View className="relative mr-3">
@@ -106,6 +110,30 @@ export default function MessageScreen({ navigation }) {
         loadChats(true);
     };
 
+    const handleDeleteChat = (chat, otherUser) => {
+        Alert.alert(
+            "Delete Conversation",
+            `Are you sure you want to delete your conversation with ${otherUser?.name || "this user"}? This will also delete all messages.`,
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Delete", 
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const res = await deleteChat(chat._id);
+                            if (res.success) {
+                                setChats(prev => prev.filter(c => c._id !== chat._id));
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "Could not delete conversation.");
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const filteredChats = chats.filter((chat) => {
         const otherUser = chat.participants.find(p => p._id !== currentUserId) || chat.participants[0];
         const matchesSearch = otherUser?.name?.toLowerCase().includes(searchText.toLowerCase()) || 
@@ -128,9 +156,9 @@ export default function MessageScreen({ navigation }) {
                     {/* Search Bar */}
                     <View className="px-4 pt-3 pb-2 bg-white">
                         <View className="flex-row items-center bg-[#f1f5f1] rounded-xl px-3 py-2">
-                            <Text className="text-gray-400 mr-2 text-base">🔍</Text>
+                            <Search size={18} color="#9CA3AF" className="mr-2" />
                             <TextInput
-                                className="flex-1 text-sm text-gray-700"
+                                className="flex-1 text-sm text-gray-700 ml-2"
                                 placeholder="Search chats..."
                                 placeholderTextColor="#9CA3AF"
                                 value={searchText}
@@ -182,12 +210,13 @@ export default function MessageScreen({ navigation }) {
                                         onPress={(chat, otherUser) =>
                                             navigation.navigate('MessageWindow', { chatId: chat._id, chatTitle: otherUser.name, otherUserId: otherUser._id })
                                         }
+                                        onLongPress={handleDeleteChat}
                                     />
                                 )}
                                 ListEmptyComponent={
                                     <View className="flex-1 justify-center items-center py-20">
-                                        <Text className="text-4xl mb-3">💬</Text>
-                                        <Text className="text-gray-500 text-base">No chats found</Text>
+                                        <MessageSquare size={48} color="#9CA3AF" className="mb-3" />
+                                        <Text className="text-gray-500 text-base mt-2">No chats found</Text>
                                     </View>
                                 }
                             />

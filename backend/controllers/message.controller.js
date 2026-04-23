@@ -56,3 +56,29 @@ export const getChatMessages = async (req, res) => {
         return res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+export const deleteMessages = async (req, res) => {
+    try {
+        const { messageIds } = req.body;
+        if (!messageIds || !Array.isArray(messageIds)) {
+            return res.status(400).json({ success: false, message: "messageIds array required" });
+        }
+        await Message.deleteMany({ _id: { $in: messageIds } });
+        return res.status(200).json({ success: true, message: "Messages deleted" });
+    } catch (error) {
+        console.error("Delete Messages Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+export const deleteChat = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        await Chat.findByIdAndDelete(chatId);
+        await Message.deleteMany({ chatId });
+        return res.status(200).json({ success: true, message: "Chat and associated messages deleted" });
+    } catch (error) {
+        console.error("Delete Chat Error:", error);
+        return res.status(500).json({ success: false, message: "Server Error" });
+    }
+};

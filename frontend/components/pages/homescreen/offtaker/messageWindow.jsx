@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
     View, 
     Text, 
@@ -8,7 +8,8 @@ import {
     Platform, 
     ActivityIndicator,
     StatusBar,
-    Keyboard
+    Keyboard,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -20,9 +21,12 @@ import {
     Paperclip, 
     Mic, 
     CheckCheck,
-    Lock
+    Lock,
+    Trash2,
+    X,
+    CheckCircle2
 } from 'lucide-react-native';
-import { getChatMessages } from '../../../../services/chatApi';
+import { getChatMessages, deleteMessages } from '../../../../services/chatApi';
 import socketService from '../../../../services/socket';
 
 function AvatarPlaceholder({ name = "Unknown", size = 40 }) {
@@ -36,7 +40,21 @@ function AvatarPlaceholder({ name = "Unknown", size = 40 }) {
     );
 }
 
-function ChatHeader({ chatTitle, otherUserId, navigation }) {
+function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selectedCount, onCancelSelection, onDeleteSelected }) {
+    if (isSelectionMode) {
+        return (
+            <View className="flex-row items-center px-4 py-3 bg-[#123524] border-b border-white/5">
+                <TouchableOpacity onPress={onCancelSelection} className="mr-4 p-1.5 rounded-full bg-white/10">
+                    <X size={22} color="#fff" />
+                </TouchableOpacity>
+                <Text className="text-white font-bold text-lg flex-1">{selectedCount} selected</Text>
+                <TouchableOpacity onPress={onDeleteSelected} className="p-2 rounded-full bg-red-500/20">
+                    <Trash2 size={22} color="#f87171" />
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     return (
         <View className="flex-row items-center px-4 py-3 bg-[#123524] border-b border-white/5">
             <TouchableOpacity onPress={() => navigation.goBack()} className="mr-2 p-1.5 rounded-full bg-white/10">
@@ -66,30 +84,40 @@ function ChatHeader({ chatTitle, otherUserId, navigation }) {
     );
 }
 
-function MessageBubble({ message, isMine }) {
+function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSelectionMode }) {
     const messageTime = new Date(message.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    if (isMine) {
-        return (
-            <View className="flex-row justify-end mb-3 px-4">
-                <View className="bg-[#123524] rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[80%] shadow-md shadow-black/20">
-                    <Text className="text-white text-sm leading-6 font-medium">{message.message}</Text>
+    return (
+        <TouchableOpacity 
+            onLongPress={() => onLongPress(message._id)}
+            onPress={() => isSelectionMode ? onPress(message._id) : null}
+            activeOpacity={0.7}
+            className={`flex-row mb-3 px-4 ${isMine ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-emerald-500/10' : ''}`}
+        >
+            <View className="flex-row items-end max-w-[85%]">
+                {isSelectionMode && (
+                    <View className="mr-2 mb-2">
+                        {isSelected ? (
+                            <CheckCircle2 size={18} color="#10b981" fill="#10b981" />
+                        ) : (
+                            <View className="w-[18px] h-[18px] rounded-full border border-gray-300" />
+                        )}
+                    </View>
+                )}
+                
+                <View className={`${isMine ? 'bg-[#123524] rounded-tr-sm' : 'bg-white rounded-tl-sm border border-gray-100'} rounded-2xl px-4 py-2.5 shadow-sm`}>
+                    <Text className={`${isMine ? 'text-white font-medium' : 'text-gray-800'} text-sm leading-6`}>
+                        {message.message}
+                    </Text>
                     <View className="flex-row justify-end items-center mt-1 gap-x-1 opacity-70">
-                        <Text className="text-emerald-200 text-[9px] font-bold uppercase">{messageTime}</Text>
-                        <CheckCheck size={12} color="#A7F3D0" />
+                        <Text className={`${isMine ? 'text-emerald-200' : 'text-gray-400'} text-[9px] font-bold uppercase`}>
+                            {messageTime}
+                        </Text>
+                        {isMine && <CheckCheck size={12} color="#A7F3D0" />}
                     </View>
                 </View>
             </View>
-        );
-    }
-
-    return (
-        <View className="flex-row justify-start mb-3 px-4">
-            <View className="bg-white rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[80%] shadow-sm border border-gray-100">
-                <Text className="text-gray-800 text-sm leading-6">{message.message}</Text>
-                <Text className="text-gray-400 text-[9px] mt-1 font-bold uppercase">{messageTime}</Text>
-            </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
@@ -99,29 +127,15 @@ export default function MessageWindowScreen({ navigation, route }) {
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState(null);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [selectedMessages, setSelectedMessages] = useState(new Set());
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
     const flatListRef = useRef(null);
 
     useEffect(() => {
         socketService.initiateSocketConnection();
         setupChat();
-
-        const showSub = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-            (e) => {
-                setKeyboardHeight(e.endCoordinates.height);
-                setTimeout(scrollToBottom, 50);
-            }
-        );
-        const hideSub = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-            () => setKeyboardHeight(0)
-        );
-
         return () => {
             socketService.leaveChatRoom(chatId);
-            showSub.remove();
-            hideSub.remove();
         };
     }, [chatId]);
 
@@ -179,16 +193,76 @@ export default function MessageWindowScreen({ navigation, route }) {
         socketService.sendMessage(newMsg);
     };
 
+    const handleLongPress = (id) => {
+        if (!id) return; // Ignore messages without ID (temp messages)
+        setIsSelectionMode(true);
+        const next = new Set(selectedMessages);
+        next.add(id);
+        setSelectedMessages(next);
+    };
+
+    const handlePress = (id) => {
+        if (!id) return;
+        const next = new Set(selectedMessages);
+        if (next.has(id)) {
+            next.delete(id);
+            if (next.size === 0) setIsSelectionMode(false);
+        } else {
+            next.add(id);
+        }
+        setSelectedMessages(next);
+    };
+
+    const cancelSelection = () => {
+        setIsSelectionMode(false);
+        setSelectedMessages(new Set());
+    };
+
+    const deleteSelected = () => {
+        if (selectedMessages.size === 0) return;
+
+        Alert.alert(
+            "Delete Messages",
+            `Are you sure you want to delete ${selectedMessages.size} selected messages?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Delete", 
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const idsToDelete = Array.from(selectedMessages);
+                            const res = await deleteMessages(idsToDelete);
+                            if (res.success) {
+                                setMessages(prev => prev.filter(m => !selectedMessages.has(m._id)));
+                                cancelSelection();
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "Could not delete messages.");
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     return (
-        <View className="flex-1 bg-[#123524]" style={{ paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }}>
+        <View className="flex-1 bg-[#123524]">
             <StatusBar barStyle="light-content" />
             <SafeAreaView edges={['top']} className="flex-1">
-                <ChatHeader chatTitle={chatTitle} otherUserId={otherUserId} navigation={navigation} />
+                <ChatHeader 
+                    chatTitle={chatTitle} 
+                    otherUserId={otherUserId} 
+                    navigation={navigation} 
+                    isSelectionMode={isSelectionMode}
+                    selectedCount={selectedMessages.size}
+                    onCancelSelection={cancelSelection}
+                    onDeleteSelected={deleteSelected}
+                />
 
                 <KeyboardAvoidingView 
-                    className="flex-1"
+                    className="flex-1" 
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={0}
                 >
                     <View className="flex-1 bg-[#f8faf9] rounded-t-[40px] overflow-hidden">
                         <View className="py-3 items-center bg-white/50 border-b border-gray-100">
@@ -211,44 +285,56 @@ export default function MessageWindowScreen({ navigation, route }) {
                                     estimatedItemSize={80}
                                     contentContainerStyle={{ paddingVertical: 20 }}
                                     showsVerticalScrollIndicator={false}
-                                    renderItem={({ item }) => <MessageBubble message={item} isMine={item.senderId === currentUserId} />}
+                                    renderItem={({ item }) => (
+                                        <MessageBubble 
+                                            message={item} 
+                                            isMine={item.senderId === currentUserId} 
+                                            onLongPress={handleLongPress}
+                                            onPress={handlePress}
+                                            isSelected={selectedMessages.has(item._id)}
+                                            isSelectionMode={isSelectionMode}
+                                        />
+                                    )}
                                     onContentSizeChange={scrollToBottom}
                                 />
                             )}
                         </View>
 
-                        <View className="bg-white border-t border-gray-100">
-                            <SafeAreaView edges={['bottom']}>
-                                <View className="flex-row items-center px-4 py-3 gap-x-2">
-                                    <TouchableOpacity className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
-                                        <Paperclip size={20} color="#6b7280" />
-                                    </TouchableOpacity>
+                        {!isSelectionMode && (
+                            <View className="bg-white border-t border-gray-100">
+                                <SafeAreaView edges={['bottom']}>
+                                    <View className="flex-row items-center px-4 py-3 gap-x-2">
+                                        <TouchableOpacity className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
+                                            <Paperclip size={20} color="#6b7280" />
+                                        </TouchableOpacity>
 
-                                    <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
-                                        <TextInput
-                                            className="text-sm text-gray-800 min-h-[40px] max-h-32"
-                                            placeholder="Type a message..."
-                                            placeholderTextColor="#9ca3af"
-                                            value={inputText}
-                                            onChangeText={setInputText}
-                                            multiline
-                                        />
+                                        <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
+                                            <TextInput
+                                                className="text-sm text-gray-800 min-h-[40px] max-h-32"
+                                                placeholder="Type a message..."
+                                                placeholderTextColor="#9ca3af"
+                                                value={inputText}
+                                                onChangeText={setInputText}
+                                                multiline
+                                                onFocus={() => setTimeout(scrollToBottom, 300)}
+                                            />
+                                        </View>
+
+                                        <TouchableOpacity 
+                                            onPress={inputText.trim() ? sendMessage : undefined} 
+                                            className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#123524] shadow-emerald-900/30' : 'bg-gray-100'}`}
+                                            activeOpacity={0.8}
+                                        >
+                                            {inputText.trim() ? (
+                                                <Send size={20} color="#fff" />
+                                            ) : (
+                                                <Mic size={20} color="#6b7280" />
+                                            )}
+                                        </TouchableOpacity>
                                     </View>
-
-                                    <TouchableOpacity 
-                                        onPress={inputText.trim() ? sendMessage : undefined} 
-                                        className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#123524] shadow-emerald-900/30' : 'bg-gray-100'}`}
-                                        activeOpacity={0.8}
-                                    >
-                                        {inputText.trim() ? (
-                                            <Send size={20} color="#fff" />
-                                        ) : (
-                                            <Mic size={20} color="#6b7280" />
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            </SafeAreaView>
-                        </View>
+                                </SafeAreaView>
+                            </View>
+                        )}
                     </View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
