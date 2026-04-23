@@ -12,7 +12,7 @@ import SettingsScreen from '../pages/homescreen/farmer/settings'; // Settings is
 import MessageScreen from '../pages/homescreen/offtaker/message';
 import MessageWindowScreen from '../pages/homescreen/offtaker/messageWindow';
 import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
-
+import FarmerProfile from '../pages/homescreen/offtaker/FarmerProfiles'
 
 const Drawer = createDrawerNavigator();
 
@@ -41,6 +41,10 @@ export default function BuyerDrawerNavigator() {
                 options={{ drawerLabel: 'Market Home' }} 
             />
             
+            <Drawer.Screen 
+                name="Farmer Profile" 
+                component={FarmerProfile}
+            />
             {/* <Drawer.Screen 
                 name="Sellers" 
                 component={FarmerProfilesScreen} 
@@ -77,6 +81,7 @@ export default function BuyerDrawerNavigator() {
                 component={FarmerProfileWindowScreen} 
                 options={{ drawerItemStyle: { display: 'none' } }} 
             />
+        
             
         </Drawer.Navigator>
     );

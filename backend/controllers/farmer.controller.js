@@ -103,10 +103,28 @@ const registerFarmer = async (req,res) =>{
 };
 const getData = async (req,res) =>{
     try {
-        const farmer = await User.find({ role: "farmer" });
-        return res.status(200).json({ message: "Farmer data", farmer });
+        const farmers = await User.find({ role: "farmer" }).lean();
+        const profiles = await FarmerProfile.find({ userId: { $in: farmers.map(f => f._id) } }).lean();
+        
+        const enrichedFarmers = farmers.map(f => {
+            const profile = profiles.find(p => p.userId.toString() === f._id.toString());
+            return {
+                ...f,
+                latitude: profile?.latitude,
+                longitude: profile?.longitude,
+                village: profile?.village,
+                district: profile?.district,
+                state: profile?.state,
+                crops: profile?.crops,
+                landArea: profile?.landArea,
+                isVerified: profile?.isVerified || f.isVerified
+            };
+        });
+
+        return res.status(200).json({ message: "Farmer data", farmer: enrichedFarmers });
     }catch(error){
         console.log("Error in getting farmer data",error);
+        res.status(500).json({ message: "Server error" });
     }
 }
 
