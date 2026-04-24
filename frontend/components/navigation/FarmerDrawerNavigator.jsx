@@ -1,6 +1,7 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { View, Text } from 'react-native';
+import { ThemeContext } from '../../context/ThemeContext';
 
 // Import local navigators
 import FarmerBottomTabs from './FarmerBottomTabs';
@@ -24,16 +25,18 @@ import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfil
 const Drawer = createDrawerNavigator();
 
 export default function FarmerDrawerNavigator() {
+    const { isDarkMode } = React.useContext(ThemeContext);
+
     return (
         <Drawer.Navigator
             initialRouteName="FarmerMainTabs"
             screenOptions={{
                 headerShown: false,
-                drawerActiveBackgroundColor: '#e9f5ef',
-                drawerActiveTintColor: '#1e4a3b',
-                drawerInactiveTintColor: '#4b5563',
+                drawerActiveBackgroundColor: isDarkMode ? '#1e4a3b' : '#e9f5ef',
+                drawerActiveTintColor: isDarkMode ? '#ffffff' : '#1e4a3b',
+                drawerInactiveTintColor: isDarkMode ? '#9ca3af' : '#4b5563',
                 drawerStyle: {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: isDarkMode ? '#121212' : '#ffffff',
                     width: 280,
                 },
                 drawerLabelStyle: {

@@ -20,7 +20,7 @@ const screenWidth = Dimensions.get('window').width;
 
 const AQI_LABELS = ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
 const AQI_COLORS = ['#4ade80', '#facc15', '#fb923c', '#ef4444', '#991b1b'];
-const AQI_EMOJI  = ['🟢', '🟡', '🟠', '🔴', '🟣'];
+const AQI_EMOJI = ['🟢', '🟡', '🟠', '🔴', '🟣'];
 
 const CROP_TIPS = (weather, aqi) => {
     const tips = [];
@@ -36,8 +36,8 @@ const CROP_TIPS = (weather, aqi) => {
         desc: humidity > 70
             ? 'High humidity — monitor for fungal diseases.'
             : humidity > 40
-            ? 'Good humidity levels for most crops.'
-            : 'Low humidity — consider irrigation.',
+                ? 'Good humidity levels for most crops.'
+                : 'Low humidity — consider irrigation.',
         color: '#1d4ed8',
         bg: '#eff6ff',
     });
@@ -229,7 +229,7 @@ export default function WeatherScreen() {
             // For real device with `adb reverse`, localhost resolves fine.
             // For emulator, swap localhost -> 10.0.2.2.
             let baseUrl = API_BASE_URL || 'http://localhost:5000/api/v1';
-            
+
             // Only swap if it's an emulator (not a real device with adb reverse)
             // We detect emulator by checking if we need the swap — leave it as-is 
             // since adb reverse tcp:5000 tcp:5000 already maps localhost on device to pc.
@@ -256,7 +256,7 @@ export default function WeatherScreen() {
             console.log('--- AI INSIGHTS START ---');
             console.log('RAW JSON:', JSON.stringify(data, null, 2));
             console.log('--- AI INSIGHTS END ---');
-            
+
             setInsights(data.success
                 ? data.suggestion
                 : 'Could not load smart suggestions. Check backend API key configuration.');

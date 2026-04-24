@@ -5,9 +5,9 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import WeatherCard from '../../../CreatedComponents/weatherCard';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 import {
     Menu,
@@ -188,9 +188,14 @@ export default function Home() {
         }
     };
 
+    const { isDarkMode } = useContext(ThemeContext);
+
     return (
         <LinearGradient 
-            colors={['#031a05ff','#020f04e9', '#031707ff', '#041407ff', '#042009ff','#041a08ff','#18a133ff', '#17ac42ff']} 
+            colors={isDarkMode 
+                ? ['#000000', '#0a0a0a', '#121212'] 
+                : ['#031a05ff','#020f04e9', '#031707ff', '#041407ff', '#042009ff','#041a08ff','#18a133ff', '#17ac42ff']
+            } 
             style={{ flex: 1 }}
         >
 
@@ -210,8 +215,8 @@ export default function Home() {
                         />
                         <View className="ml-3">
                             <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                                <Text className="text-white/80 text-xs">Welcome back</Text>
-                                <Text className="text-white text-base font-bold">
+                                <Text className="text-white/80 dark:text-gray-400 text-xs">Welcome back</Text>
+                                <Text className="text-white dark:text-white text-base font-bold">
                                     {farmer?.name || 'Loading...'}
                                 </Text>
                             </TouchableOpacity>
@@ -278,53 +283,53 @@ export default function Home() {
                     {/* Lower White Section */}
                     
                     <LinearGradient 
-                        colors={['#ffffffff','#ffffffff', '#ffffffff']} // Placeholder: Deep farmer-green gradient
-                        style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, borderTopWidth: 3, borderColor: 'rgba(0, 0, 0, 1)' }}
+                        colors={isDarkMode ? ['#1e1e1e', '#121212', '#121212'] : ['#ffffffff','#ffffffff', '#ffffffff']}
+                        style={{ borderTopLeftRadius: 50, borderTopRightRadius: 50, borderTopWidth: 3, borderColor: isDarkMode ? '#333' : 'rgba(0, 0, 0, 1)' }}
                         className="flex-1 pt-6 px-5 min-h-screen shadow-lg shadow-black/20"
                     >
 
                         {/* Quick Actions */}
-                        <Text className="text-[#1e4a3b] text-base font-bold mb-4">Quick Actions</Text>
+                        <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold mb-4">Quick Actions</Text>
                         <View className="flex-row justify-between mb-8">
                             <TouchableOpacity className="items-center">
-                                <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
-                                    <MessageCircleQuestion color="#16a34a" size={26} />
+                                <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
+                                    <MessageCircleQuestion color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 text-xs font-semibold">Q&A</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Q&A</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => navigation.navigate('Marketplace')} className="items-center">
-                                <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
-                                    <Store color="#16a34a" size={26} />
+                                <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
+                                    <Store color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 text-xs font-semibold">Sell Produce</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Sell Produce</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => navigation.navigate('Fertilizer')} className="items-center">
-                                <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
-                                    <FlaskConical color="#16a34a" size={26} />
+                                <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
+                                    <FlaskConical color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 text-xs font-semibold">Fertilizer</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Fertilizer</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => navigation.navigate('Weather')} className="items-center">
-                                <View className="bg-white p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50">
-                                    <CloudSun color="#16a34a" size={26} />
+                                <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
+                                    <CloudSun color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 text-xs font-semibold">Weather</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Weather</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Harvest Timeline */}
-                        <Text className="text-[#1e4a3b] text-base font-bold mb-4">Harvest Timeline</Text>
-                        <View className="bg-white p-5 rounded-3xl flex-row items-center shadow-sm shadow-gray-200 border border-green-50">
-                            <View className="bg-[#e9f5ef] p-3 rounded-2xl mr-4">
-                                <Tractor color="#16a34a" size={28} />
+                        <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold mb-4">Harvest Timeline</Text>
+                        <View className="bg-white dark:bg-[#2a2a2a] p-5 rounded-3xl flex-row items-center shadow-sm shadow-gray-200 border border-green-50 dark:border-gray-800">
+                            <View className="bg-[#e9f5ef] dark:bg-[#1e4a3b]/30 p-3 rounded-2xl mr-4">
+                                <Tractor color={isDarkMode ? "#4ade80" : "#16a34a"} size={28} />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-[#1e4a3b] font-bold text-sm mb-1">Weekly Harvest Status</Text>
-                                <Text className="text-[#16a34a] font-black text-xl mb-1">+280Kg</Text>
-                                <Text className="text-gray-500 text-xs">Ready to Harvest</Text>
+                                <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-sm mb-1">Weekly Harvest Status</Text>
+                                <Text className="text-[#16a34a] dark:text-[#4ade80] font-black text-xl mb-1">+280Kg</Text>
+                                <Text className="text-gray-500 dark:text-gray-400 text-xs">Ready to Harvest</Text>
                             </View>
                             <View className="h-16 w-16 opacity-20 items-end justify-center">
-                                <TrendingUp color="#16a34a" size={40} />
+                                <TrendingUp color={isDarkMode ? "#4ade80" : "#16a34a"} size={40} />
                             </View>
                         </View>
                     </LinearGradient>

@@ -10,6 +10,20 @@ export const getUserProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
+
+        // Check if 25 days have passed since last login
+        if (user.lastLogin) {
+            const twentyFiveDaysInMs = 25 * 24 * 60 * 60 * 1000;
+            const timePassed = Date.now() - new Date(user.lastLogin).getTime();
+            
+            if (timePassed > twentyFiveDaysInMs) {
+                return res.status(401).json({ 
+                    success: false, 
+                    message: "SESSION_EXPIRED_25_DAYS",
+                    details: "25 days passed, re-login needed" 
+                });
+            }
+        }
         
         let profile = null;
         if (user.role === 'farmer') {

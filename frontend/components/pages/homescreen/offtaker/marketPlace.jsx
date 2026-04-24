@@ -172,7 +172,7 @@ const BuyerCard = memo(({ item, onPress }) => {
                             )}
                         </View>
                         <Text className="text-[12px] text-slate-400 mt-0.5">{item.location} • {item.distance}</Text>
-                        
+
                         <View className="flex-row items-center mt-1" style={{ gap: 2 }}>
                             <Star size={12} color="#f59e0b" fill="#f59e0b" />
                             <Text className="text-[12px] font-bold text-amber-500">{item.rating}</Text>
@@ -207,9 +207,9 @@ const BuyerDetailModal = memo(({ item, onClose }) => {
 
     return (
         <Modal visible={!!item} animationType="slide" transparent onRequestClose={onClose}>
-            <TouchableOpacity 
-                className="flex-1 bg-black/50 justify-end" 
-                activeOpacity={1} 
+            <TouchableOpacity
+                className="flex-1 bg-black/50 justify-end"
+                activeOpacity={1}
                 onPress={onClose}
             >
                 <Pressable className="bg-white rounded-t-[40px] h-[80%] overflow-hidden">
@@ -219,7 +219,7 @@ const BuyerDetailModal = memo(({ item, onClose }) => {
                             <X size={20} color="#64748b" />
                         </TouchableOpacity>
                     </View>
-                    
+
                     <ScrollView className="px-6">
                         <View className="flex-row items-center mb-6">
                             <View className="w-20 h-20 rounded-3xl items-center justify-center" style={{ backgroundColor: item.avatarBg }}>
@@ -262,9 +262,9 @@ const BuyerDetailModal = memo(({ item, onClose }) => {
                         <TouchableOpacity className="w-14 h-14 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
                             <MessageSquare size={24} color="#1e4e8c" />
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={() => Linking.openURL(`tel:${item.phone}`)}
-                            className="flex-1 h-14 bg-[#1e4e8c] rounded-2xl flex-row items-center justify-center shadow-lg shadow-blue-900/20" 
+                            className="flex-1 h-14 bg-[#1e4e8c] rounded-2xl flex-row items-center justify-center shadow-lg shadow-blue-900/20"
                             style={{ gap: 8 }}
                         >
                             <Phone size={20} color="#fff" />
@@ -324,8 +324,8 @@ export default function OfftakerMarketplace() {
         }
     };
 
-    const allBuyers = [...realBuyers, ...DUMMY_BUYERS].filter(b => 
-        b.name.toLowerCase().includes(search.toLowerCase()) || 
+    const allBuyers = [...realBuyers, ...DUMMY_BUYERS].filter(b =>
+        b.name.toLowerCase().includes(search.toLowerCase()) ||
         b.type.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -339,9 +339,9 @@ export default function OfftakerMarketplace() {
                         <View className="flex-row items-center mb-6" style={{ gap: 10 }}>
                             <View className="flex-1 bg-white rounded-2xl flex-row items-center px-4 py-3 shadow-sm border border-slate-100">
                                 <Search size={18} color="#94a3b8" />
-                                <TextInput 
-                                    className="ml-2 flex-1 text-slate-900" 
-                                    placeholder="Search buyers..." 
+                                <TextInput
+                                    className="ml-2 flex-1 text-slate-900"
+                                    placeholder="Search buyers..."
                                     value={search}
                                     onChangeText={setSearch}
                                 />
@@ -373,7 +373,7 @@ export default function OfftakerMarketplace() {
                     </View>
                 </View>
             </SafeAreaView>
-            
+
             <BuyerDetailModal item={selectedBuyer} onClose={() => setSelectedBuyer(null)} />
         </View>
     );

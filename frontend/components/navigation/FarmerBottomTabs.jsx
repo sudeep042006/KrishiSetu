@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ThemeContext } from '../../context/ThemeContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
 import { LayoutDashboard, Home, ShoppingBag, MessageSquare } from 'lucide-react-native';
@@ -15,15 +16,17 @@ import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfil
 const Tab = createBottomTabNavigator();
 
 export default function FarmerBottomTabs() {
+    const { isDarkMode } = useContext(ThemeContext);
+
     return (
         <Tab.Navigator
             initialRouteName="Home"
             screenOptions={({ route }) => ({
                 headerShown: false,
                 tabBarShowLabel: true,
-                tabBarActiveTintColor: '#1e4a3b', // Deep green
-                tabBarInactiveTintColor: '#9ca3af', // Gray
-                tabBarStyle: styles.tabBar,
+                tabBarActiveTintColor: isDarkMode ? '#4ade80' : '#1e4a3b', 
+                tabBarInactiveTintColor: isDarkMode ? '#6b7280' : '#9ca3af',
+                tabBarStyle: [styles.tabBar, { backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff' }],
                 tabBarLabelStyle: styles.tabBarLabel,
                 tabBarItemStyle: styles.tabBarItem,
                 tabBarIcon: ({ focused, color, size }) => {
@@ -36,7 +39,7 @@ export default function FarmerBottomTabs() {
                     else if (route.name === 'Message') IconComponent = MessageSquare;
 
                     return (
-                        <View className={`items-center justify-center p-2 rounded-full ${focused ? 'bg-[#e9f5ef]' : 'bg-transparent'}`}>
+                        <View className={`items-center justify-center p-2 rounded-full ${focused ? (isDarkMode ? 'bg-[#1e4a3b]/30' : 'bg-[#e9f5ef]') : 'bg-transparent'}`}>
                             <IconComponent color={color} size={size} strokeWidth={focused ? 2.5 : 2} />
                         </View>
                     );

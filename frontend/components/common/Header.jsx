@@ -1,23 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Menu, Bell } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerActions } from '@react-navigation/native';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { ThemeContext } from '../../context/ThemeContext';
 
 export default function Header({ title, showNotification = false, rightIcon = null }) {
     const navigation = useNavigation();
+    const { isDarkMode } = React.useContext(ThemeContext);
 
     return (
-        <View className="flex-row items-center justify-between h-10 px-4 pt-12 pb-5 bg-[#020f04e9] rounded-b-3xl">
+        <View className="flex-row items-center justify-between h-10 px-4 pt-12 pb-5 bg-[#020f04e9] dark:bg-[#000000] rounded-b-3xl">
             <TouchableOpacity 
                 className="mr-3 -mt-8"
                 activeOpacity={0.7}
                 onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
             >
-                <Menu color="#ffffffff" size={24} />
+                <Menu color="#ffffff" size={24} />
             </TouchableOpacity>
 
-            <Text className="text-lg font-bold text-white tracking-wide -mt-8">{title}</Text>
+            <Text className="text-lg font-bold text-white dark:text-gray-100 tracking-wide -mt-8">{title}</Text>
 
             <View className="items-end min-w-[24px] -mt-8">
                 {showNotification ? (

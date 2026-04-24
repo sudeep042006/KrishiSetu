@@ -1,5 +1,6 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { ThemeContext } from '../../context/ThemeContext';
 
 // Import local navigators
 import BuyerBottomTabs from './BuyerBottomTabs';
@@ -17,16 +18,18 @@ import FarmerProfile from '../pages/homescreen/offtaker/FarmerProfiles'
 const Drawer = createDrawerNavigator();
 
 export default function BuyerDrawerNavigator() {
+    const { isDarkMode } = React.useContext(ThemeContext);
+
     return (
         <Drawer.Navigator
             initialRouteName="BuyerMainTabs"
             screenOptions={{
                 headerShown: false,
-                drawerActiveBackgroundColor: '#e0f2fe',
-                drawerActiveTintColor: '#1e4e8c',
-                drawerInactiveTintColor: '#4b5563',
+                drawerActiveBackgroundColor: isDarkMode ? '#1e4e8c' : '#e0f2fe',
+                drawerActiveTintColor: isDarkMode ? '#ffffff' : '#1e4e8c',
+                drawerInactiveTintColor: isDarkMode ? '#9ca3af' : '#4b5563',
                 drawerStyle: {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: isDarkMode ? '#121212' : '#ffffff',
                     width: 280,
                 },
                 drawerLabelStyle: {
@@ -35,14 +38,14 @@ export default function BuyerDrawerNavigator() {
                 }
             }}
         >
-            <Drawer.Screen 
-                name="BuyerMainTabs" 
-                component={BuyerBottomTabs} 
-                options={{ drawerLabel: 'Market Home' }} 
+            <Drawer.Screen
+                name="BuyerMainTabs"
+                component={BuyerBottomTabs}
+                options={{ drawerLabel: 'Market Home' }}
             />
-            
-            <Drawer.Screen 
-                name="Farmer Profile" 
+
+            <Drawer.Screen
+                name="Farmer Profile"
                 component={FarmerProfile}
             />
             {/* <Drawer.Screen 
@@ -50,39 +53,39 @@ export default function BuyerDrawerNavigator() {
                 component={FarmerProfilesScreen} 
                 options={{ drawerLabel: 'Trusted Sellers' }}
             /> */}
-            
-            <Drawer.Screen 
-                name="Wallet" 
-                component={OfftakerWallet} 
+
+            <Drawer.Screen
+                name="Wallet"
+                component={OfftakerWallet}
                 options={{ drawerLabel: 'Billing & Wallet' }}
             />
-            
-            <Drawer.Screen 
-                name="Profile" 
-                component={ProfileScreen} 
+
+            <Drawer.Screen
+                name="Profile"
+                component={ProfileScreen}
             />
-            
-            <Drawer.Screen 
-                name="Settings" 
-                component={SettingsScreen} 
+
+            <Drawer.Screen
+                name="Settings"
+                component={SettingsScreen}
             />
-            <Drawer.Screen 
-                name="Message" 
-                component={MessageScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="Message"
+                component={MessageScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="MessageWindow" 
-                component={MessageWindowScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="MessageWindow"
+                component={MessageWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="FarmerProfileWindow" 
-                component={FarmerProfileWindowScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="FarmerProfileWindow"
+                component={FarmerProfileWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-        
-            
+
+
         </Drawer.Navigator>
     );
 }

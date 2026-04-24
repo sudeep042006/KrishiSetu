@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Header from '../../../common/BHeader';
+import Header from '../../../common/Header';
 import { getUserChats, deleteChat } from '../../../../services/chatApi';
 import { Trash2, Search, MessageSquare } from 'lucide-react-native';
 

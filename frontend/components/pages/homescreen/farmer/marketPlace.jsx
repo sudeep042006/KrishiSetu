@@ -357,14 +357,14 @@ const MapSection = memo(({ onMarkerPress, externalCenter }) => {
                         {/* Quick detail popup for Full Screen view */}
                         {fsSelectedBuyer && (
                             <View className="absolute bottom-10 left-4 right-4">
-                                <BuyerCard 
-                                    item={fsSelectedBuyer} 
+                                <BuyerCard
+                                    item={fsSelectedBuyer}
                                     onPress={(b) => {
                                         setIsFullScreen(false);
                                         onMarkerPress(b);
-                                    }} 
+                                    }}
                                 />
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     className="absolute -top-3 -right-2 bg-white rounded-full p-1 border border-gray-100 shadow-sm"
                                     onPress={() => setFsSelectedBuyer(null)}
                                 >
@@ -482,13 +482,13 @@ const BuyerDetailModal = memo(({ buyer, onClose }) => {
             transparent
             onRequestClose={onClose}
         >
-            <TouchableOpacity 
-                className="flex-1 bg-black/60 justify-end" 
-                activeOpacity={1} 
+            <TouchableOpacity
+                className="flex-1 bg-black/60 justify-end"
+                activeOpacity={1}
                 onPress={onClose}
             >
-                <Pressable 
-                    className="bg-[#f8fafc] rounded-t-[32px] overflow-hidden" 
+                <Pressable
+                    className="bg-[#f8fafc] rounded-t-[32px] overflow-hidden"
                     style={{ height: '80%' }}
                 >
                     {/* Draggable indicator */}
@@ -568,13 +568,13 @@ const BuyerDetailModal = memo(({ buyer, onClose }) => {
 
                     {/* Action Footer */}
                     <View className="px-6 pt-4 pb-10 bg-white border-t border-gray-100 flex-row" style={{ gap: 12 }}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={handleWhatsApp}
                             className="w-14 h-14 bg-gray-50 rounded-2xl items-center justify-center border border-gray-100"
                         >
                             <MessageSquare size={24} color="#123524" />
                         </TouchableOpacity>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={handleCall}
                             className="flex-1 h-14 bg-[#123524] rounded-2xl flex-row items-center justify-center shadow-lg"
                             style={{ gap: 8 }}
@@ -614,7 +614,7 @@ export default function MarketplaceScreen() {
                 const mappedRealBuyers = response.offtakers.map((off) => {
                     const user = off.userId || {};
                     const headquarters = off.headquarters || {};
-                    
+
                     return {
                         id: off._id,
                         name: off.companyName || user.name || 'Premium Buyer',
@@ -656,7 +656,7 @@ export default function MarketplaceScreen() {
     const filteredBuyers = useCallback(() => {
         // Combine dummy and real buyers
         let buyers = [...realBuyers, ...BUYERS];
-        
+
         // Region filtering
         if (selectedRegion && selectedRegion.label !== 'All Regions') {
             buyers = buyers.filter(b => b.region === selectedRegion.label);
@@ -708,9 +708,9 @@ export default function MarketplaceScreen() {
             </View>
 
             {/* ── Crop chips ── */}
-            <FlatList 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
+            <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12, gap: 8 }}
                 data={CROP_CHIPS}
                 keyExtractor={(item) => item}
@@ -777,7 +777,7 @@ export default function MarketplaceScreen() {
 
             {/* ── Region Selection UI ── */}
             <View className="px-4 pb-3">
-                <TouchableOpacity 
+                <TouchableOpacity
                     onPress={() => setIsRegionModalVisible(true)}
                     className="bg-white rounded-xl p-3 flex-row items-center justify-between border border-gray-100"
                     style={{ shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 }}
@@ -853,9 +853,9 @@ export default function MarketplaceScreen() {
 
             {/* ── Region Selector Modal ── */}
             <Modal visible={isRegionModalVisible} transparent animationType="fade" onRequestClose={() => setIsRegionModalVisible(false)}>
-                <TouchableOpacity 
-                    className="flex-1 bg-black/50 justify-center items-center p-6" 
-                    activeOpacity={1} 
+                <TouchableOpacity
+                    className="flex-1 bg-black/50 justify-center items-center p-6"
+                    activeOpacity={1}
                     onPress={() => setIsRegionModalVisible(false)}
                 >
                     <View className="bg-white w-full rounded-2xl overflow-hidden shadow-xl" onPress={(e) => e.stopPropagation()}>
@@ -867,7 +867,7 @@ export default function MarketplaceScreen() {
                         </View>
                         <View className="p-2">
                             {REGIONS.map((region) => (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     key={region.label}
                                     onPress={() => {
                                         setSelectedRegion(region);

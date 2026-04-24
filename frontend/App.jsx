@@ -2,8 +2,11 @@ import './global.css';
 import React, { useState, createContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from './services/supabase';
+import apiClient from './components/pages/service/api';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Import Screens
 import LoginScreen from './components/pages/auth/login';
@@ -31,25 +34,40 @@ export default function App() {
   useEffect(() => {
     const checkStoredLogin = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
+        // Use Supabase to get the session (handles auto-refresh if expired)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         const role = await AsyncStorage.getItem('userRole');
+        const userId = await AsyncStorage.getItem('userId');
 
-        if (token && role) {
-          // Token found → user is already logged in
+        if (session && role && userId) {
+          // 🚀 OPTIMISTIC LOGIN: Go to app immediately
           setUserRole(role);
           setIsAuthenticated(true);
+          setIsCheckingAuth(false);
+
+          // 🛡️ BACKGROUND CHECK: Verify the 25-day limit
+          try {
+            await apiClient.get(`/user/${userId}`);
+            // Session is still valid, do nothing
+          } catch (err) {
+            if (err.response && err.response.data?.message === "SESSION_EXPIRED_25_DAYS") {
+              Alert.alert("Session Expired", "25 days passed, re-login needed");
+              await authContext.logout();
+            }
+          }
+        } else {
+          // No session or missing role
+          setIsAuthenticated(false);
+          setIsCheckingAuth(false);
         }
-        // If no token → isAuthenticated stays false → Login screen shows
       } catch (error) {
         console.error('Error reading auth from storage:', error);
-      } finally {
-        // Whether token found or not, we're done checking
         setIsCheckingAuth(false);
       }
     };
 
     checkStoredLogin();
-  }, []); // ← empty array means: run once when app starts
+  }, []);
 
   const authContext = {
     login: (role) => {
@@ -58,17 +76,20 @@ export default function App() {
       setIsAuthenticated(true);
     },
     logout: async () => {
-      // ✅ NEW: Clear the permanent storage on logout
+      // ✅ NEW: Sign out from Supabase (clears its storage)
+      await supabase.auth.signOut();
+
+      // Clear the permanent storage on logout
       await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('userRole');
       await AsyncStorage.removeItem('userId');
       await AsyncStorage.removeItem('userData');
-      
+
       // Cleanup legacy keys if they exist
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('farmerId');
       await AsyncStorage.removeItem('farmerData');
-      
+
       setUserRole(null);
       setIsAuthenticated(false);
     }
@@ -85,30 +106,32 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AuthContext.Provider value={authContext}>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <AuthContext.Provider value={authContext}>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
 
-            {isAuthenticated ? (
-              userRole === 'Farmer' ? (
-                <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
+              {isAuthenticated ? (
+                userRole === 'Farmer' ? (
+                  <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
+                ) : (
+                  <Stack.Screen name="OfftakerApp" component={BuyerDrawerNavigator} />
+                )
               ) : (
-                <Stack.Screen name="OfftakerApp" component={BuyerDrawerNavigator} />
-              )
-            ) : (
-              <>
-                <Stack.Screen name="Landing" component={LandingPage} />
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
-                <Stack.Screen name="LandDetails" component={LandDetailsScreen} />
-              </>
-            )}
+                <>
+                  <Stack.Screen name="Landing" component={LandingPage} />
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Register" component={RegisterScreen} />
+                  <Stack.Screen name="LandDetails" component={LandDetailsScreen} />
+                </>
+              )}
 
-          </Stack.Navigator>
-        </NavigationContainer>
-      </AuthContext.Provider>
-    </SafeAreaProvider>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AuthContext.Provider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 
@@ -189,16 +212,16 @@ export default function App() {
               )
             ) : (
               /* Public Auth Screens */
-        /*       <>
-                <Stack.Screen name="Landing" component={LandingPage} />
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
-              </>
-            )} */
+/*       <>
+        <Stack.Screen name="Landing" component={LandingPage} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+      </>
+    )} */
 
-       /*    </Stack.Navigator>
-        </NavigationContainer>
-      </AuthContext.Provider>
-    </SafeAreaProvider>
-  );
+/*    </Stack.Navigator>
+ </NavigationContainer>
+</AuthContext.Provider>
+</SafeAreaProvider>
+);
 } */ 

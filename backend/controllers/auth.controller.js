@@ -75,7 +75,11 @@ const login = async (req, res) => {
             return res.status(400).json({ message: error.message });
         }
 
-        const mongoUser = await User.findOne({ email });
+        const mongoUser = await User.findOneAndUpdate(
+            { email },
+            { lastLogin: new Date() },
+            { new: true }
+        );
 
         if (!mongoUser) {
             return res.status(404).json({ message: "User not found" });
@@ -88,6 +92,7 @@ const login = async (req, res) => {
         return res.status(200).json({
             message: "User logged in successfully",
             token: data.session.access_token,
+            refreshToken: data.session.refresh_token,
             role: mongoUser.role,
             user: mongoUser
         });

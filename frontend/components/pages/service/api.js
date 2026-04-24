@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '@env';
+import { supabase } from '../../../services/supabase';
 
 // ---------------------------------------------------------
 // API CONFIGURATION
@@ -40,11 +41,27 @@ const apiClient = axios.create({
 
 // In api.js
 apiClient.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('authToken'); 
-  console.log('Interpreting token for:', config.url, 'Token found:', !!token);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    // console.log('Auth Header set:', config.headers.Authorization);
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error getting Supabase session:', error);
+    }
+
+    const token = session?.access_token;
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      // console.log('Auth Header set from Supabase session');
+    } else {
+      // Fallback to AsyncStorage for any legacy reasons during transition
+      const legacyToken = await AsyncStorage.getItem('authToken');
+      if (legacyToken) {
+        config.headers.Authorization = `Bearer ${legacyToken}`;
+      }
+    }
+  } catch (err) {
+    console.error('Interceptor session check failed:', err);
   }
   return config;
 }, (error) => Promise.reject(error));
@@ -105,6 +122,12 @@ export const authService = {
     const role = credentials.role;
 
     if (token) {
+      // ✅ Session persistence handled by Supabase JS
+      await supabase.auth.setSession({
+        access_token: token,
+        refresh_token: response.data?.refreshToken
+      });
+
       await AsyncStorage.setItem('authToken', token);
       await AsyncStorage.setItem('userRole', role);
       if (response.data?.user) {
