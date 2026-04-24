@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from 'react-native-geolocation-service';
 import { WEATHER_API } from '@env';
 
-import WeatherCard from '../../../CreatedComponents/weatherCard';
+// Removed WeatherCard import
 import { ThemeContext } from '../../../../context/ThemeContext';
 import {
     Menu,
@@ -20,7 +20,8 @@ import {
     ChevronRight,
     TrendingUp,
     Search,
-    Target
+    Target,
+    Sprout
 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import BuyerBottomTabs from '../../../navigation/BuyerBottomTabs';
@@ -213,13 +214,26 @@ export default function OfftakerHome() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity activeOpacity={0.9} className="flex-[1.2]">
-                            <WeatherCard
-                                weather={weatherData}
-                                loading={loadingWeather && !weatherData}
-                                isCompact={true}
-                                containerStyle={{ marginHorizontal: 0, marginVertical: 0, height: 170, marginLeft: 4, borderRadius: 28 }}
-                            />
+                        <TouchableOpacity 
+                            activeOpacity={0.9} 
+                            className="flex-[1.2] ml-2"
+                            onPress={() => navigation.navigate('CropsPage')}
+                        >
+                            <View className="bg-emerald-600 dark:bg-emerald-800 rounded-[28px] overflow-hidden shadow-2xl h-[170px] border border-white/10">
+                                <View className="p-5 w-full h-full justify-between">
+                                    <View>
+                                        <View className="bg-white/20 self-start px-2 py-1 rounded-md mb-2">
+                                            <Text className="text-emerald-50 text-[10px] font-bold tracking-widest">MARKETPLACE</Text>
+                                        </View>
+                                        <Text className="text-white text-2xl font-black mt-1">Crops</Text>
+                                        <Text className="text-white/80 text-[11px] mt-1 leading-4 pr-4">Browse real listings from verified farmers</Text>
+                                    </View>
+                                    <View className="flex-row items-center justify-between">
+                                        <Sprout color="#ffffff" size={28} />
+                                        <ChevronRight color="#ffffff" size={20} />
+                                    </View>
+                                </View>
+                            </View>
                         </TouchableOpacity>
                     </View>
 

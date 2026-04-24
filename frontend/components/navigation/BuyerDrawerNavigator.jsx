@@ -9,11 +9,13 @@ import BuyerBottomTabs from './BuyerBottomTabs';
 import OfftakerWallet from '../pages/homescreen/offtaker/wallet';
 import FarmerProfilesScreen from '../pages/homescreen/offtaker/FarmerProfiles';
 import ProfileScreen from '../pages/homescreen/offtaker/profile';
-import SettingsScreen from '../pages/homescreen/farmer/settings'; // Settings is shared
+import SettingsScreen from '../pages/homescreen/offtaker/settings'; // Settings is shared
 import MessageScreen from '../pages/homescreen/offtaker/message';
 import MessageWindowScreen from '../pages/homescreen/offtaker/messageWindow';
 import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
 import FarmerProfile from '../pages/homescreen/offtaker/FarmerProfiles'
+import CropsPage from '../pages/homescreen/offtaker/CropsPage';
+import CropWindow from '../pages/homescreen/offtaker/cropWindow';
 
 const Drawer = createDrawerNavigator();
 
@@ -43,6 +45,11 @@ export default function BuyerDrawerNavigator() {
                 component={BuyerBottomTabs}
                 options={{ drawerLabel: 'Market Home' }}
             />
+            <Drawer.Screen
+                name="CropWindow"
+                component={CropWindow}
+                options={{ drawerItemStyle: { display: 'none' } }}
+            />
 
             <Drawer.Screen
                 name="Farmer Profile"
@@ -53,6 +60,11 @@ export default function BuyerDrawerNavigator() {
                 component={FarmerProfilesScreen} 
                 options={{ drawerLabel: 'Trusted Sellers' }}
             /> */}
+            <Drawer.Screen 
+                name="CropsPage" 
+                component={CropsPage} 
+                options={{ drawerLabel: 'Crops' }}
+            />
 
             <Drawer.Screen
                 name="Wallet"

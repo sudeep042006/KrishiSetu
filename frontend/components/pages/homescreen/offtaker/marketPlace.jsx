@@ -15,7 +15,7 @@ import {
     Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
+import { Search, Mic, Filter, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
 import { offtakerService } from '../../service/api';
 

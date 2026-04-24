@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Menu, Bell } from 'lucide-react-native';
+import { Menu, Bell, ChevronLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
 
-export default function Header({ title, showNotification = false, rightIcon = null }) {
+export default function Header({ title, showNotification = false, rightIcon = null, onBackPress = null }) {
     const navigation = useNavigation();
 
     return (
@@ -12,9 +12,21 @@ export default function Header({ title, showNotification = false, rightIcon = nu
             <TouchableOpacity 
                 className="mr-3 -mt-8"
                 activeOpacity={0.7}
-                onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+                onPress={() => {
+                    if (onBackPress) {
+                        onBackPress();
+                    } else if (navigation.canGoBack()) {
+                        navigation.goBack();
+                    } else {
+                        navigation.dispatch(DrawerActions.toggleDrawer());
+                    }
+                }}
             >
-                <Menu color="#ffffffff" size={24} />
+                {navigation.canGoBack() ? (
+                    <ChevronLeft color="#ffffffff" size={24} />
+                ) : (
+                    <Menu color="#ffffffff" size={24} />
+                )}
             </TouchableOpacity>
 
             <Text className="text-lg font-bold text-white tracking-wide -mt-8">{title}</Text>
