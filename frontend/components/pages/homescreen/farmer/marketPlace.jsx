@@ -11,12 +11,14 @@ import {
     ActivityIndicator,
     FlatList,
     Modal,
+    Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
 import { Linking } from 'react-native';
 import Header from '../../../common/Header';
 import Geolocation from 'react-native-geolocation-service';
+import { offtakerService } from '../../service/api';
 
 // ─── MapLibre: use named imports (the lib has NO default export) ──────────────
 import {
@@ -485,9 +487,8 @@ const BuyerDetailModal = memo(({ buyer, onClose }) => {
                 activeOpacity={1} 
                 onPress={onClose}
             >
-                <View 
+                <Pressable 
                     className="bg-[#f8fafc] rounded-t-[32px] overflow-hidden" 
-                    onPress={(e) => e.stopPropagation()}
                     style={{ height: '80%' }}
                 >
                     {/* Draggable indicator */}
@@ -582,7 +583,7 @@ const BuyerDetailModal = memo(({ buyer, onClose }) => {
                             <Text className="text-white font-bold text-lg">Call Now</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
+                </Pressable>
             </TouchableOpacity>
         </Modal>
     );
@@ -597,9 +598,64 @@ export default function MarketplaceScreen() {
     const [sortBy, setSortBy] = useState('Distance');
     const [selectedRegion, setSelectedRegion] = useState(REGIONS[0]);
     const [isRegionModalVisible, setIsRegionModalVisible] = useState(false);
+    const [realBuyers, setRealBuyers] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetchRealBuyers();
+    }, []);
+
+    const fetchRealBuyers = async () => {
+        try {
+            setLoading(true);
+            const response = await offtakerService.getAllOfftakers();
+            if (response.success && response.offtakers) {
+                // Map real offtakers to the UI format
+                const mappedRealBuyers = response.offtakers.map((off) => {
+                    const user = off.userId || {};
+                    const headquarters = off.headquarters || {};
+                    
+                    return {
+                        id: off._id,
+                        name: off.companyName || user.name || 'Premium Buyer',
+                        shortName: (off.companyName || user.name || 'B').slice(0, 2).toUpperCase(),
+                        avatarBg: '#dcf0e3',
+                        avatarText: '#1e4a3b',
+                        type: off.businessType || 'Buyer',
+                        verified: off.isBusinessVerified || false,
+                        verifiedColor: '#1e4a3b',
+                        location: headquarters.city ? `${headquarters.city}, ${headquarters.state}` : 'Nearby, MH',
+                        region: headquarters.district || 'All Regions',
+                        lat: headquarters.coordinates?.lat || 19.2183 + (Math.random() - 0.5) * 0.1,
+                        lng: headquarters.coordinates?.lng || 74.7378 + (Math.random() - 0.5) * 0.1,
+                        rating: off.ratingAverage || 4.5,
+                        reviews: off.totalReviews || 0,
+                        deals: off.totalContractsCompleted || 0,
+                        distance: (Math.random() * 5 + 1).toFixed(1) + ' km',
+                        price: 2200 + Math.floor(Math.random() * 200),
+                        crops: off.preferredCrops && off.preferredCrops.length > 0 ? off.preferredCrops : ['Wheat', 'Rice'],
+                        tags: [
+                            { label: off.businessType || 'Verified', highlight: true },
+                            { label: off.paymentTermsPreference || 'Direct', highlight: false }
+                        ],
+                        markerColor: '#1e4a3b',
+                        phone: off.companyPhone || user.phone || '',
+                        description: off.companyDescription || 'Reliable buyer interested in quality produce.',
+                        isReal: true
+                    };
+                });
+                setRealBuyers(mappedRealBuyers);
+            }
+        } catch (error) {
+            console.error("Error fetching real buyers:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredBuyers = useCallback(() => {
-        let buyers = BUYERS;
+        // Combine dummy and real buyers
+        let buyers = [...realBuyers, ...BUYERS];
         
         // Region filtering
         if (selectedRegion && selectedRegion.label !== 'All Regions') {
@@ -613,7 +669,7 @@ export default function MarketplaceScreen() {
             b.tags.some(t => t.label.toLowerCase().includes(q)) ||
             b.location.toLowerCase().includes(q)
         );
-    }, [search, selectedRegion]);
+    }, [search, selectedRegion, realBuyers]);
 
     const renderBuyer = useCallback(({ item }) => (
         <BuyerCard item={item} onPress={setSelectedBuyer} />
