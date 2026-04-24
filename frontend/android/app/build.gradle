@@ -120,7 +120,14 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    // Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:33.1.2')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
 }
+
+apply plugin: "com.google.gms.google-services"
 
 configurations.all {
     resolutionStrategy {
