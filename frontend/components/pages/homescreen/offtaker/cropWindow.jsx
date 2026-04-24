@@ -131,6 +131,7 @@ export default function CropWindow() {
                 <Header 
                     title={crop.cropName || "Crop Details"} 
                     onBackPress={() => navigation.navigate('CropsPage')}
+                    showBack={true}
                 />
                 
                 <ScrollView 

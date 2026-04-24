@@ -4,7 +4,7 @@ import { Menu, Bell, ChevronLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerActions } from '@react-navigation/native';
 
-export default function Header({ title, showNotification = false, rightIcon = null, onBackPress = null }) {
+export default function Header({ title, showNotification = false, rightIcon = null, onBackPress = null, showBack = false }) {
     const navigation = useNavigation();
 
     return (
@@ -13,16 +13,16 @@ export default function Header({ title, showNotification = false, rightIcon = nu
                 className="mr-3 -mt-8"
                 activeOpacity={0.7}
                 onPress={() => {
-                    if (onBackPress) {
+                    if (showBack && onBackPress) {
                         onBackPress();
-                    } else if (navigation.canGoBack()) {
+                    } else if (showBack && navigation.canGoBack()) {
                         navigation.goBack();
                     } else {
                         navigation.dispatch(DrawerActions.toggleDrawer());
                     }
                 }}
             >
-                {navigation.canGoBack() ? (
+                {showBack ? (
                     <ChevronLeft color="#ffffffff" size={24} />
                 ) : (
                     <Menu color="#ffffffff" size={24} />
