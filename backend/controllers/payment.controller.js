@@ -109,6 +109,18 @@ export const paymentVerification = async (req, res) => {
                                 totalEarnings: transaction.amount 
                             }
                         });
+
+                        // 3. Create transaction record for the farmer (Seller)
+                        await Transaction.create({
+                            userId: project.createdBy,
+                            amount: transaction.amount,
+                            orderId: `sale_${Date.now()}_${project._id}`,
+                            paymentId: razorpay_payment_id,
+                            status: 'success',
+                            type: 'sale',
+                            relatedItem: project._id,
+                            notes: `Crop Sale: ${project.cropName}`
+                        });
                     }
                 }
             }

@@ -30,7 +30,7 @@ const normalizeStatus = (status) => {
     if (!status) return 'pending';
     const s = status.toLowerCase().trim();
     if (s === 'active' || s === 'approved') return 'active';
-    if (s === 'sold' || s === 'completed') return 'sold';
+    if (s === 'sold' || s === 'completed' || s === 'closed') return 'sold';
     return 'pending';
 };
 

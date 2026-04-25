@@ -137,8 +137,8 @@ export default function WalletScreen() {
             className="flex-row items-center p-4 bg-white mb-3 rounded-2xl border border-gray-100"
             style={{ elevation: 1, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 8 }}
         >
-            <View className={`w-12 h-12 rounded-full items-center justify-center ${tx.type === 'income' ? 'bg-green-50' : 'bg-red-50'}`}>
-                {tx.type === 'income' ? (
+            <View className={`w-12 h-12 rounded-full items-center justify-center ${tx.type === 'sale' || tx.type === 'deposit' ? 'bg-green-50' : 'bg-red-50'}`}>
+                {tx.type === 'sale' || tx.type === 'deposit' ? (
                     <ArrowDownLeft size={22} color="#16a34a" />
                 ) : (
                     <ArrowUpRight size={22} color="#dc2626" />
@@ -146,7 +146,7 @@ export default function WalletScreen() {
             </View>
             <View className="flex-1 ml-4">
                 <Text className="text-[15px] font-bold text-gray-900" numberOfLines={1}>
-                    {tx.type === 'purchase' ? 'Crop Sold' : tx.type === 'deposit' ? 'Added Funds' : 'Transaction'}
+                    {tx.type === 'sale' ? 'Crop Sold' : tx.type === 'deposit' ? 'Added Funds' : tx.type === 'withdrawal' ? 'Bank Withdrawal' : 'Transaction'}
                 </Text>
                 <View className="flex-row items-center mt-1">
                     <Clock size={12} color="#94a3b8" />
@@ -159,8 +159,8 @@ export default function WalletScreen() {
                 </View>
             </View>
             <View className="items-end">
-                <Text className={`text-[16px] font-black ${tx.type === 'deposit' || tx.type === 'purchase' ? 'text-green-600' : 'text-red-600'}`}>
-                    {tx.type === 'deposit' || tx.type === 'purchase' ? '+' : '-'} ₹{tx.amount.toLocaleString('en-IN')}
+                <Text className={`text-[16px] font-black ${tx.type === 'deposit' || tx.type === 'sale' ? 'text-green-600' : 'text-red-600'}`}>
+                    {tx.type === 'deposit' || tx.type === 'sale' ? '+' : '-'} ₹{tx.amount.toLocaleString('en-IN')}
                 </Text>
                 <ChevronRight size={16} color="#cbd5e1" className="mt-1" />
             </View>

@@ -16,6 +16,7 @@ import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfil
 import FarmerProfile from '../pages/homescreen/offtaker/FarmerProfiles'
 import CropsPage from '../pages/homescreen/offtaker/CropsPage';
 import CropWindow from '../pages/homescreen/offtaker/cropWindow';
+import OfftakerOrders from '../pages/homescreen/offtaker/orders';
 
 const Drawer = createDrawerNavigator();
 
@@ -65,6 +66,11 @@ export default function BuyerDrawerNavigator() {
                 component={CropsPage} 
                 options={{ drawerLabel: 'Crops' }}
             />
+            <Drawer.Screen
+                name="OfftakerOrders"
+                component={OfftakerOrders}
+                options={{ drawerLabel: 'Orders' }}
+            />
 
             <Drawer.Screen
                 name="Wallet"
@@ -96,6 +102,7 @@ export default function BuyerDrawerNavigator() {
                 component={FarmerProfileWindowScreen}
                 options={{ drawerItemStyle: { display: 'none' } }}
             />
+           
 
 
         </Drawer.Navigator>

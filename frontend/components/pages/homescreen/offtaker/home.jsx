@@ -243,6 +243,7 @@ export default function OfftakerHome() {
                             <View className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl mr-4">
                                 <Target color={isDarkMode ? "#818cf8" : "#4f46e5"} size={24} />
                             </View>
+                            <TouchableOpacity onPress={() => navigation.navigate('Orders')}>
                             <View className="flex-1">
                                 <Text className="text-slate-900 dark:text-gray-100 font-bold text-sm">Target: Wheat Procurement</Text>
                                 <View className="h-1.5 bg-slate-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden">
@@ -251,6 +252,7 @@ export default function OfftakerHome() {
                                 <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1">65% of monthly goal achieved</Text>
                             </View>
                             <ChevronRight color={isDarkMode ? "#4b5563" : "#cbd5e1"} size={20} />
+                            </TouchableOpacity>
                         </View>
                     </View>
 

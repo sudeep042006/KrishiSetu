@@ -14,6 +14,7 @@ import {
     StyleSheet
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Header from '../../../common/BHeader';
 import { AuthContext } from '../../../../App';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -39,6 +40,7 @@ import { ThemeContext } from '../../../../context/ThemeContext';
 export default function OfftakerProfileScreen() {
     const authContext = useContext(AuthContext);
     const { isDarkMode } = useContext(ThemeContext);
+    const navigation = useNavigation();
 
     const bg = isDarkMode ? '#0a0f1e' : '#14243e';
     const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
@@ -247,8 +249,16 @@ export default function OfftakerProfileScreen() {
 
                         {/* Action Buttons */}
                         <TouchableOpacity 
+                            onPress={() => navigation.navigate('OfftakerOrders')}
+                            className="bg-[#10b981] py-4 rounded-3xl flex-row justify-center items-center shadow-lg mt-6 mb-4"
+                        >
+                            <Package size={20} color="#fff" style={{ marginRight: 8 }} />
+                            <Text className="text-white font-bold text-base">My Procurement Orders</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
                             onPress={() => setModalVisible(true)}
-                            className="bg-[#1e4e8c] py-4 rounded-3xl items-center shadow-lg shadow-blue-900/30 mt-6"
+                            className="bg-[#1e4e8c] py-4 rounded-3xl items-center shadow-lg shadow-blue-900/30"
                         >
                             <Text className="text-white font-bold text-base">Complete Business Profile</Text>
                         </TouchableOpacity>
