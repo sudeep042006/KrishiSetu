@@ -18,6 +18,7 @@ import Header from '../../../common/BHeader';
 import { AuthContext } from '../../../../App';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { offtakerService } from '../../service/api';
+import MapPickerModal from '../../../common/MapPickerModal';
 import { 
     User, 
     Briefcase, 
@@ -64,6 +65,7 @@ export default function OfftakerProfileScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [mapPickerVisible, setMapPickerVisible] = useState(false);
 
     useEffect(() => {
         fetchProfile();
@@ -142,6 +144,16 @@ export default function OfftakerProfileScreen() {
         );
     }
 
+    const handleLocationSelected = (coords) => {
+        setProfileData(prev => ({
+            ...prev,
+            headquarters: {
+                ...prev.headquarters,
+                coordinates: coords
+            }
+        }));
+    };
+
     return (
         <View className="flex-1 bg-[#14243eff]">
             <SafeAreaView edges={['top']} className="flex-1">
@@ -208,6 +220,13 @@ export default function OfftakerProfileScreen() {
 
                         <InfoSection title="Headquarters">
                             <DetailRow icon={MapPin} label="Location" value={`${profileData.headquarters?.city}, ${profileData.headquarters?.state}`} />
+                            {profileData.headquarters?.coordinates && (
+                                <DetailRow 
+                                    icon={Globe} 
+                                    label="Coordinates" 
+                                    value={`${profileData.headquarters.coordinates.lat?.toFixed(4)}, ${profileData.headquarters.coordinates.lng?.toFixed(4)}`} 
+                                />
+                            )}
                         </InfoSection>
 
                         {/* Action Buttons */}
@@ -259,6 +278,24 @@ export default function OfftakerProfileScreen() {
                                 <InputField label="Headquarters City" placeholder="e.g. Pune" value={profileData.headquarters?.city} onChangeText={v => updateNestedField('headquarters', 'city', v)} />
                                 <InputField label="State" placeholder="e.g. Maharashtra" value={profileData.headquarters?.state} onChangeText={v => updateNestedField('headquarters', 'state', v)} />
 
+                                <TouchableOpacity 
+                                    onPress={() => setMapPickerVisible(true)}
+                                    className="bg-blue-50 py-4 rounded-2xl flex-row items-center justify-center border border-blue-100 mb-6"
+                                >
+                                    <MapPin size={18} color="#3b82f6" />
+                                    <Text className="text-[#3b82f6] font-bold ml-2">
+                                        {profileData.headquarters?.coordinates ? 'Change Map Location' : 'Pick Location on Map'}
+                                    </Text>
+                                </TouchableOpacity>
+                                {profileData.headquarters?.coordinates && (
+                                    <View className="bg-slate-50 p-3 rounded-xl mb-6 -mt-4 border border-slate-100">
+                                        <Text className="text-[10px] text-slate-400 font-bold uppercase">Stored Coordinates</Text>
+                                        <Text className="text-slate-600 text-xs font-mono">
+                                            {profileData.headquarters.coordinates.lat.toFixed(6)}, {profileData.headquarters.coordinates.lng.toFixed(6)}
+                                        </Text>
+                                    </View>
+                                )}
+
                                 <FormLabel label="Procurement Specs" />
                                 <InputField label="Capacity Quantity" placeholder="e.g. 500" value={profileData.procurementCapacity?.toString()} onChangeText={v => updateField('procurementCapacity', v)} keyboardType="numeric" />
                                 <InputField label="Unit (ton, kg, qtl)" placeholder="ton" value={profileData.procurementUnit} onChangeText={v => updateField('procurementUnit', v)} />
@@ -275,6 +312,13 @@ export default function OfftakerProfileScreen() {
                     </KeyboardAvoidingView>
                 </View>
             </Modal>
+
+            <MapPickerModal
+                visible={mapPickerVisible}
+                onClose={() => setMapPickerVisible(false)}
+                onLocationSelected={handleLocationSelected}
+                initialLocation={profileData.headquarters?.coordinates ? [profileData.headquarters.coordinates.lng, profileData.headquarters.coordinates.lat] : null}
+            />
         </View>
     );
 }

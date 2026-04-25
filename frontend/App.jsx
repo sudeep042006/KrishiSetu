@@ -16,6 +16,7 @@ import FarmerDrawerNavigator from './components/navigation/FarmerDrawerNavigator
 import BuyerDrawerNavigator from './components/navigation/BuyerDrawerNavigator';
 import LandDetailsScreen from './components/pages/homescreen/farmer/LandDetails';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import NetworkStatus from './components/common/NetworkStatus';
 
 export const AuthContext = createContext();
 
@@ -109,6 +110,7 @@ export default function App() {
     <ThemeProvider>
       <SafeAreaProvider>
         <AuthContext.Provider value={authContext}>
+          <NetworkStatus />
           <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
 

@@ -143,7 +143,7 @@ const CROP_CHIPS = ['Wheat', 'Rice', 'Tomato', 'Soybean', 'Near Me'];
 // ─── MapLibre setup (called inside component, not at module level) ─────────────
 
 // ─── MAP SECTION ──────────────────────────────────────────────────────────────
-const MapSection = memo(({ onMarkerPress, externalCenter }) => {
+const MapSection = memo(({ buyers, onMarkerPress, externalCenter }) => {
     const [userCoords, setUserCoords] = useState(null);
     const [mapCenter, setMapCenter] = useState([74.7378, 19.2183]); // default fallback
     const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -251,7 +251,7 @@ const MapSection = memo(({ onMarkerPress, externalCenter }) => {
                 )}
 
                 {/* Buyer markers */}
-                {BUYERS.map((buyer) => (
+                {buyers.map((buyer) => (
                     <GeoJSONSource
                         key={buyer.id}
                         id={`buyer_${buyer.id}`}
@@ -263,7 +263,7 @@ const MapSection = memo(({ onMarkerPress, externalCenter }) => {
                             type="circle"
                             paint={{
                                 'circle-radius': 14,
-                                'circle-color': buyer.markerColor,
+                                'circle-color': buyer.markerColor || '#1e4a3b',
                                 'circle-stroke-width': 2,
                                 'circle-stroke-color': '#fff',
                             }}
@@ -773,7 +773,7 @@ export default function MarketplaceScreen() {
             </View>
 
             {/* ── Map ── */}
-            <MapSection onMarkerPress={setSelectedBuyer} externalCenter={selectedRegion.center} />
+            <MapSection buyers={filteredBuyers()} onMarkerPress={setSelectedBuyer} externalCenter={selectedRegion.center} />
 
             {/* ── Region Selection UI ── */}
             <View className="px-4 pb-3">
