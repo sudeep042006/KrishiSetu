@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useContext } from 'react';
 import {
     View,
     Text,
@@ -14,10 +14,13 @@ import {
     Linking,
     Pressable
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Mic, Filter, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
 import { offtakerService } from '../../service/api';
+import { createOrGetChat } from '../../../../services/chatApi';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 // ─── DUMMY DATA ───────────────────────────────────────────────────────────────
 const DUMMY_BUYERS = [
@@ -202,7 +205,7 @@ const BuyerCard = memo(({ item, onPress }) => {
 });
 
 // ─── DETAIL MODAL ─────────────────────────────────────────────────────────────
-const BuyerDetailModal = memo(({ item, onClose }) => {
+const BuyerDetailModal = memo(({ item, onClose, onChat }) => {
     if (!item) return null;
 
     return (
@@ -259,7 +262,10 @@ const BuyerDetailModal = memo(({ item, onClose }) => {
                     </ScrollView>
 
                     <View className="p-6 pb-10 bg-white border-t border-slate-100 flex-row" style={{ gap: 12 }}>
-                        <TouchableOpacity className="w-14 h-14 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+                        <TouchableOpacity 
+                            onPress={() => onChat(item)}
+                            className="w-14 h-14 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100"
+                        >
                             <MessageSquare size={24} color="#1e4e8c" />
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -277,11 +283,21 @@ const BuyerDetailModal = memo(({ item, onClose }) => {
     );
 });
 
-export default function OfftakerMarketplace() {
+export default function OfftakerMarketplace({ navigation }) {
+    const { isDarkMode } = useContext(ThemeContext);
     const [realBuyers, setRealBuyers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedBuyer, setSelectedBuyer] = useState(null);
     const [search, setSearch] = useState('');
+
+    const bg = isDarkMode ? '#0a0f1e' : '#102a43';
+    const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
+    const cardBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const cardBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
+    const titleColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+    const subColor = isDarkMode ? '#64748b' : '#94a3b8';
+    const searchBg = isDarkMode ? '#1e293b' : '#ffffff';
+    const searchBorder = isDarkMode ? '#334155' : '#e2e8f0';
 
     useEffect(() => {
         loadRealBuyers();
@@ -324,37 +340,61 @@ export default function OfftakerMarketplace() {
         }
     };
 
+    const handleChat = async (buyer) => {
+        try {
+            if (buyer.id.startsWith('d')) {
+                Alert.alert("Demo Business", "This is a dummy business for demonstration. Real messaging is available for registered entities.");
+                return;
+            }
+
+            const senderId = await AsyncStorage.getItem('userId');
+            if (!senderId) return;
+
+            const res = await createOrGetChat(senderId, buyer.id);
+            if (res.success) {
+                navigation.navigate('MessageWindow', {
+                    chatId: res.chat._id,
+                    chatTitle: buyer.name,
+                    otherUserId: buyer.id
+                });
+            }
+        } catch (error) {
+            console.error("Chat Error:", error);
+        }
+    };
+
     const allBuyers = [...realBuyers, ...DUMMY_BUYERS].filter(b =>
         b.name.toLowerCase().includes(search.toLowerCase()) ||
         b.type.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
-        <View className="flex-1 bg-[#102a43]">
-            <SafeAreaView edges={['top']} className="flex-1">
+        <View style={{ flex: 1, backgroundColor: bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header title="Buyer Marketplace" />
-                <View className="flex-1 bg-[#f8fafc] rounded-t-[40px] overflow-hidden">
-                    <View className="p-5 flex-1">
+                <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40, overflow: 'hidden' }}>
+                    <View style={{ padding: 20, flex: 1 }}>
                         {/* Search */}
-                        <View className="flex-row items-center mb-6" style={{ gap: 10 }}>
-                            <View className="flex-1 bg-white rounded-2xl flex-row items-center px-4 py-3 shadow-sm border border-slate-100">
-                                <Search size={18} color="#94a3b8" />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 10 }}>
+                            <View style={{ flex: 1, backgroundColor: searchBg, borderRadius: 16, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: searchBorder, gap: 8 }}>
+                                <Search size={18} color={subColor} />
                                 <TextInput
-                                    className="ml-2 flex-1 text-slate-900"
+                                    style={{ flex: 1, color: titleColor, fontSize: 14 }}
                                     placeholder="Search buyers..."
+                                    placeholderTextColor={subColor}
                                     value={search}
                                     onChangeText={setSearch}
                                 />
                             </View>
-                            <TouchableOpacity className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-                                <Filter size={20} color="#1e4e8c" />
+                            <TouchableOpacity style={{ backgroundColor: searchBg, padding: 12, borderRadius: 16, borderWidth: 1, borderColor: searchBorder }}>
+                                <Filter size={20} color="#3b82f6" />
                             </TouchableOpacity>
                         </View>
 
                         {loading ? (
-                            <View className="flex-1 justify-center items-center">
-                                <ActivityIndicator size="large" color="#1e4e8c" />
-                                <Text className="mt-4 text-slate-400 font-medium">Fetching Real Buyers...</Text>
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color="#3b82f6" />
+                                <Text style={{ marginTop: 16, color: subColor, fontWeight: '600' }}>Fetching Real Buyers...</Text>
                             </View>
                         ) : (
                             <FlatList
@@ -364,7 +404,7 @@ export default function OfftakerMarketplace() {
                                 showsVerticalScrollIndicator={false}
                                 contentContainerStyle={{ paddingBottom: 100 }}
                                 ListHeaderComponent={() => (
-                                    <Text className="text-slate-900 font-black text-lg mb-4">
+                                    <Text style={{ color: titleColor, fontWeight: '900', fontSize: 17, marginBottom: 16 }}>
                                         {search ? `Search Results (${allBuyers.length})` : 'Featured Buyers'}
                                     </Text>
                                 )}
@@ -374,7 +414,11 @@ export default function OfftakerMarketplace() {
                 </View>
             </SafeAreaView>
 
-            <BuyerDetailModal item={selectedBuyer} onClose={() => setSelectedBuyer(null)} />
+            <BuyerDetailModal 
+                item={selectedBuyer} 
+                onClose={() => setSelectedBuyer(null)} 
+                onChat={handleChat}
+            />
         </View>
     );
 }

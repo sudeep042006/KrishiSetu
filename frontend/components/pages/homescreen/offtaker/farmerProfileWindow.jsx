@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { 
     View, 
     Text, 
@@ -26,17 +26,36 @@ import {
     TrendingUp,
     Zap
 } from 'lucide-react-native';
-import { getUserOrProfile } from '../../../../services/chatApi';
+import { getUserOrProfile, createOrGetChat } from '../../../../services/chatApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function FarmerProfileWindow({ navigation, route }) {
     const { userId } = route.params;
+    const { isDarkMode } = useContext(ThemeContext);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [user, setUser] = useState(null);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [showSubModal, setShowSubModal] = useState(false);
+
+    const heroBg = isDarkMode ? '#0a1628' : '#123524';
+    const bodyBg = isDarkMode ? '#0d1117' : '#f8faf9';
+    const cardBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const cardBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
+    const titleColor = isDarkMode ? '#e2e8f0' : '#111827';
+    const subColor = isDarkMode ? '#475569' : '#6b7280';
+    const labelColor = isDarkMode ? '#334155' : '#94a3b8';
+    const pillBg = isDarkMode ? 'rgba(16,185,129,0.12)' : '#ecfdf5';
+    const pillBorder = isDarkMode ? 'rgba(16,185,129,0.2)' : '#d1fae5';
+    const pillText = isDarkMode ? '#10b981' : '#065f46';
+    const bottomBarBg = isDarkMode ? 'rgba(15,23,42,0.92)' : 'rgba(255,255,255,0.85)';
+    const bottomBarBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
+    const chatBtnBg = isDarkMode ? '#1e293b' : '#f3f4f6';
+    const chatBtnBorder = isDarkMode ? '#334155' : '#e5e7eb';
+    const dealBtnBg = isDarkMode ? '#0f3460' : '#123524';
 
     useEffect(() => {
         if (userId) loadProfile();
@@ -57,6 +76,24 @@ export default function FarmerProfileWindow({ navigation, route }) {
         }
     };
 
+    const handleChat = async () => {
+        try {
+            const senderId = await AsyncStorage.getItem('userId');
+            if (!senderId) return;
+
+            const res = await createOrGetChat(senderId, userId);
+            if (res.success) {
+                navigation.navigate('MessageWindow', {
+                    chatId: res.chat._id,
+                    chatTitle: user.name,
+                    otherUserId: userId
+                });
+            }
+        } catch (error) {
+            console.error("Chat Error:", error);
+        }
+    };
+
     const handleShowPhone = () => {
         if (isSubscribed) {
             // Already subscribed, just show phone logic would be here
@@ -67,9 +104,9 @@ export default function FarmerProfileWindow({ navigation, route }) {
 
     if (loading) {
         return (
-            <View className="flex-1 bg-[#123524] justify-center items-center">
+            <View style={{ flex: 1, backgroundColor: heroBg, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#10b981" />
-                <Text className="text-white/60 mt-4 font-medium">Loading Professional Profile...</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.5)', marginTop: 16, fontWeight: '500' }}>Loading Professional Profile...</Text>
             </View>
         );
     }
@@ -92,21 +129,21 @@ export default function FarmerProfileWindow({ navigation, route }) {
     }
 
     return (
-        <View className="flex-1 bg-[#f8faf9]">
+        <View style={{ flex: 1, backgroundColor: bodyBg }}>
             <StatusBar barStyle="light-content" />
             
             {/* Header Overlay */}
-            <View className="absolute top-0 left-0 right-0 z-10">
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
                 <SafeAreaView edges={['top']}>
-                    <View className="flex-row items-center justify-between px-4 py-4">
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16 }}>
                         <TouchableOpacity 
                             onPress={() => navigation.goBack()} 
-                            className="w-10 h-10 bg-black/20 rounded-full items-center justify-center backdrop-blur-md"
+                            style={{ width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}
                         >
                             <ChevronLeft size={24} color="#fff" />
                         </TouchableOpacity>
-                        <View className="flex-row gap-x-2">
-                            <TouchableOpacity className="w-10 h-10 bg-black/20 rounded-full items-center justify-center backdrop-blur-md">
+                        <View>
+                            <TouchableOpacity style={{ width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 20, alignItems: 'center', justifyContent: 'center' }}>
                                 <Star size={20} color="#fff" />
                             </TouchableOpacity>
                         </View>
@@ -114,14 +151,13 @@ export default function FarmerProfileWindow({ navigation, route }) {
                 </SafeAreaView>
             </View>
 
-            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-                {/* Hero Section */}
-                <View className="h-72 bg-[#123524] relative overflow-hidden">
-                    {/* Abstract background elements */}
-                    <View className="absolute -top-20 -right-20 w-64 h-64 bg-[#10b981]/20 rounded-full" />
-                    <View className="absolute bottom-0 left-0 right-0 h-32 bg-[#f8faf9]" style={{ borderTopLeftRadius: 40, borderTopRightRadius: 40 }} />
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                {/* Hero */}
+                <View style={{ height: 288, backgroundColor: heroBg, position: 'relative', overflow: 'hidden' }}>
+                    <View style={{ position: 'absolute', top: -80, right: -80, width: 256, height: 256, borderRadius: 128, backgroundColor: 'rgba(16,185,129,0.15)' }} />
+                    <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 128, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40 }} />
                     
-                    <View className="absolute bottom-6 left-0 right-0 items-center">
+                    <View style={{ position: 'absolute', bottom: 24, left: 0, right: 0, alignItems: 'center' }}>
                         <View className="relative shadow-2xl">
                             {profile?.profilePhoto ? (
                                 <Image source={{ uri: profile.profilePhoto }} className="w-32 h-32 rounded-full border-4 border-white" />
@@ -247,16 +283,19 @@ export default function FarmerProfileWindow({ navigation, route }) {
             </ScrollView>
 
             {/* Bottom Actions */}
-            <View className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl px-6 pt-4 pb-10 flex-row gap-x-3 border-t border-gray-100">
-                <TouchableOpacity className="w-14 h-14 bg-gray-100 rounded-2xl items-center justify-center border border-gray-200">
-                    <MessageSquare size={24} color="#123524" />
+            <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: bottomBarBg, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40, flexDirection: 'row', gap: 12, borderTopWidth: 1, borderTopColor: bottomBarBorder }}>
+                <TouchableOpacity 
+                    onPress={handleChat}
+                    style={{ width: 56, height: 56, backgroundColor: chatBtnBg, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: chatBtnBorder }}
+                >
+                    <MessageSquare size={24} color={isDarkMode ? '#3b82f6' : '#123524'} />
                 </TouchableOpacity>
                 <TouchableOpacity 
                     onPress={handleShowPhone}
-                    className="flex-1 h-14 bg-[#123524] rounded-2xl flex-row items-center justify-center shadow-lg shadow-emerald-900/20"
+                    style={{ flex: 1, height: 56, backgroundColor: dealBtnBg, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
                     <Zap size={20} color="#fff" />
-                    <Text className="text-white font-bold text-lg ml-2">Initiate Deal</Text>
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 17 }}>Initiate Deal</Text>
                 </TouchableOpacity>
             </View>
 

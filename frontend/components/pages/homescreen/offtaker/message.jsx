@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -6,74 +6,111 @@ import {
     TouchableOpacity,
     Image,
     ActivityIndicator,
-    Alert
+    Alert,
+    StyleSheet
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/BHeader';
 import { getUserChats, deleteChat } from '../../../../services/chatApi';
-import { Trash2, Search, MessageSquare } from 'lucide-react-native';
+import { Trash2, Search, MessageSquare, ChevronRight } from 'lucide-react-native';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 const FILTERS = ['All', 'Farmers', 'Buyers', 'Orders'];
 
-// Avatar placeholder
-function AvatarPlaceholder({ name, size = 48 }) {
+// Avatar placeholder with bluish palette
+function AvatarPlaceholder({ name, size = 48, isDark }) {
     if (!name) name = "User";
     const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
-    const colors = ['#2D6A4F', '#40916C', '#52B788', '#1B4332', '#74C69D'];
+    // Bluish color palette
+    const colors = ['#1e4e8c', '#1d4ed8', '#2563eb', '#1e40af', '#3b82f6'];
     const color = colors[name.charCodeAt(0) % colors.length];
     return (
         <View
-            style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }}
-            className="justify-center items-center"
+            style={{
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: color,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 2,
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)',
+            }}
         >
-            <Text className="text-white font-bold" style={{ fontSize: size * 0.35 }}>
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.35 }}>
                 {initials}
             </Text>
         </View>
     );
 }
 
-function ChatItem({ item, onPress, onLongPress, currentUserId }) {
-    // Determine the OTHER participant
+function ChatItem({ item, onPress, onLongPress, currentUserId, isDark }) {
     const otherUser = item.participants.find(p => p._id !== currentUserId) || item.participants[0];
-    
+    const timeStr = new Date(item.updatedAt).toLocaleDateString([], { month: "short", day: "numeric" });
+
     return (
         <TouchableOpacity
             onPress={() => onPress(item, otherUser)}
             onLongPress={() => onLongPress(item, otherUser)}
-            activeOpacity={0.7}
-            className="flex-row items-center px-4 py-3 bg-white border-b border-gray-100"
+            activeOpacity={0.75}
+            style={[
+                styles.chatItem,
+                {
+                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
+                }
+            ]}
         >
             {/* Avatar */}
-            <View className="relative mr-3">
+            <View style={{ marginRight: 14 }}>
                 {otherUser?.profileImage ? (
-                    <Image source={{ uri: otherUser.profileImage }} className="w-12 h-12 rounded-full" />
+                    <Image
+                        source={{ uri: otherUser.profileImage }}
+                        style={{ width: 52, height: 52, borderRadius: 26 }}
+                    />
                 ) : (
-                    <AvatarPlaceholder name={otherUser?.name} size={48} />
+                    <AvatarPlaceholder name={otherUser?.name} size={52} isDark={isDark} />
                 )}
+                {/* Online dot */}
+                <View style={[
+                    styles.onlineDot,
+                    { backgroundColor: isDark ? '#22c55e' : '#16a34a' }
+                ]} />
             </View>
 
             {/* Content */}
-            <View className="flex-1">
-                <View className="flex-row justify-between items-center mb-0.5">
-                    <Text className="text-base font-semibold text-gray-900">{otherUser?.name || "Unknown"}</Text>
-                    <Text className="text-xs text-gray-400">
-                        {new Date(item.updatedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
+            <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                    <Text
+                        style={[
+                            styles.chatName,
+                            { color: isDark ? '#f1f5f9' : '#0f172a' }
+                        ]}
+                        numberOfLines={1}
+                    >
+                        {otherUser?.name || "Unknown"}
+                    </Text>
+                    <Text style={[styles.chatTime, { color: isDark ? '#64748b' : '#94a3b8' }]}>
+                        {timeStr}
                     </Text>
                 </View>
-                <View className="flex-row justify-between items-center">
-                    <Text className="text-sm text-gray-500 flex-1 mr-2" numberOfLines={1}>
-                        {item.lastMessage || "Started a conversation"}
-                    </Text>
-                </View>
+                <Text
+                    style={[styles.chatPreview, { color: isDark ? '#64748b' : '#94a3b8' }]}
+                    numberOfLines={1}
+                >
+                    {item.lastMessage || "Started a conversation"}
+                </Text>
             </View>
+
+            <ChevronRight size={18} color={isDark ? '#334155' : '#cbd5e1'} style={{ marginLeft: 8 }} />
         </TouchableOpacity>
     );
 }
 
 export default function MessageScreen({ navigation }) {
+    const { isDarkMode } = useContext(ThemeContext);
     const [activeFilter, setActiveFilter] = useState('All');
     const [searchText, setSearchText] = useState('');
     const [chats, setChats] = useState([]);
@@ -90,7 +127,7 @@ export default function MessageScreen({ navigation }) {
             if (!isRefresh) setLoading(true);
             const uid = await AsyncStorage.getItem('userId');
             setCurrentUserId(uid);
-            
+
             if (uid) {
                 const response = await getUserChats(uid);
                 if (response.success) {
@@ -113,11 +150,11 @@ export default function MessageScreen({ navigation }) {
     const handleDeleteChat = (chat, otherUser) => {
         Alert.alert(
             "Delete Conversation",
-            `Are you sure you want to delete your conversation with ${otherUser?.name || "this user"}? This will also delete all messages.`,
+            `Delete conversation with ${otherUser?.name || "this user"}?`,
             [
                 { text: "Cancel", style: "cancel" },
-                { 
-                    text: "Delete", 
+                {
+                    text: "Delete",
                     style: "destructive",
                     onPress: async () => {
                         try {
@@ -136,8 +173,9 @@ export default function MessageScreen({ navigation }) {
 
     const filteredChats = chats.filter((chat) => {
         const otherUser = chat.participants.find(p => p._id !== currentUserId) || chat.participants[0];
-        const matchesSearch = otherUser?.name?.toLowerCase().includes(searchText.toLowerCase()) || 
-                              chat.lastMessage?.toLowerCase().includes(searchText.toLowerCase());
+        const matchesSearch =
+            otherUser?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+            chat.lastMessage?.toLowerCase().includes(searchText.toLowerCase());
 
         const matchesFilter =
             activeFilter === 'All' ||
@@ -147,53 +185,76 @@ export default function MessageScreen({ navigation }) {
         return matchesSearch && matchesFilter;
     });
 
+    // Theme colors
+    const bg = isDarkMode ? '#0a0f1e' : '#14243e';           // header bg (kept as is)
+    const bodyBg = isDarkMode ? '#0d1117' : '#f0f4f8';       // main body
+    const cardBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const searchBg = isDarkMode ? '#1e293b' : '#ffffff';
+    const searchInputBg = isDarkMode ? '#0f172a' : '#eff6ff'; // light blue tint
+    const borderColor = isDarkMode ? '#1e293b' : '#dbeafe';
+    const placeholderColor = isDarkMode ? '#475569' : '#94a3b8';
+    const filterActiveBg = isDarkMode ? '#1d4ed8' : '#1e4e8c';
+    const filterInactiveBg = isDarkMode ? '#1e293b' : '#eff6ff';
+    const filterActiveText = '#ffffff';
+    const filterInactiveText = isDarkMode ? '#64748b' : '#1e4e8c';
+    const filterInactiveBorder = isDarkMode ? '#334155' : '#bfdbfe';
+
     return (
-        <View className="flex-1 bg-[#123524]">
-            <SafeAreaView edges={['top']} className="flex-1">
+        <View style={{ flex: 1, backgroundColor: bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header title="Message" />
 
-                <View className="flex-1 bg-[#f6f8f5]">
-                    {/* Search Bar */}
-                    <View className="px-4 pt-3 pb-2 bg-white">
-                        <View className="flex-row items-center bg-[#f1f5f1] rounded-xl px-3 py-2">
-                            <Search size={18} color="#9CA3AF" className="mr-2" />
+                <View style={{ flex: 1, backgroundColor: bodyBg }}>
+
+                    {/* Search + Filter Section */}
+                    <View style={[styles.searchSection, { backgroundColor: searchBg, borderBottomColor: borderColor }]}>
+                        {/* Search Bar */}
+                        <View style={[styles.searchBar, { backgroundColor: searchInputBg, borderColor: isDarkMode ? '#334155' : '#bfdbfe' }]}>
+                            <Search size={18} color={placeholderColor} />
                             <TextInput
-                                className="flex-1 text-sm text-gray-700 ml-2"
-                                placeholder="Search chats..."
-                                placeholderTextColor="#9CA3AF"
+                                style={[styles.searchInput, { color: isDarkMode ? '#e2e8f0' : '#0f172a' }]}
+                                placeholder="Search conversations..."
+                                placeholderTextColor={placeholderColor}
                                 value={searchText}
                                 onChangeText={setSearchText}
                             />
                         </View>
+
+                        {/* Filter Pills */}
+                        <View style={styles.filterRow}>
+                            {FILTERS.map((filter) => {
+                                const isActive = activeFilter === filter;
+                                return (
+                                    <TouchableOpacity
+                                        key={filter}
+                                        onPress={() => setActiveFilter(filter)}
+                                        style={[
+                                            styles.filterPill,
+                                            {
+                                                backgroundColor: isActive ? filterActiveBg : filterInactiveBg,
+                                                borderColor: isActive ? filterActiveBg : filterInactiveBorder,
+                                            }
+                                        ]}
+                                    >
+                                        <Text style={[
+                                            styles.filterText,
+                                            { color: isActive ? filterActiveText : filterInactiveText }
+                                        ]}>
+                                            {filter}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
                     </View>
 
-                    {/* Filter Tabs */}
-                    <View className="flex-row px-4 py-2 bg-white border-b border-gray-100">
-                        {FILTERS.map((filter) => (
-                            <TouchableOpacity
-                                key={filter}
-                                onPress={() => setActiveFilter(filter)}
-                                className={`mr-2 px-4 py-1.5 rounded-full border ${
-                                    activeFilter === filter
-                                        ? 'bg-[#1B4332] border-[#1B4332]'
-                                        : 'bg-white border-gray-300'
-                                }`}
-                            >
-                                <Text
-                                    className={`text-sm font-medium ${
-                                        activeFilter === filter ? 'text-white' : 'text-gray-600'
-                                    }`}
-                                >
-                                    {filter}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-
-                    {/* Chat List using FlashList */}
+                    {/* Chat List */}
                     {loading ? (
-                        <View className="flex-1 justify-center items-center">
-                            <ActivityIndicator size="large" color="#1B4332" />
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color="#3b82f6" />
+                            <Text style={{ color: isDarkMode ? '#475569' : '#94a3b8', marginTop: 12, fontWeight: '600' }}>
+                                Loading conversations...
+                            </Text>
                         </View>
                     ) : (
                         <View style={{ flex: 1 }}>
@@ -207,18 +268,41 @@ export default function MessageScreen({ navigation }) {
                                     <ChatItem
                                         item={item}
                                         currentUserId={currentUserId}
+                                        isDark={isDarkMode}
                                         onPress={(chat, otherUser) =>
-                                            navigation.navigate('MessageWindow', { chatId: chat._id, chatTitle: otherUser.name, otherUserId: otherUser._id })
+                                            navigation.navigate('MessageWindow', {
+                                                chatId: chat._id,
+                                                chatTitle: otherUser.name,
+                                                otherUserId: otherUser._id
+                                            })
                                         }
                                         onLongPress={handleDeleteChat}
                                     />
                                 )}
+                                ListHeaderComponent={() => (
+                                    <View style={[styles.listHeader, { borderBottomColor: isDarkMode ? '#1e293b' : '#eff6ff' }]}>
+                                        <Text style={[styles.listHeaderText, { color: isDarkMode ? '#64748b' : '#94a3b8' }]}>
+                                            {filteredChats.length} CONVERSATION{filteredChats.length !== 1 ? 'S' : ''}
+                                        </Text>
+                                    </View>
+                                )}
                                 ListEmptyComponent={
-                                    <View className="flex-1 justify-center items-center py-20">
-                                        <MessageSquare size={48} color="#9CA3AF" className="mb-3" />
-                                        <Text className="text-gray-500 text-base mt-2">No chats found</Text>
+                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 }}>
+                                        <View style={[
+                                            styles.emptyIcon,
+                                            { backgroundColor: isDarkMode ? '#1e293b' : '#eff6ff' }
+                                        ]}>
+                                            <MessageSquare size={36} color={isDarkMode ? '#334155' : '#bfdbfe'} />
+                                        </View>
+                                        <Text style={[styles.emptyTitle, { color: isDarkMode ? '#334155' : '#94a3b8' }]}>
+                                            No conversations yet
+                                        </Text>
+                                        <Text style={[styles.emptySubtitle, { color: isDarkMode ? '#1e293b' : '#cbd5e1' }]}>
+                                            Start a chat from a farmer profile
+                                        </Text>
                                     </View>
                                 }
+                                contentContainerStyle={{ paddingBottom: 100 }}
                             />
                         </View>
                     )}
@@ -227,3 +311,99 @@ export default function MessageScreen({ navigation }) {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    chatItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+    },
+    onlineDot: {
+        position: 'absolute',
+        bottom: 2,
+        right: 2,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    chatName: {
+        fontSize: 15,
+        fontWeight: '700',
+        flex: 1,
+        marginRight: 8,
+    },
+    chatTime: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    chatPreview: {
+        fontSize: 13,
+        fontWeight: '400',
+    },
+    searchSection: {
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
+    },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        marginBottom: 12,
+        borderWidth: 1,
+        gap: 10,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    filterRow: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    filterPill: {
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    filterText: {
+        fontSize: 12,
+        fontWeight: '700',
+    },
+    listHeader: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+    },
+    listHeaderText: {
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 1.2,
+    },
+    emptyIcon: {
+        width: 80,
+        height: 80,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    emptyTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 6,
+    },
+    emptySubtitle: {
+        fontSize: 13,
+        fontWeight: '500',
+    },
+});

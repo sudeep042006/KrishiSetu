@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import { X, Map as MapIcon } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
 import { farmerService } from '../../service/api';
 import { Map, Camera, Marker } from '@maplibre/maplibre-react-native';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 // Fallback local data removed
@@ -288,9 +289,13 @@ export default function FarmerProfiles() {
 
     const keyExtractor = useCallback((item) => item.id, []);
 
+    const { isDarkMode } = useContext(ThemeContext);
+    const bg = isDarkMode ? '#0a0f1e' : '#123524';
+    const bodyBg = isDarkMode ? '#0d1117' : '#f0f4f1';
+
     return (
-        <View className="flex-1 bg-[#123524]">
-            <SafeAreaView edges={['top']} className="flex-1">
+        <View style={{ flex: 1, backgroundColor: bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header 
                     title="Farmer Profiles" 
                     rightIcon={
@@ -304,7 +309,7 @@ export default function FarmerProfiles() {
                     }
                 />
 
-                <View className="flex-1 bg-[#f0f4f1]">
+                <View style={{ flex: 1, backgroundColor: bodyBg }}>
                     <FlatList
                         data={visibleData}
                         keyExtractor={keyExtractor}

@@ -1,52 +1,65 @@
-import React from 'react';
-import { View, Text, ScrollView, Dimensions } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart2, TrendingUp, Package, Users } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 export default function OfftakerDashboard() {
+    const { isDarkMode } = useContext(ThemeContext);
+
+    const bg = isDarkMode ? '#0a0f1e' : '#102a43';
+    const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
+    const cardBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const cardBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
+    const titleColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+    const labelColor = isDarkMode ? '#475569' : '#94a3b8';
+    const iconBgBlue = isDarkMode ? 'rgba(59,130,246,0.15)' : '#eff6ff';
+    const iconBgIndigo = isDarkMode ? 'rgba(99,102,241,0.15)' : '#eef2ff';
+    const analyticsBg = isDarkMode ? '#1e293b' : '#f8fafc';
+
     return (
-        <View className="flex-1 bg-[#102a43]">
-            <SafeAreaView edges={['top']} className="flex-1">
+        <View style={{ flex: 1, backgroundColor: bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header title="Procurement Insights" />
-                <View className="flex-1 bg-[#f8fafc] rounded-t-[40px] overflow-hidden">
-                    <ScrollView showsVerticalScrollIndicator={false} className="p-5">
-                        <Text className="text-slate-900 font-black text-xl mb-6">Market Trends</Text>
+                <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40, overflow: 'hidden' }}>
+                    <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 20 }}>
+                        <Text style={{ color: titleColor, fontWeight: '900', fontSize: 20, marginBottom: 24 }}>Market Trends</Text>
 
                         {/* Top Metrics Grid */}
-                        <View className="flex-row flex-wrap justify-between mb-6">
-                            <View className="w-[48%] bg-white p-5 rounded-3xl mb-4 shadow-sm border border-slate-50">
-                                <View className="bg-blue-50 p-3 rounded-2xl self-start mb-3">
-                                    <Package color="#478dfdff" size={24} />
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 }}>
+                            <View style={[styles.metricCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                                <View style={[styles.iconBox, { backgroundColor: iconBgBlue }]}>
+                                    <Package color="#3b82f6" size={24} />
                                 </View>
-                                <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Total Sourced</Text>
-                                <Text className="text-slate-900 text-xl font-black mt-1">1.2k Tons</Text>
-                                <View className="flex-row items-center mt-2" style={{ gap: 4 }}>
+                                <Text style={[styles.metricLabel, { color: labelColor }]}>Total Sourced</Text>
+                                <Text style={[styles.metricValue, { color: titleColor }]}>1.2k Tons</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 4 }}>
                                     <TrendingUp size={12} color="#10b981" />
-                                    <Text className="text-emerald-500 font-bold text-[10px]">+12% vs LY</Text>
+                                    <Text style={{ color: '#10b981', fontWeight: '700', fontSize: 10 }}>+12% vs LY</Text>
                                 </View>
                             </View>
 
-                            <View className="w-[48%] bg-white p-5 rounded-3xl mb-4 shadow-sm border border-slate-50">
-                                <View className="bg-indigo-50 p-3 rounded-2xl self-start mb-3">
+                            <View style={[styles.metricCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                                <View style={[styles.iconBox, { backgroundColor: iconBgIndigo }]}>
                                     <Users color="#6366f1" size={24} />
                                 </View>
-                                <Text className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Active Farmers</Text>
-                                <Text className="text-slate-900 text-xl font-black mt-1">84 Active</Text>
-                                <View className="flex-row items-center mt-2" style={{ gap: 4 }}>
+                                <Text style={[styles.metricLabel, { color: labelColor }]}>Active Farmers</Text>
+                                <Text style={[styles.metricValue, { color: titleColor }]}>84 Active</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 4 }}>
                                     <TrendingUp size={12} color="#10b981" />
-                                    <Text className="text-emerald-500 font-bold text-[10px]">+5 this week</Text>
+                                    <Text style={{ color: '#10b981', fontWeight: '700', fontSize: 10 }}>+5 this week</Text>
                                 </View>
                             </View>
                         </View>
 
                         {/* Analytics Placeholder */}
-                        <View className="bg-white p-6 rounded-[32px] mb-8 shadow-sm border border-slate-50 items-center justify-center">
-                            <View className="bg-slate-50 p-10 rounded-full mb-4">
-                                <BarChart2 size={48} color="#94a3b8" />
+                        <View style={[styles.analyticsCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                            <View style={[styles.analyticsIcon, { backgroundColor: analyticsBg }]}>
+                                <BarChart2 size={48} color={isDarkMode ? '#334155' : '#94a3b8'} />
                             </View>
-                            <Text className="text-slate-900 font-bold text-lg">Price Predictor</Text>
-                            <Text className="text-slate-400 text-center text-xs mt-2 leading-5">
+                            <Text style={{ color: titleColor, fontWeight: '700', fontSize: 17, marginBottom: 8 }}>Price Predictor</Text>
+                            <Text style={{ color: labelColor, textAlign: 'center', fontSize: 13, lineHeight: 20 }}>
                                 Your procurement cost is optimized. Price for Wheat is expected to dip next month.
                             </Text>
                         </View>
@@ -56,3 +69,43 @@ export default function OfftakerDashboard() {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    metricCard: {
+        width: '48%',
+        padding: 20,
+        borderRadius: 24,
+        marginBottom: 16,
+        borderWidth: 1,
+    },
+    iconBox: {
+        padding: 12,
+        borderRadius: 16,
+        alignSelf: 'flex-start',
+        marginBottom: 12,
+    },
+    metricLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    metricValue: {
+        fontSize: 20,
+        fontWeight: '900',
+        marginTop: 4,
+    },
+    analyticsCard: {
+        padding: 24,
+        borderRadius: 32,
+        marginBottom: 32,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    analyticsIcon: {
+        padding: 40,
+        borderRadius: 9999,
+        marginBottom: 16,
+    },
+});

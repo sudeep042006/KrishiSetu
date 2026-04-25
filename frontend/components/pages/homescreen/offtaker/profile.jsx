@@ -34,9 +34,25 @@ import {
     PlusCircle,
     X
 } from 'lucide-react-native';
+import { ThemeContext } from '../../../../context/ThemeContext';
 
 export default function OfftakerProfileScreen() {
     const authContext = useContext(AuthContext);
+    const { isDarkMode } = useContext(ThemeContext);
+
+    const bg = isDarkMode ? '#0a0f1e' : '#14243e';
+    const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
+    const cardBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const cardBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
+    const titleColor = isDarkMode ? '#e2e8f0' : '#0f172a';
+    const subColor = isDarkMode ? '#475569' : '#94a3b8';
+    const labelColor = isDarkMode ? '#64748b' : '#64748b';
+    const inputBg = isDarkMode ? '#1e293b' : '#f8fafc';
+    const inputBorder = isDarkMode ? '#334155' : '#e2e8f0';
+    const inputText = isDarkMode ? '#e2e8f0' : '#0f172a';
+    const modalBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const sectionBg = isDarkMode ? '#0f172a' : '#ffffff';
+    const sectionBorder = isDarkMode ? '#1e293b' : '#f1f5f9';
     
     const [profileData, setProfileData] = useState({
         companyName: '',
@@ -155,11 +171,11 @@ export default function OfftakerProfileScreen() {
     };
 
     return (
-        <View className="flex-1 bg-[#14243eff]">
-            <SafeAreaView edges={['top']} className="flex-1">
+        <View style={{ flex: 1, backgroundColor: bg }}>
+            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header title="Business Profile" />
 
-                <ScrollView className="flex-1 bg-[#f8fafc] rounded-t-[40px]" showsVerticalScrollIndicator={false}>
+                <ScrollView style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40 }} showsVerticalScrollIndicator={false}>
                     {/* Hero Section */}
                     <View className="items-center py-8">
                         <TouchableOpacity onPress={handlePickImage} className="relative">
