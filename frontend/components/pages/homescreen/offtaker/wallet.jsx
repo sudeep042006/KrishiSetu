@@ -1,9 +1,11 @@
-import React, { useContext } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Wallet, ArrowUpRight, ArrowDownLeft, History, CreditCard } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
 import { ThemeContext } from '../../../../context/ThemeContext';
+import RazorpayCheckout from 'react-native-razorpay';
+import { paymentService } from '../../service/api';
 
 export default function OfftakerWallet() {
     const { isDarkMode } = useContext(ThemeContext);
@@ -16,6 +18,68 @@ export default function OfftakerWallet() {
     const subTextColor = isDarkMode ? '#475569' : '#94a3b8';
     const txIconBg = isDarkMode ? '#1e293b' : '#f8fafc';
     const walletCardBg = isDarkMode ? '#0f1f3d' : '#0f172a';
+
+    const [wallet, setWallet] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchWalletData = async () => {
+        try {
+            setLoading(true);
+            const wRes = await paymentService.getWalletDetails();
+            if (wRes.success) setWallet(wRes.wallet);
+            const txRes = await paymentService.getTransactions();
+            if (txRes.success) setTransactions(txRes.transactions);
+        } catch (error) {
+            console.error("Error fetching wallet:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchWalletData();
+    }, []);
+
+    const handleDeposit = async () => {
+        try {
+            const amount = 5000; // Hardcoded 5000 for test demo
+            const orderRes = await paymentService.createOrder({
+                amount: amount,
+                type: 'deposit'
+            });
+
+            if (!orderRes.success) return Alert.alert("Error", "Could not create order");
+
+            const options = {
+                description: 'Add Funds to Wallet',
+                image: 'https://cdn-icons-png.flaticon.com/512/10041/10041178.png',
+                currency: 'INR',
+                key: 'rzp_test_ShTlQNZMXMnxb6',
+                amount: amount * 100,
+                name: 'KrishiSetu',
+                order_id: orderRes.order.id,
+                theme: { color: isDarkMode ? '#1d4ed8' : '#1e4e8c' }
+            };
+
+            RazorpayCheckout.open(options).then(async (data) => {
+                const verifyRes = await paymentService.verifyPayment(data);
+                if (verifyRes.success) {
+                    Alert.alert("Success", `₹${amount} added to your wallet!`);
+                    fetchWalletData();
+                }
+            }).catch((error) => {
+                Alert.alert("Payment Failed", `Payment cancelled or failed.`);
+            });
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "Something went wrong during payment setup");
+        }
+    };
+
+    const handlePayout = () => {
+        Alert.alert("Payout", "Payout functionality will be processed to your linked bank account.");
+    };
 
     return (
         <View style={{ flex: 1, backgroundColor: bg }}>
@@ -30,7 +94,7 @@ export default function OfftakerWallet() {
                                 <View>
                                     <Text style={styles.balanceLabel}>Available Balance</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
-                                        <Text style={styles.balanceAmount}>₹4,85,250</Text>
+                                        <Text style={styles.balanceAmount}>₹{wallet ? wallet.availableBalance.toLocaleString('en-IN') : '0'}</Text>
                                         <Text style={styles.balanceDecimal}>.00</Text>
                                     </View>
                                 </View>
@@ -40,11 +104,11 @@ export default function OfftakerWallet() {
                             </View>
 
                             <View style={{ flexDirection: 'row', gap: 12 }}>
-                                <TouchableOpacity style={styles.walletAction}>
+                                <TouchableOpacity style={styles.walletAction} onPress={handleDeposit}>
                                     <ArrowUpRight color="#4ade80" size={18} />
-                                    <Text style={styles.walletActionText}>Deposit</Text>
+                                    <Text style={styles.walletActionText}>Test Deposit</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.walletAction}>
+                                <TouchableOpacity style={styles.walletAction} onPress={handlePayout}>
                                     <ArrowDownLeft color="#f87171" size={18} />
                                     <Text style={styles.walletActionText}>Payout</Text>
                                 </TouchableOpacity>
@@ -52,18 +116,31 @@ export default function OfftakerWallet() {
                         </View>
 
                         <Text style={{ color: titleColor, fontWeight: '900', fontSize: 18, marginBottom: 16 }}>Recent Transactions</Text>
-                        {[1, 2, 3].map((i) => (
-                            <View key={i} style={[styles.txCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
-                                <View style={[styles.txIcon, { backgroundColor: txIconBg }]}>
-                                    <History size={20} color={isDarkMode ? '#475569' : '#64748b'} />
+                        
+                        {loading ? (
+                            <ActivityIndicator size="large" color="#3b82f6" style={{ marginTop: 20 }} />
+                        ) : transactions.length === 0 ? (
+                            <Text style={{ color: subTextColor, textAlign: 'center', marginTop: 20 }}>No transactions yet.</Text>
+                        ) : (
+                            transactions.map((tx) => (
+                                <View key={tx._id} style={[styles.txCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                                    <View style={[styles.txIcon, { backgroundColor: txIconBg }]}>
+                                        <History size={20} color={isDarkMode ? '#475569' : '#64748b'} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ color: titleColor, fontWeight: '700', fontSize: 14 }}>
+                                            {tx.type === 'deposit' ? 'Wallet Deposit' : tx.type === 'purchase' ? 'Crop Purchase' : 'Transaction'}
+                                        </Text>
+                                        <Text style={{ color: subTextColor, fontSize: 10, marginTop: 4 }}>
+                                            {new Date(tx.createdAt).toLocaleDateString()} • {tx.status}
+                                        </Text>
+                                    </View>
+                                    <Text style={{ color: tx.type === 'deposit' ? '#4ade80' : '#f87171', fontWeight: '700' }}>
+                                        {tx.type === 'deposit' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
+                                    </Text>
                                 </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ color: titleColor, fontWeight: '700', fontSize: 14 }}>Payment to Patil Farms</Text>
-                                    <Text style={{ color: subTextColor, fontSize: 10, marginTop: 4 }}>Today, 2:45 PM • Settlement</Text>
-                                </View>
-                                <Text style={{ color: '#f87171', fontWeight: '700' }}>-₹1,24,500</Text>
-                            </View>
-                        ))}
+                            ))
+                        )}
                     </ScrollView>
                 </View>
             </SafeAreaView>

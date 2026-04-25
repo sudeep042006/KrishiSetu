@@ -331,4 +331,26 @@ export const CropService = {
 };
 
 
+// ---------------------------------------------------------
+// PAYMENT SERVICES
+// ---------------------------------------------------------
+export const paymentService = {
+  createOrder: async (paymentData) => {
+    const response = await apiClient.post('/payment/checkout', paymentData);
+    return response.data;
+  },
+  verifyPayment: async (verificationData) => {
+    const response = await apiClient.post('/payment/verify', verificationData);
+    return response.data;
+  },
+  getTransactions: async () => {
+    const response = await apiClient.get('/payment/history');
+    return response.data;
+  },
+  getWalletDetails: async () => {
+    const response = await apiClient.get('/payment/wallet');
+    return response.data;
+  }
+};
+
 export default apiClient;

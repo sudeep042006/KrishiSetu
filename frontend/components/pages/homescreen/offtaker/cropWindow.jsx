@@ -29,6 +29,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
 import { RAZORPAY_KEY_ID } from '@env';
+import { paymentService } from '../../service/api';
 import apiClient from '../../service/api';
 import Header from '../../../common/BHeader';
 
@@ -73,19 +74,19 @@ export default function CropWindow() {
             const quantityVal = parseInt(crop.quantityRequired) || 1;
             const totalAmount = (crop.expectedPrice || 0) * quantityVal;
 
-            const orderRes = await apiClient.post('/payments/checkout', {
+            const orderRes = await paymentService.createOrder({
                 amount: totalAmount,
                 relatedItem: crop._id,
                 type: 'purchase'
             });
 
-            if (!orderRes.data.success) {
+            if (!orderRes.success) {
                 Alert.alert("Error", "Could not create order. Please try again.");
                 setIsProcessing(false);
                 return;
             }
 
-            const { order } = orderRes.data;
+            const { order } = orderRes;
 
             var options = {
                 description: `Purchase of ${crop.cropName}`,
@@ -99,13 +100,13 @@ export default function CropWindow() {
             };
 
             RazorpayCheckout.open(options).then(async (data) => {
-                const verifyRes = await apiClient.post('/payments/verify', {
+                const verifyRes = await paymentService.verifyPayment({
                     razorpay_order_id: data.razorpay_order_id,
                     razorpay_payment_id: data.razorpay_payment_id,
                     razorpay_signature: data.razorpay_signature
                 });
 
-                if (verifyRes.data.success) {
+                if (verifyRes.success) {
                     Alert.alert('Success', 'Payment Successful! Crop procured.');
                     navigation.goBack();
                 } else {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkout, paymentVerification, getUserTransactions } from "../controllers/payment.controller.js";
+import { checkout, paymentVerification, getUserTransactions, getWalletDetails } from "../controllers/payment.controller.js";
 import authenticate from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -12,5 +12,7 @@ router.post("/verify", authenticate, paymentVerification);
 
 // 3. Get User Transaction History
 router.get("/history", authenticate, getUserTransactions);
+// 4. Get User Wallet Details
+router.get("/wallet", authenticate, getWalletDetails);
 
 export default router;

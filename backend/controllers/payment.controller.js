@@ -1,5 +1,7 @@
 import { createOrder, verifyPaymentSignature } from '../services/razorpay.service.js';
 import Transaction from '../models/Transaction.js';
+import Wallet from '../models/Wallet.js';
+import Project from '../models/Project.js';
 
 export const checkout = async (req, res) => {
     try {
@@ -40,16 +42,76 @@ export const paymentVerification = async (req, res) => {
 
         if (isAuthentic) {
             // Update transaction status to success
-            await Transaction.findOneAndUpdate(
+            const transaction = await Transaction.findOneAndUpdate(
                 { orderId: razorpay_order_id },
                 { 
                     status: 'success', 
                     paymentId: razorpay_payment_id, 
                     signature: razorpay_signature 
-                }
+                },
+                { new: true }
             );
 
-            // TODO: Add logic to update Farmer Wallet, change crop status to 'sold', etc.
+            if (transaction) {
+                // Fetch or Create Wallet
+                let wallet = await Wallet.findOne({ userId: transaction.userId });
+                if (!wallet) {
+                    wallet = await Wallet.create({
+                        userId: transaction.userId,
+                        availableBalance: 0,
+                        pendingBalance: 0,
+                        totalEarnings: 0,
+                        totalSpent: 0,
+                        currency: "INR"
+                    });
+                }
+
+                // Update Wallet Balance if it was a deposit
+                if (transaction.type === 'deposit') {
+                    await Wallet.findByIdAndUpdate(wallet._id, {
+                        $inc: { availableBalance: transaction.amount }
+                    });
+                }
+                
+                // If it was a crop purchase
+                if (transaction.type === 'purchase' && transaction.relatedItem) {
+                    const project = await Project.findById(transaction.relatedItem);
+                    if (project) {
+                        // Mark crop as closed (sold)
+                        project.status = 'closed';
+                        await project.save();
+
+                        // 1. Deduct from buyer's (offtaker's) wallet
+                        await Wallet.findByIdAndUpdate(wallet._id, {
+                            $inc: { 
+                                availableBalance: -transaction.amount,
+                                totalSpent: transaction.amount 
+                            }
+                        });
+
+                        // 2. Add to seller's (farmer's) wallet
+                        // Ensure the farmer has a wallet
+                        let farmerWallet = await Wallet.findOne({ userId: project.createdBy });
+                        if (!farmerWallet) {
+                            farmerWallet = await Wallet.create({
+                                userId: project.createdBy,
+                                availableBalance: 0,
+                                pendingBalance: 0,
+                                totalEarnings: 0,
+                                totalSpent: 0,
+                                currency: "INR"
+                            });
+                        }
+                        
+                        await Wallet.findByIdAndUpdate(farmerWallet._id, {
+                            $inc: { 
+                                availableBalance: transaction.amount,
+                                totalEarnings: transaction.amount 
+                            }
+                        });
+                    }
+                }
+            }
 
             res.status(200).json({
                 success: true,
@@ -81,6 +143,31 @@ export const getUserTransactions = async (req, res) => {
         res.status(200).json({
             success: true,
             transactions
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
+export const getWalletDetails = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        let wallet = await Wallet.findOne({ userId });
+        
+        if (!wallet) {
+             wallet = await Wallet.create({
+                userId,
+                availableBalance: 0,
+                pendingBalance: 0,
+                totalEarnings: 0,
+                totalSpent: 0,
+                currency: "INR"
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            wallet
         });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server Error" });

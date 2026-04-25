@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { paymentService } from '../../service/api';
+import { Alert } from 'react-native';
 import {
     View,
     Text,
@@ -81,37 +83,57 @@ const DUMMY_TRANSACTIONS = [
 export default function WalletScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [walletData, setWalletData] = useState({
-        available: 42500,
-        pending: 15000,
-        totalEarned: 134500
-    });
+    const [walletData, setWalletData] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+
+    const fetchWalletData = async () => {
+        try {
+            setLoading(true);
+            const wRes = await paymentService.getWalletDetails();
+            if (wRes.success) setWalletData(wRes.wallet);
+            
+            const txRes = await paymentService.getTransactions();
+            if (txRes.success) setTransactions(txRes.transactions);
+        } catch (error) {
+            console.error("Error fetching wallet:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Simulate loading
-        setTimeout(() => setLoading(false), 1000);
+        fetchWalletData();
     }, []);
 
-    const onRefresh = React.useCallback(() => {
+    const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
-        setTimeout(() => {
-            setRefreshing(false);
-        }, 2000);
+        await fetchWalletData();
+        setRefreshing(false);
     }, []);
 
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [withdrawAmount, setWithdrawAmount] = useState('');
 
-    const handleWithdraw = () => {
-        // Logic for withdrawal
+    const handleWithdraw = async () => {
+        if (!withdrawAmount || isNaN(withdrawAmount) || Number(withdrawAmount) <= 0) {
+            Alert.alert("Invalid Amount", "Please enter a valid withdrawal amount.");
+            return;
+        }
+
+        if (walletData && Number(withdrawAmount) > walletData.availableBalance) {
+            Alert.alert("Insufficient Balance", "You cannot withdraw more than your available balance.");
+            return;
+        }
+
+        // Logic for withdrawal (Test Mode Simulation)
         setShowWithdrawModal(false);
         setWithdrawAmount('');
-        // Show success alert or notification
+        Alert.alert("Withdrawal Initiated", `₹${withdrawAmount} has been sent to your bank account.`);
     };
 
     const renderTransaction = (tx) => (
         <TouchableOpacity 
-            key={tx.id}
+            key={tx._id}
             className="flex-row items-center p-4 bg-white mb-3 rounded-2xl border border-gray-100"
             style={{ elevation: 1, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 8 }}
         >
@@ -123,10 +145,12 @@ export default function WalletScreen() {
                 )}
             </View>
             <View className="flex-1 ml-4">
-                <Text className="text-[15px] font-bold text-gray-900" numberOfLines={1}>{tx.source}</Text>
+                <Text className="text-[15px] font-bold text-gray-900" numberOfLines={1}>
+                    {tx.type === 'purchase' ? 'Crop Sold' : tx.type === 'deposit' ? 'Added Funds' : 'Transaction'}
+                </Text>
                 <View className="flex-row items-center mt-1">
                     <Clock size={12} color="#94a3b8" />
-                    <Text className="text-[12px] text-gray-400 ml-1">{tx.date}</Text>
+                    <Text className="text-[12px] text-gray-400 ml-1">{new Date(tx.createdAt).toLocaleDateString()}</Text>
                     {tx.status === 'pending' && (
                         <View className="bg-amber-50 px-2 py-0.5 rounded-full ml-2">
                             <Text className="text-[10px] text-amber-600 font-bold uppercase">Pending</Text>
@@ -135,8 +159,8 @@ export default function WalletScreen() {
                 </View>
             </View>
             <View className="items-end">
-                <Text className={`text-[16px] font-black ${tx.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {tx.type === 'income' ? '+' : '-'} ₹{tx.amount.toLocaleString('en-IN')}
+                <Text className={`text-[16px] font-black ${tx.type === 'deposit' || tx.type === 'purchase' ? 'text-green-600' : 'text-red-600'}`}>
+                    {tx.type === 'deposit' || tx.type === 'purchase' ? '+' : '-'} ₹{tx.amount.toLocaleString('en-IN')}
                 </Text>
                 <ChevronRight size={16} color="#cbd5e1" className="mt-1" />
             </View>
@@ -173,7 +197,7 @@ export default function WalletScreen() {
                                     <View>
                                         <Text className="text-green-200 text-xs font-bold uppercase tracking-widest">Available Balance</Text>
                                         <Text className="text-white text-4xl font-black mt-1">
-                                            ₹{walletData.available.toLocaleString('en-IN')}
+                                            ₹{walletData ? walletData.availableBalance.toLocaleString('en-IN') : '0'}
                                         </Text>
                                     </View>
                                     <View className="bg-white/10 p-2 rounded-xl">
@@ -184,11 +208,11 @@ export default function WalletScreen() {
                                 <View className="flex-row items-center bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
                                     <View className="flex-1 border-r border-white/10">
                                         <Text className="text-green-200/60 text-[10px] font-bold uppercase">Pending</Text>
-                                        <Text className="text-white font-bold text-lg">₹{walletData.pending.toLocaleString('en-IN')}</Text>
+                                        <Text className="text-white font-bold text-lg">₹{walletData ? walletData.pendingBalance.toLocaleString('en-IN') : '0'}</Text>
                                     </View>
                                     <View className="flex-1 pl-4">
                                         <Text className="text-green-200/60 text-[10px] font-bold uppercase">Total Earned</Text>
-                                        <Text className="text-white font-bold text-lg">₹{walletData.totalEarned.toLocaleString('en-IN')}</Text>
+                                        <Text className="text-white font-bold text-lg">₹{walletData ? walletData.totalEarnings.toLocaleString('en-IN') : '0'}</Text>
                                     </View>
                                 </View>
 
@@ -247,7 +271,11 @@ export default function WalletScreen() {
 
                         {/* ── Transactions List ── */}
                         <View className="px-5">
-                            {DUMMY_TRANSACTIONS.map(renderTransaction)}
+                            {transactions.length === 0 ? (
+                                <Text className="text-center text-gray-500 my-4">No transactions yet.</Text>
+                            ) : (
+                                transactions.map(renderTransaction)
+                            )}
                         </View>
 
                         {/* ── Tip Card ── */}
@@ -268,7 +296,7 @@ export default function WalletScreen() {
                         <View className="items-center mb-8">
                             <View className="w-12 h-1.5 bg-gray-200 rounded-full mb-6" />
                             <Text className="text-2xl font-black text-gray-900">Withdraw Funds</Text>
-                            <Text className="text-gray-400 mt-2">Available: ₹{walletData.available.toLocaleString('en-IN')}</Text>
+                            <Text className="text-gray-400 mt-2">Available: ₹{walletData ? walletData.availableBalance.toLocaleString('en-IN') : '0'}</Text>
                         </View>
 
                         <Text className="text-gray-900 font-bold mb-2">Amount to Withdraw</Text>

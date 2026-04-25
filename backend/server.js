@@ -12,6 +12,7 @@ import weatherRoutes from "./routes/weather.routes.js";
 import offtakerRoutes from "./routes/offtaker.routes.js"; // New weather route
 import messageRoutes from "./routes/message.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 
 import http from 'http';
 import { initializeSocket } from './config/socket.js';
@@ -39,6 +40,7 @@ app.use("/api/v1/weather", weatherRoutes);
 app.use("/api/v1/offtaker", offtakerRoutes); // Mounted weather routes
 app.use("/api/v1/chat", messageRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/payment", paymentRoutes);
 
 
 app.get("/",(req,res)=>{
