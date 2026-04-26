@@ -1,64 +1,48 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const proposalSchema = new mongoose.Schema(
-  {
-    projectId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-      required: true,
+const proposalSchema = new mongoose.Schema({
+    offtakerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
-
-    senderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    farmerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
-
-    receiverId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    cropName: {
+        type: String,
+        required: true
     },
-
-    proposedPrice: {
-      type: Number,
-      required: true,
-      min: 0,
+    quantity: {
+        type: Number,
+        required: true
     },
-
-    proposedQuantity: {
-      type: Number,
-      required: true,
-      min: 1,
+    unit: {
+        type: String,
+        default: 'Quintal'
     },
-
-    proposedStartDate: {
-      type: Date,
+    pricePerUnit: {
+        type: Number,
+        required: true
     },
-
-    proposedEndDate: {
-      type: Date,
+    deliveryDate: {
+        type: Date,
+        required: true
     },
-
     message: {
-      type: String,
-      trim: true,
+        type: String,
+        default: ''
     },
-
     status: {
-      type: String,
-      enum: ["pending", "accepted", "rejected", "withdrawn", "negotiating"],
-      default: "pending",
-    },
+        type: String,
+        enum: ['Pending', 'Accepted', 'Rejected'],
+        default: 'Pending'
+    }
+}, {
+    timestamps: true
+});
 
-    respondedAt: {
-      type: Date,
-      default: null,
-    },
-  },
-  { timestamps: true }
-);
-
-const Proposal = mongoose.model("Proposal", proposalSchema);
-
+const Proposal = mongoose.model('Proposal', proposalSchema);
 export default Proposal;

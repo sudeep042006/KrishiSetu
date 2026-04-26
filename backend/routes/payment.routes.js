@@ -1,6 +1,12 @@
-import { Router } from "express";
-import { checkout, paymentVerification, getUserTransactions, getWalletDetails } from "../controllers/payment.controller.js";
+import { 
+    checkout, 
+    paymentVerification, 
+    getUserTransactions, 
+    getWalletDetails,
+    addBankDetails
+} from "../controllers/payment.controller.js";
 import authenticate from "../middlewares/auth.middleware.js";
+import { Router } from "express";
 
 const router = Router();
 
@@ -14,5 +20,7 @@ router.post("/verify", authenticate, paymentVerification);
 router.get("/history", authenticate, getUserTransactions);
 // 4. Get User Wallet Details
 router.get("/wallet", authenticate, getWalletDetails);
+// 5. Add/Update Bank Details
+router.post("/bank", authenticate, addBankDetails);
 
 export default router;

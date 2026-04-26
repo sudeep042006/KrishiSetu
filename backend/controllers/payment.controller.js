@@ -185,3 +185,47 @@ export const getWalletDetails = async (req, res) => {
         res.status(500).json({ success: false, message: "Server Error" });
     }
 };
+
+export const addBankDetails = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { bankName, accountNumber, ifscCode, accountHolderName } = req.body;
+
+        if (!bankName || !accountNumber || !ifscCode || !accountHolderName) {
+            return res.status(400).json({ success: false, message: "All bank details are required" });
+        }
+
+        let wallet = await Wallet.findOne({ userId });
+        
+        if (!wallet) {
+            wallet = await Wallet.create({
+                userId,
+                availableBalance: 0,
+                pendingBalance: 0,
+                totalEarnings: 0,
+                totalSpent: 0,
+                currency: "INR"
+            });
+        }
+
+        wallet.linkedBankAccount = {
+            bankName,
+            accountNumber,
+            ifscCode,
+            accountHolderName,
+            isVerified: true // Simulating verification for now
+        };
+
+        await wallet.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Bank details updated successfully",
+            wallet
+        });
+    } catch (error) {
+        console.error("Add Bank Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+

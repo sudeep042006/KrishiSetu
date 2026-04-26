@@ -13,6 +13,9 @@ import offtakerRoutes from "./routes/offtaker.routes.js"; // New weather route
 import messageRoutes from "./routes/message.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import cropPriceRoutes from "./routes/cropPrice.routes.js";
+import proposalRoutes from "./routes/proposal.routes.js";
+import { startPriceSyncJob } from './services/priceSync.service.js';
 
 import http from 'http';
 import { initializeSocket } from './config/socket.js';
@@ -41,7 +44,10 @@ app.use("/api/v1/offtaker", offtakerRoutes); // Mounted weather routes
 app.use("/api/v1/chat", messageRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/crop-prices", cropPriceRoutes);
+app.use("/api/v1/proposal", proposalRoutes);
 
+startPriceSyncJob();
 
 app.get("/",(req,res)=>{
     res.send("KrishiSetu is Running");

@@ -39,6 +39,16 @@ const walletSchema = new mongoose.Schema(
       uppercase: true,
       trim: true,
     },
+    linkedBankAccount: {
+      bankName: String,
+      accountNumber: String,
+      ifscCode: String,
+      accountHolderName: String,
+      isVerified: {
+        type: Boolean,
+        default: false
+      }
+    },
   },
   { timestamps: true }
 );
