@@ -13,7 +13,7 @@ import { supabase } from '../../../services/supabase';
 const getBaseUrl = () => {
   // If you are running on a physical device, replace this IP with your computer's IP
   // Example: return 'http://192.168.1.100:5000/api/v1';
-  
+
   if (Platform.OS === 'android') {
     return API_BASE_URL;
   } else {
@@ -43,13 +43,13 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
-    
+
     if (error) {
       console.error('Error getting Supabase session:', error);
     }
 
     const token = session?.access_token;
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       // console.log('Auth Header set from Supabase session');
@@ -97,8 +97,8 @@ export const authService = {
         password: userData.password,
         role: userData.role === 'Farmer' ? 'farmer' : 'offtaker', // map Buyer to offtaker
       };
-      
-      const response = await apiClient.post('/auth/register', payload);
+
+      const response = await apiClient.post('auth/register', payload);
       return response.data;
     } catch (error) {
       console.error("API Error registering user:", error?.response?.data || error);
@@ -107,39 +107,39 @@ export const authService = {
   },
 
   loginUser: async (credentials) => {
-  try {
-    const payload = {
-      email: credentials.mobileOrEmail,
-      password: credentials.password,
-      role: credentials.role === 'Farmer' ? 'farmer' : 'offtaker',
-    };
+    try {
+      const payload = {
+        email: credentials.mobileOrEmail,
+        password: credentials.password,
+        role: credentials.role === 'Farmer' ? 'farmer' : 'offtaker',
+      };
 
-    const response = await apiClient.post('/auth/login', payload);
-    console.log('LOGIN RESPONSE:', JSON.stringify(response.data));
+      const response = await apiClient.post('auth/login', payload);
+      console.log('LOGIN RESPONSE:', JSON.stringify(response.data));
 
-    // ✅ NEW: Save token and role to permanent storage
-    const token = response.data?.token;       // adjust if your backend uses different key
-    const role = credentials.role;
+      // ✅ NEW: Save token and role to permanent storage
+      const token = response.data?.token;       // adjust if your backend uses different key
+      const role = credentials.role;
 
-    if (token) {
-      // ✅ Session persistence handled by Supabase JS
-      await supabase.auth.setSession({
-        access_token: token,
-        refresh_token: response.data?.refreshToken
-      });
+      if (token) {
+        // ✅ Session persistence handled by Supabase JS
+        await supabase.auth.setSession({
+          access_token: token,
+          refresh_token: response.data?.refreshToken
+        });
 
-      await AsyncStorage.setItem('authToken', token);
-      await AsyncStorage.setItem('userRole', role);
-      if (response.data?.user) {
-        await AsyncStorage.setItem('userId', String(response.data.user._id));
-        await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        await AsyncStorage.setItem('authToken', token);
+        await AsyncStorage.setItem('userRole', role);
+        if (response.data?.user) {
+          await AsyncStorage.setItem('userId', String(response.data.user._id));
+          await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        }
       }
-    }
 
-    return response.data;
+      return response.data;
 
-    }  catch (error) {
-     console.error("API Error logging in:", error?.response?.data || error);
+    } catch (error) {
+      console.error("API Error logging in:", error?.response?.data || error);
       throw error;
     }
   }
@@ -157,12 +157,12 @@ export const CompleteFarmerProfile = async (farmerData) => {
 
 export const farmerService = {
   getFarmers: async () => {
-    const response = await apiClient.get('/farmer/get');
+    const response = await apiClient.get('farmer/get');
     return response.data;
   },
 
   getProfile: async () => {
-    const response = await apiClient.get('/farmer/profile');
+    const response = await apiClient.get('farmer/profile');
     return response.data;
   },
 
@@ -173,7 +173,7 @@ export const farmerService = {
       type: fileType,
       name: fileName,
     });
-    
+
     // We use fetch here because React Native's FormData works best with native fetch
     // when dealing with multipart/form-data boundaries, avoiding multer backend crashes.
     const token = await AsyncStorage.getItem('authToken');
@@ -184,29 +184,29 @@ export const farmerService = {
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Upload failed: ${errorText}`);
     }
-    
+
     return await response.json();
   },
 
   searchFarmer: async (searchQueries) => {
-    const response = await apiClient.post('/farmer/search', searchQueries);
+    const response = await apiClient.post('farmer/search', searchQueries);
     return response.data;
   },
 
   updateFarmer: async (farmerId, updateData) => {
-    const response = await apiClient.put(`/farmer/update/${farmerId}`, updateData);
+    const response = await apiClient.put(`farmer/update/${farmerId}`, updateData);
     return response.data;
   },
 
 
 
   getProfilePhotobyId: async (farmerId) => {
-    const response = await apiClient.get(`/farmer/profile-photo/${farmerId}`);
+    const response = await apiClient.get(`farmer/profile-photo/${farmerId}`);
     return response.data;
   }
 };
@@ -217,17 +217,17 @@ export const farmerService = {
 
 export const offtakerService = {
   getAllOfftakers: async () => {
-    const response = await apiClient.get('/offtaker/all');
+    const response = await apiClient.get('offtaker/all');
     return response.data;
   },
 
   getProfile: async () => {
-    const response = await apiClient.get('/offtaker/profile');
+    const response = await apiClient.get('offtaker/profile');
     return response.data;
   },
 
   updateProfile: async (profileData) => {
-    const response = await apiClient.post('/offtaker/profile', profileData);
+    const response = await apiClient.post('offtaker/profile', profileData);
     return response.data;
   },
 
@@ -238,7 +238,7 @@ export const offtakerService = {
       type: fileType,
       name: fileName,
     });
-    
+
     const token = await AsyncStorage.getItem('authToken');
     const response = await fetch(`${BASE_URL}/offtaker/profile-photo`, {
       method: 'POST',
@@ -247,12 +247,12 @@ export const offtakerService = {
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Upload failed: ${errorText}`);
     }
-    
+
     return await response.json();
   }
 };
@@ -262,37 +262,37 @@ export const offtakerService = {
 // ---------------------------------------------------------
 export const CropService = {
   getProjects: async () => {
-    const response = await apiClient.get('/project/get');
+    const response = await apiClient.get('project/get');
     return response.data;
   },
 
   getCategories: async () => {
-    const response = await apiClient.get('/project/getCategories');
+    const response = await apiClient.get('project/getCategories');
     return response.data;
   },
 
   getProjectByCropName: async (cropName) => {
-    const response = await apiClient.get(`/project/getProjectByCropName?cropName=${cropName}`);
+    const response = await apiClient.get(`project/getProjectByCropName?cropName=${cropName}`);
     return response.data;
   },
 
   getProjectByLocation: async (location) => {
-    const response = await apiClient.get(`/project/getProjectByLocation?location=${location}`);
+    const response = await apiClient.get(`project/getProjectByLocation?location=${location}`);
     return response.data;
   },
 
   getProjectPhotoById: async (projectId) => {
-    const response = await apiClient.get(`/project/getPhoto/${projectId}`);
+    const response = await apiClient.get(`project/getPhoto/${projectId}`);
     return response.data;
   },
 
   updateProject: async (projectId, updateData) => {
-    const response = await apiClient.post(`/project/update/${projectId}`, updateData);
+    const response = await apiClient.post(`project/update/${projectId}`, updateData);
     return response.data;
   },
 
   deleteProject: async (projectId) => {
-    const response = await apiClient.post(`/project/deleteProject/${projectId}`);
+    const response = await apiClient.post(`project/deleteProject/${projectId}`);
     return response.data;
   },
 
@@ -304,7 +304,7 @@ export const CropService = {
       type: fileType,
       name: fileName,
     });
-    
+
     // We use fetch here because React Native's FormData works best with native fetch
     // when dealing with multipart/form-data boundaries, avoiding multer backend crashes.
     const token = await AsyncStorage.getItem('authToken');
@@ -315,19 +315,41 @@ export const CropService = {
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Upload failed: ${errorText}`);
     }
-    
+
     return await response.json();
   },
 
   createProject: async (projectData) => {
-    const response = await apiClient.post('/project/create', projectData);
+    const response = await apiClient.post('project/create', projectData);
     return response.data;
   },
+};
+
+// ==========================================
+// CROP PRICES ENDPOINTS
+// ==========================================
+
+export const fetchLiveCropPrices = async (district, commodity) => {
+  try {
+    // This will automatically append to your BASE_URL
+    // Result: GET http://10.0.2.2:5000/api/crop-prices?district=Nagpur&commodity=Wheat
+    const response = await apiClient.get('crop-prices', {
+      params: {
+        district: district,
+        commodity: commodity
+      }
+    });
+
+    return response.data;
+
+  } catch (error) {
+    throw error;
+  }
 };
 
 
@@ -336,19 +358,42 @@ export const CropService = {
 // ---------------------------------------------------------
 export const paymentService = {
   createOrder: async (paymentData) => {
-    const response = await apiClient.post('/payment/checkout', paymentData);
+    const response = await apiClient.post('payment/checkout', paymentData);
     return response.data;
   },
   verifyPayment: async (verificationData) => {
-    const response = await apiClient.post('/payment/verify', verificationData);
+    const response = await apiClient.post('payment/verify', verificationData);
     return response.data;
   },
   getTransactions: async () => {
-    const response = await apiClient.get('/payment/history');
+    const response = await apiClient.get('payment/history');
     return response.data;
   },
   getWalletDetails: async () => {
-    const response = await apiClient.get('/payment/wallet');
+    const response = await apiClient.get('payment/wallet');
+    return response.data;
+  },
+  addBankDetails: async (bankData) => {
+    const response = await apiClient.post('payment/bank', bankData);
+    return response.data;
+  }
+};
+
+export const ProposalService = {
+  createProposal: async (proposalData) => {
+    const response = await apiClient.post('proposal/create', proposalData);
+    return response.data;
+  },
+  getFarmerProposals: async () => {
+    const response = await apiClient.get('proposal/farmer');
+    return response.data;
+  },
+  getOfftakerProposals: async () => {
+    const response = await apiClient.get('proposal/offtaker');
+    return response.data;
+  },
+  updateProposalStatus: async (proposalId, status) => {
+    const response = await apiClient.put(`proposal/${proposalId}/status`, { status });
     return response.data;
   }
 };

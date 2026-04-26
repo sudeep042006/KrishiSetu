@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Platform, StyleSheet, PermissionsAndroid } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Platform, StyleSheet, PermissionsAndroid, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
@@ -21,11 +21,19 @@ import {
     TrendingUp,
     Search,
     Target,
-    Sprout
+    Sprout,
+    BadgePercent,
+    Warehouse,
+    ThermometerSnowflake,
+    Factory,
+    ShieldCheck,
+    FlaskConical,
+    Box
 } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import BuyerBottomTabs from '../../../navigation/BuyerBottomTabs';
 import Header from '../../../common/BHeader';
+import { Animated, Modal as RNModal } from 'react-native';
 
 export default function OfftakerHome() {
     const navigation = useNavigation();
@@ -34,6 +42,37 @@ export default function OfftakerHome() {
     const [weatherData, setWeatherData] = useState(null);
     const [loadingWeather, setLoadingWeather] = useState(true);
     const [procurementCount, setProcurementCount] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const [showLogisticsModal, setShowLogisticsModal] = useState(false);
+    const scaleAnim = useState(new Animated.Value(0))[0];
+
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        await Promise.all([
+            fetchUserData(),
+            initializeWeather()
+        ]);
+        setRefreshing(false);
+    }, []);
+
+    const toggleLogisticsModal = (show) => {
+        if (show) {
+            setShowLogisticsModal(true);
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                useNativeDriver: true,
+                tension: 50,
+                friction: 7
+            }).start();
+        } else {
+            Animated.timing(scaleAnim, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true
+            }).start(() => setShowLogisticsModal(false));
+        }
+    };
 
     useEffect(() => {
         fetchUserData();
@@ -188,10 +227,18 @@ export default function OfftakerHome() {
                     className="flex-1"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 100 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor="#ffffff"
+                            colors={['#1e4e8c']}
+                        />
+                    }
                 >
                     {/* Procurement Stats Row */}
                     <View className="flex-row justify-between px-5 mb-5">
-                        <TouchableOpacity className="flex-1">
+                        <TouchableOpacity onPress={() => navigation.navigate('OfftakerOrders')} className="flex-1">
                             <View className="bg-slate-900 rounded-[28px] mr-2 overflow-hidden border border-white/10 shadow-2xl h-[170px]">
                                 <Image
                                     source={{ uri: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070' }}
@@ -214,8 +261,8 @@ export default function OfftakerHome() {
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            activeOpacity={0.9} 
+                        <TouchableOpacity
+                            activeOpacity={0.9}
                             className="flex-[1.2] ml-2"
                             onPress={() => navigation.navigate('CropsPage')}
                         >
@@ -237,24 +284,7 @@ export default function OfftakerHome() {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Quick Analytics Bar */}
-                    <View className="px-5 mb-6">
-                        <View className="bg-white/95 dark:bg-[#1e1e1e] p-4 rounded-[24px] flex-row items-center shadow-lg border border-slate-100 dark:border-gray-800">
-                            <View className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl mr-4">
-                                <Target color={isDarkMode ? "#818cf8" : "#4f46e5"} size={24} />
-                            </View>
-                            <TouchableOpacity onPress={() => navigation.navigate('Orders')}>
-                            <View className="flex-1">
-                                <Text className="text-slate-900 dark:text-gray-100 font-bold text-sm">Target: Wheat Procurement</Text>
-                                <View className="h-1.5 bg-slate-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden">
-                                    <View className="h-full bg-indigo-500 w-[65%]" />
-                                </View>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1">65% of monthly goal achieved</Text>
-                            </View>
-                            <ChevronRight color={isDarkMode ? "#4b5563" : "#cbd5e1"} size={20} />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
+
 
                     {/* Operations Center */}
                     <View className="bg-[#f8fafc] dark:bg-[#121212] flex-1 pt-8 px-5 rounded-t-[48px] min-h-screen">
@@ -265,9 +295,10 @@ export default function OfftakerHome() {
                             </TouchableOpacity>
                         </View>
 
+
                         {/* Action Grid */}
                         <View className="flex-row flex-wrap justify-between mb-8">
-                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('PostRequest')} className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
                                 <View className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-3xl mb-3">
                                     <PlusSquare color={isDarkMode ? "#fbbf24" : "#f59e0b"} size={28} />
                                 </View>
@@ -275,7 +306,7 @@ export default function OfftakerHome() {
                                 <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Buy newer crops</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('Marketplace')} className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
                                 <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-3xl mb-3">
                                     <MapPin color={isDarkMode ? "#60a5fa" : "#3b82f6"} size={28} />
                                 </View>
@@ -283,7 +314,7 @@ export default function OfftakerHome() {
                                 <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Locate sellers</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
+                            <TouchableOpacity onPress={() => navigation.navigate('CropPriceScreen')} className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
                                 <View className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-3xl mb-3">
                                     <BarChart2 color={isDarkMode ? "#34d399" : "#10b981"} size={28} />
                                 </View>
@@ -291,7 +322,10 @@ export default function OfftakerHome() {
                                 <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Price analytics</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
+                            <TouchableOpacity 
+                                onPress={() => toggleLogisticsModal(true)}
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center"
+                            >
                                 <View className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-3xl mb-3">
                                     <Truck color={isDarkMode ? "#a78bfa" : "#8b5cf6"} size={28} />
                                 </View>
@@ -300,23 +334,239 @@ export default function OfftakerHome() {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Recent Contracts / Deliveries */}
-                        <Text className="text-slate-900 dark:text-gray-100 text-lg font-black mb-4">Scheduled Pickups</Text>
-                        <View className="bg-white dark:bg-[#1e1e1e] p-4 rounded-[28px] flex-row items-center shadow-sm border border-slate-50 dark:border-gray-800 mb-4">
-                            <View className="bg-emerald-500/10 dark:bg-emerald-500/20 p-4 rounded-2xl mr-4">
-                                <Truck color={isDarkMode ? "#34d399" : "#10b981"} size={26} />
-                            </View>
-                            <View className="flex-1">
-                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">Wheat (Bulk) - Ahmednagar</Text>
-                                <Text className="text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-0.5">EST: Today, 4:00 PM</Text>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1">Farmer: Rajesh Kumar • 2.5 Tons</Text>
-                            </View>
-                            <View className="bg-slate-100 dark:bg-gray-800 rounded-full p-2">
-                                <ChevronRight color={isDarkMode ? "#94a3b8" : "#64748b"} size={16} />
-                            </View>
+
+                        {/* Industrial Ads Grid */}
+                        <View className="flex-row items-center justify-between mb-4 mt-4">
+                            <Text className="text-slate-900 dark:text-gray-100 text-lg font-black tracking-tight">Industrial & Logistics</Text>
+                            <TouchableOpacity>
+                                <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">View All</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View className="flex-row flex-wrap justify-between pb-20" style={{ gap: 12 }}>
+                            {/* Ad Card 1: Cold Storage */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-blue-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">COLD CHAIN</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Premium Cold Storage</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <ThermometerSnowflake size={12} color="#2563eb" />
+                                        <Text className="text-blue-600 text-[10px] font-bold ml-1">Across Maharashtra</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 2: Logistics */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=2075' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-slate-800 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">LOGISTICS</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Bulk Transport Fleet</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <Truck size={12} color="#475569" />
+                                        <Text className="text-slate-600 text-[10px] font-bold ml-1">Real-time Tracking</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 3: Quality Testing */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1579152276503-03b293c66f77?q=80&w=2070' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-emerald-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">LAB TESTED</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Crop Quality Lab</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <FlaskConical size={12} color="#059669" />
+                                        <Text className="text-emerald-600 text-[10px] font-bold ml-1">Instant Reports</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 4: Warehouse */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?q=80&w=2072' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-indigo-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">STORAGE</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Modern Warehousing</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <Warehouse size={12} color="#4f46e5" />
+                                        <Text className="text-indigo-600 text-[10px] font-bold ml-1">Secure & Insured</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 5: Processing */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1516939884455-1445c8652f83?q=80&w=2070' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-orange-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">UNITS</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Food Processing Units</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <Factory size={12} color="#ea580c" />
+                                        <Text className="text-orange-600 text-[10px] font-bold ml-1">Available for Rent</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 6: Packaging */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2070' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-purple-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">PACKAGING</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Eco-friendly Packaging</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <Box size={12} color="#9333ea" />
+                                        <Text className="text-purple-600 text-[10px] font-bold ml-1">Retail & Bulk</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 7: Business Loans */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2073' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-blue-700 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">FINANCE</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Working Capital Loans</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <TrendingUp size={12} color="#1d4ed8" />
+                                        <Text className="text-blue-700 text-[10px] font-bold ml-1">For Offtakers</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Ad Card 8: Certifications */}
+                            <TouchableOpacity
+                                className="w-[48%] bg-white dark:bg-[#1e1e1e] rounded-[28px] overflow-hidden shadow-sm border border-slate-100 dark:border-gray-800"
+                                activeOpacity={0.9}
+                            >
+                                <View className="h-32 w-full relative">
+                                    <Image
+                                        source={{ uri: 'https://images.unsplash.com/photo-1454165833767-027ffea9e7a7?q=80&w=2070' }}
+                                        className="w-full h-full"
+                                    />
+                                    <View className="absolute top-2 left-2 bg-yellow-600 px-2 py-1 rounded-lg">
+                                        <Text className="text-white text-[9px] font-bold">QUALITY</Text>
+                                    </View>
+                                </View>
+                                <View className="p-3">
+                                    <Text className="text-slate-900 dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Export Certifications</Text>
+                                    <View className="flex-row items-center mt-1">
+                                        <ShieldCheck size={12} color="#ca8a04" />
+                                        <Text className="text-yellow-700 text-[10px] font-bold ml-1">Global Standard</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </ScrollView>
+
+                {/* Coming Soon Modal */}
+                <RNModal
+                    transparent
+                    visible={showLogisticsModal}
+                    animationType="none"
+                    onRequestClose={() => toggleLogisticsModal(false)}
+                >
+                    <TouchableOpacity 
+                        activeOpacity={1} 
+                        onPress={() => toggleLogisticsModal(false)}
+                        className="flex-1 bg-black/40 justify-center items-center px-10"
+                    >
+                        <Animated.View 
+                            style={{ transform: [{ scale: scaleAnim }] }}
+                            className="bg-white dark:bg-[#1e1e1e] w-full p-8 rounded-[40px] items-center border border-blue-100 dark:border-blue-900/30"
+                        >
+                            <View className="bg-blue-50 dark:bg-blue-900/20 w-24 h-24 rounded-full items-center justify-center mb-6 border border-blue-100/50">
+                                <Truck color="#2563eb" size={40} />
+                            </View>
+                            <Text className="text-slate-900 dark:text-white text-2xl font-black text-center mb-3">Logistics Center</Text>
+                            <View className="bg-blue-600 px-4 py-1.5 rounded-full mb-4">
+                                <Text className="text-white text-[10px] font-black uppercase tracking-widest">Coming Soon</Text>
+                            </View>
+                            <Text className="text-slate-500 dark:text-gray-400 text-center text-sm leading-6">
+                                We're building a world-class fleet management system. <Text className="text-blue-600 font-bold">Stay tuned</Text> for real-time tracking and delivery automation!
+                            </Text>
+                            
+                            <TouchableOpacity 
+                                onPress={() => toggleLogisticsModal(false)}
+                                className="mt-8 bg-slate-900 dark:bg-blue-600 px-10 py-4 rounded-2xl"
+                            >
+                                <Text className="text-white font-bold">Got it!</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </TouchableOpacity>
+                </RNModal>
             </SafeAreaView>
         </LinearGradient>
     );

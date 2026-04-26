@@ -307,10 +307,9 @@ export default function CropProjectScreen({ navigation }) {
                                 <SectionLabel>Harvest & Location</SectionLabel>
 
                                 <Field label="Expected Harvest Date">
-                                    <StyledInput
-                                        placeholder="e.g. 15 March 2025"
+                                    <DateBox 
                                         value={form.harvestDate}
-                                        onChangeText={v => set('harvestDate', v)}
+                                        onChange={(v) => set('harvestDate', v)}
                                     />
                                 </Field>
 
@@ -392,5 +391,70 @@ function StyledInput({ placeholder, value, onChangeText, keyboardType, maxLength
             keyboardType={keyboardType || 'default'}
             maxLength={maxLength}
         />
+    );
+}
+
+function DateBox({ value, onChange }) {
+    // Parse value (expected format: YYYY-MM-DD or DD/MM/YYYY)
+    // For simplicity, we'll handle DD, MM, YYYY separately in local state
+    const [dd, setDd] = useState('');
+    const [mm, setMm] = useState('');
+    const [yyyy, setYyyy] = useState('');
+
+    const mmRef = React.useRef();
+    const yyyyRef = React.useRef();
+
+    const update = (d, m, y) => {
+        if (d && m && y && y.length === 4) {
+            onChange(`${d}/${m}/${y}`);
+        }
+    };
+
+    return (
+        <View className="flex-row gap-2">
+            <View className="flex-1">
+                <TextInput
+                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-center text-sm font-bold text-gray-800"
+                    placeholder="DD"
+                    keyboardType="numeric"
+                    maxLength={2}
+                    value={dd}
+                    onChangeText={(v) => {
+                        setDd(v);
+                        if (v.length === 2) mmRef.current?.focus();
+                        update(v, mm, yyyy);
+                    }}
+                />
+            </View>
+            <View className="flex-1">
+                <TextInput
+                    ref={mmRef}
+                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-center text-sm font-bold text-gray-800"
+                    placeholder="MM"
+                    keyboardType="numeric"
+                    maxLength={2}
+                    value={mm}
+                    onChangeText={(v) => {
+                        setMm(v);
+                        if (v.length === 2) yyyyRef.current?.focus();
+                        update(dd, v, yyyy);
+                    }}
+                />
+            </View>
+            <View className="flex-[1.5]">
+                <TextInput
+                    ref={yyyyRef}
+                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-center text-sm font-bold text-gray-800"
+                    placeholder="YYYY"
+                    keyboardType="numeric"
+                    maxLength={4}
+                    value={yyyy}
+                    onChangeText={(v) => {
+                        setYyyy(v);
+                        update(dd, mm, v);
+                    }}
+                />
+            </View>
+        </View>
     );
 }

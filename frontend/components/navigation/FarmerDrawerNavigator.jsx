@@ -21,6 +21,8 @@ import MessageScreen from '../pages/homescreen/farmer/message';
 import MessageWindowScreen from '../pages/homescreen/farmer/messageWindow';
 import OfftakerProfileWindowScreen from '../pages/homescreen/farmer/offtakerProfilewindow';
 import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfileWindow';
+import CropPriceScreen from '../pages/homescreen/farmer/cropPrice';
+import RequestFromOfftaker from '../pages/homescreen/farmer/RequestFromOfftaker'; 
 
 const Drawer = createDrawerNavigator();
 
@@ -45,53 +47,57 @@ export default function FarmerDrawerNavigator() {
                 }
             }}
         >
-            <Drawer.Screen 
-                name="FarmerMainTabs" 
-                component={FarmerBottomTabs} 
-                options={{ drawerLabel: 'Home' }} 
+            <Drawer.Screen
+                name="FarmerMainTabs"
+                component={FarmerBottomTabs}
+                options={{ drawerLabel: 'Home' }}
             />
-            
+
             <Drawer.Screen name="Crops" component={CropListScreen} />
-            <Drawer.Screen 
-                name="Add Crops" 
-                component={CropProjectScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="Add Crops"
+                component={CropProjectScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
+            <Drawer.Screen name="Crop Prices" component={CropPriceScreen} />
             <Drawer.Screen name="Crop Diseases" component={CropDiseaseScreen} />
-            <Drawer.Screen name="Orders" component={OrdersScreen} />
+            <Drawer.Screen name="Orders" component={OrdersScreen} 
+                options={{ drawerItemStyle: { display: 'none' }}}
+            />
             <Drawer.Screen name="Offtaker Profiles" component={OfftakerProfilesScreen} />
+            <Drawer.Screen name="Requests" component={RequestFromOfftaker} />
             <Drawer.Screen name="Wallet" component={WalletScreen} />
             <Drawer.Screen name="Profile" component={ProfileScreen} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
-            <Drawer.Screen 
-                name="Weather" 
-                component={WeatherScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="Weather"
+                component={WeatherScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="LandDetails" 
-                component={LandDetailsScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="LandDetails"
+                component={LandDetailsScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="Message" 
-                component={MessageScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="Message"
+                component={MessageScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="MessageWindow" 
-                component={MessageWindowScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="MessageWindow"
+                component={MessageWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="OfftakerProfileWindow" 
-                component={OfftakerProfileWindowScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="OfftakerProfileWindow"
+                component={OfftakerProfileWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
-            <Drawer.Screen 
-                name="FarmerProfileWindow" 
-                component={FarmerProfileWindowScreen} 
-                options={{ drawerItemStyle: { display: 'none' } }} 
+            <Drawer.Screen
+                name="FarmerProfileWindow"
+                component={FarmerProfileWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
             />
         </Drawer.Navigator>
     );

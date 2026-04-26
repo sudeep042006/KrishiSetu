@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
     ScrollView,
     TouchableOpacity,
     Dimensions,
-    Image
+    Image,
+    ActivityIndicator,
+    RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -21,18 +23,98 @@ import {
     ArrowUpRight,
     ArrowDownRight
 } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/Header';
+import { paymentService, CropService } from '../../service/api';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen({ navigation }) {
-    // Quick Stats Data
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [walletData, setWalletData] = useState(null);
+    const [dashboardStats, setDashboardStats] = useState({
+        activeCrops: 0,
+        totalEarnings: 0,
+        buyersReach: 0,
+        salesDone: 0
+    });
+
+    const fetchData = async () => {
+        try {
+            // Get user data
+            const userDataStr = await AsyncStorage.getItem('userData');
+            if (userDataStr) {
+                setUser(JSON.parse(userDataStr));
+            }
+
+            // Fetch wallet details
+            const walletRes = await paymentService.getWalletDetails();
+            if (walletRes.success) {
+                setWalletData(walletRes.wallet);
+            }
+
+            // Fetch transactions for sales and reach
+            const transRes = await paymentService.getTransactions();
+            let salesCount = 0;
+            let totalSalesAmount = 0;
+            
+            if (transRes.success && transRes.transactions) {
+                const sales = transRes.transactions.filter(t => t.type === 'sale' || t.type === 'income');
+                salesCount = sales.length;
+                totalSalesAmount = sales.reduce((acc, curr) => acc + curr.amount, 0);
+            }
+
+            // Fetch active crops
+            const cropRes = await CropService.getProjects();
+            const activeCropsCount = cropRes.projects ? cropRes.projects.length : 0;
+
+            setDashboardStats({
+                activeCrops: activeCropsCount,
+                totalEarnings: totalSalesAmount,
+                buyersReach: salesCount, // Assuming buyers reach is equal to transactions done
+                salesDone: salesCount
+            });
+
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchData();
+    }, []);
+
+    const formatCurrency = (amount) => {
+        if (amount >= 100000) {
+            return `₹${(amount / 100000).toFixed(2)}L`;
+        }
+        return `₹${amount.toLocaleString('en-IN')}`;
+    };
+
     const stats = [
-        { id: 1, label: 'Active Crops', value: '4', icon: Sprout, color: '#16a34a', bg: '#f0fdf4' },
-        { id: 2, label: 'Total Earnings', value: '₹1.34L', icon: Wallet, color: '#0891b2', bg: '#ecfeff' },
-        { id: 3, label: 'Buyers Reach', value: '12', icon: Users, color: '#7c3aed', bg: '#f5f3ff' },
-        { id: 4, label: 'Sales Done', value: '28', icon: ShoppingBag, color: '#ea580c', bg: '#fff7ed' },
+        { id: 1, label: 'Active Crops', value: dashboardStats.activeCrops.toString(), icon: Sprout, color: '#16a34a', bg: '#f0fdf4' },
+        { id: 2, label: 'Total Sales', value: formatCurrency(dashboardStats.totalEarnings), icon: Wallet, color: '#0891b2', bg: '#ecfeff' },
+        { id: 3, label: 'Buyers Reach', value: dashboardStats.buyersReach.toString(), icon: Users, color: '#7c3aed', bg: '#f5f3ff' },
+        { id: 4, label: 'Sales Done', value: dashboardStats.salesDone.toString(), icon: ShoppingBag, color: '#ea580c', bg: '#fff7ed' },
     ];
+
+    if (loading && !refreshing) {
+        return (
+            <View className="flex-1 bg-[#123524] justify-center items-center">
+                <ActivityIndicator size="large" color="#ffffff" />
+            </View>
+        );
+    }
 
     return (
         <View className="flex-1 bg-[#123524]">
@@ -43,11 +125,12 @@ export default function DashboardScreen({ navigation }) {
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 100 }}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     >
                         {/* ── Welcome Section ── */}
                         <View className="p-6">
                             <Text className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Welcome Back,</Text>
-                            <Text className="text-slate-900 text-3xl font-black mt-1">Namaste, Patil Ji! 👋</Text>
+                            <Text className="text-slate-900 text-3xl font-black mt-1">Namaste, {user?.name || 'Farmer'}! 👋</Text>
                         </View>
 
                         {/* ── Stats Grid ── */}
@@ -78,10 +161,12 @@ export default function DashboardScreen({ navigation }) {
                                 </View>
                                 <View className="ml-4 flex-1">
                                     <Text className="text-green-200/80 text-xs font-bold uppercase tracking-widest">Farm Wallet</Text>
-                                    <Text className="text-white text-2xl font-black">₹42,500.00</Text>
+                                    <Text className="text-white text-2xl font-black">
+                                        ₹{walletData ? walletData.availableBalance.toLocaleString('en-IN') : '0.00'}
+                                    </Text>
                                     <View className="flex-row items-center mt-1">
                                         <ArrowUpRight size={14} color="#4ade80" />
-                                        <Text className="text-green-400 text-xs font-bold ml-1">+12.4% this month</Text>
+                                        <Text className="text-green-400 text-xs font-bold ml-1">+Real-time sync</Text>
                                     </View>
                                 </View>
                                 <ChevronRight size={24} color="#ffffff80" />
@@ -91,7 +176,7 @@ export default function DashboardScreen({ navigation }) {
                         {/* ── Active Listings Section ── */}
                         <View className="px-5 flex-row justify-between items-center mb-4 mt-2">
                             <Text className="text-slate-900 text-xl font-black">Active Listings</Text>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => navigation.navigate('Crops')}>
                                 <Text className="text-[#123524] font-bold">View All</Text>
                             </TouchableOpacity>
                         </View>
@@ -101,6 +186,7 @@ export default function DashboardScreen({ navigation }) {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{ paddingHorizontal: 20, gap: 15 }}
                         >
+                            {/* Static dummy listings as requested */}
                             <View className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm w-64">
                                 <View className="flex-row items-center justify-between mb-3">
                                     <View className="bg-orange-50 px-3 py-1 rounded-full">
@@ -149,10 +235,13 @@ export default function DashboardScreen({ navigation }) {
                                     <CloudSun size={32} color="#3b82f6" />
                                 </View>
                                 <View className="ml-4 flex-1">
-                                    <Text className="text-slate-900 font-black text-lg">32°C • Sunny</Text>
-                                    <Text className="text-slate-400 text-xs font-medium">Ideal time for harvest in your area.</Text>
+                                    <Text className="text-slate-900 font-black text-lg">Weather Sync</Text>
+                                    <Text className="text-slate-400 text-xs font-medium">Check the weather screen for detailed farm-level alerts.</Text>
                                 </View>
-                                <TouchableOpacity className="bg-slate-50 p-3 rounded-full">
+                                <TouchableOpacity 
+                                    onPress={() => navigation.navigate('Weather')}
+                                    className="bg-slate-50 p-3 rounded-full"
+                                >
                                     <Calendar size={20} color="#64748b" />
                                 </TouchableOpacity>
                             </View>

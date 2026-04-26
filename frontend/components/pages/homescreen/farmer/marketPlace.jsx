@@ -12,6 +12,7 @@ import {
     FlatList,
     Modal,
     Pressable,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
@@ -19,6 +20,9 @@ import { Linking } from 'react-native';
 import Header from '../../../common/Header';
 import Geolocation from 'react-native-geolocation-service';
 import { offtakerService } from '../../service/api';
+import { createOrGetChat } from '../../../../services/chatApi';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── MapLibre: use named imports (the lib has NO default export) ──────────────
 import {
@@ -463,17 +467,11 @@ const BuyerCard = memo(({ item, onPress }) => {
 });
 
 // ─── DETAILED BUYER MODAL ─────────────────────────────────────────────────────
-const BuyerDetailModal = memo(({ buyer, onClose }) => {
+const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
+    const navigation = useNavigation();
     if (!buyer) return null;
 
-    const handleCall = () => {
-        Linking.openURL(`tel:${buyer.phone}`);
-    };
-
-    const handleWhatsApp = () => {
-        const message = `Hello ${buyer.name}, I found your profile on KrishiSetu and I'm interested in selling my produce.`;
-        Linking.openURL(`whatsapp://send?phone=${buyer.phone}&text=${encodeURIComponent(message)}`);
-    };
+    const isChatting = chattingId === (buyer.userId?._id || buyer.userId);
 
     return (
         <Modal
@@ -569,18 +567,19 @@ const BuyerDetailModal = memo(({ buyer, onClose }) => {
                     {/* Action Footer */}
                     <View className="px-6 pt-4 pb-10 bg-white border-t border-gray-100 flex-row" style={{ gap: 12 }}>
                         <TouchableOpacity
-                            onPress={handleWhatsApp}
-                            className="w-14 h-14 bg-gray-50 rounded-2xl items-center justify-center border border-gray-100"
-                        >
-                            <MessageSquare size={24} color="#123524" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={handleCall}
+                            onPress={() => onChat(buyer)}
+                            disabled={isChatting}
                             className="flex-1 h-14 bg-[#123524] rounded-2xl flex-row items-center justify-center shadow-lg"
                             style={{ gap: 8 }}
                         >
-                            <Phone size={20} color="#fff" />
-                            <Text className="text-white font-bold text-lg">Call Now</Text>
+                            {isChatting ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <MessageSquare size={20} color="#fff" />
+                                    <Text className="text-white font-bold text-lg">Start Chat</Text>
+                                </>
+                            )}
                         </TouchableOpacity>
                     </View>
                 </Pressable>
@@ -600,10 +599,46 @@ export default function MarketplaceScreen() {
     const [isRegionModalVisible, setIsRegionModalVisible] = useState(false);
     const [realBuyers, setRealBuyers] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [chattingId, setChattingId] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
+        const loadUserId = async () => {
+            const uid = await AsyncStorage.getItem('userId');
+            setCurrentUserId(uid);
+        };
+        loadUserId();
         fetchRealBuyers();
     }, []);
+
+    const startChat = async (buyer) => {
+        // In this component's mapping, buyer.userId is already the ID string
+        const receiverId = buyer.userId;
+        if (!currentUserId || !receiverId) {
+            if (!currentUserId) Alert.alert("Login Required", "Please login to chat.");
+            return;
+        }
+
+        try {
+            setChattingId(receiverId);
+            const res = await createOrGetChat(currentUserId, receiverId);
+            
+            if (res.success && res.chat) {
+                setSelectedBuyer(null); // Close modal
+                navigation.navigate('MessageWindow', { 
+                    chatId: res.chat._id, 
+                    chatTitle: buyer.name, 
+                    otherUserId: receiverId 
+                });
+            }
+        } catch (error) {
+            console.error("Error creating chat:", error);
+            Alert.alert("Chat Error", "Could not start conversation.");
+        } finally {
+            setChattingId(null);
+        }
+    };
 
     const fetchRealBuyers = async () => {
         try {
@@ -641,6 +676,7 @@ export default function MarketplaceScreen() {
                         markerColor: '#1e4a3b',
                         phone: off.companyPhone || user.phone || '',
                         description: off.companyDescription || 'Reliable buyer interested in quality produce.',
+                        userId: user._id,
                         isReal: true
                     };
                 });
@@ -849,7 +885,12 @@ export default function MarketplaceScreen() {
             </SafeAreaView>
 
             {/* ── Buyer Profile Detail Modal ── */}
-            <BuyerDetailModal buyer={selectedBuyer} onClose={() => setSelectedBuyer(null)} />
+            <BuyerDetailModal 
+                buyer={selectedBuyer} 
+                onClose={() => setSelectedBuyer(null)} 
+                onChat={startChat}
+                chattingId={chattingId}
+            />
 
             {/* ── Region Selector Modal ── */}
             <Modal visible={isRegionModalVisible} transparent animationType="fade" onRequestClose={() => setIsRegionModalVisible(false)}>

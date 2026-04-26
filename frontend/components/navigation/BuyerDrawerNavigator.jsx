@@ -17,6 +17,9 @@ import FarmerProfile from '../pages/homescreen/offtaker/FarmerProfiles'
 import CropsPage from '../pages/homescreen/offtaker/CropsPage';
 import CropWindow from '../pages/homescreen/offtaker/cropWindow';
 import OfftakerOrders from '../pages/homescreen/offtaker/orders';
+import CropPriceScreen from '../pages/homescreen/offtaker/cropPrice';
+import PostRequest from '../pages/homescreen/offtaker/PostRequest';
+import OfftakerMarketplace from '../pages/homescreen/offtaker/marketPlace';
 
 const Drawer = createDrawerNavigator();
 
@@ -51,7 +54,11 @@ export default function BuyerDrawerNavigator() {
                 component={CropWindow}
                 options={{ drawerItemStyle: { display: 'none' } }}
             />
-
+            <Drawer.Screen
+                name="CropPriceScreen"
+                component={CropPriceScreen}
+                options={{ drawerLabel: 'Crop Prices' }}
+            />
             <Drawer.Screen
                 name="Farmer Profile"
                 component={FarmerProfile}
@@ -65,6 +72,11 @@ export default function BuyerDrawerNavigator() {
                 name="CropsPage" 
                 component={CropsPage} 
                 options={{ drawerLabel: 'Crops' }}
+            />
+            <Drawer.Screen
+                name="PostRequest"
+                component={PostRequest}
+                options={{ drawerLabel: 'Post Request' }}
             />
             <Drawer.Screen
                 name="OfftakerOrders"
@@ -100,6 +112,11 @@ export default function BuyerDrawerNavigator() {
             <Drawer.Screen
                 name="FarmerProfileWindow"
                 component={FarmerProfileWindowScreen}
+                options={{ drawerItemStyle: { display: 'none' } }}
+            />
+            <Drawer.Screen
+                name="Marketplace"
+                component={OfftakerMarketplace}
                 options={{ drawerItemStyle: { display: 'none' } }}
             />
            
