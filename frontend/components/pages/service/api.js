@@ -45,23 +45,25 @@ apiClient.interceptors.request.use(async (config) => {
     const { data: { session }, error } = await supabase.auth.getSession();
 
     if (error) {
-      console.error('Error getting Supabase session:', error);
+      // Suppress the noisy "invalid refresh token" error from Supabase
+      if (!error.message.includes('Refresh Token')) {
+        console.error('Supabase session check:', error.message);
+      }
     }
 
     const token = session?.access_token;
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      // console.log('Auth Header set from Supabase session');
     } else {
-      // Fallback to AsyncStorage for any legacy reasons during transition
+      // Fallback
       const legacyToken = await AsyncStorage.getItem('authToken');
       if (legacyToken) {
         config.headers.Authorization = `Bearer ${legacyToken}`;
       }
     }
   } catch (err) {
-    console.error('Interceptor session check failed:', err);
+    // Silent catch
   }
   return config;
 }, (error) => Promise.reject(error));
@@ -72,11 +74,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       console.warn("401 Unauthorized caught globally. Session might be expired.");
-      // Optional: uncomment below to auto-logout on 401
-      // await AsyncStorage.removeItem('authToken');
-      // await AsyncStorage.removeItem('userId');
-      // await AsyncStorage.removeItem('userData');
-      // await AsyncStorage.removeItem('userRole');
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('userRole');
+      await supabase.auth.signOut().catch(()=>{});// Silently sign out
       // Alert.alert("Session Expired", "Please log in again.");
     }
     return Promise.reject(error);

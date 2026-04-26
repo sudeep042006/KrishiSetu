@@ -35,8 +35,17 @@ export default function App() {
   useEffect(() => {
     const checkStoredLogin = async () => {
       try {
-        // Use Supabase to get the session (handles auto-refresh if expired)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.warn("Session error on startup (likely expired token), clearing storage...");
+          await supabase.auth.signOut().catch(() => {});
+          await AsyncStorage.multiRemove(['authToken', 'userRole', 'userId', 'userData', 'token', 'farmerId', 'farmerData']);
+          setIsAuthenticated(false);
+          setIsCheckingAuth(false);
+          return;
+        }
+
         const role = await AsyncStorage.getItem('userRole');
         const userId = await AsyncStorage.getItem('userId');
 

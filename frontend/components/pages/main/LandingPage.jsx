@@ -30,7 +30,7 @@ export default function LandingPage({ navigation }) {
         <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" backgroundColor="#e0f2fe" />
             <ScrollView contentContainerStyle={{ flexGrow: 1 }} bounces={false}>
-                
+
                 {/* Hero Section with Vibrant Green-Blue Gradient */}
                 <View className="w-full pt-10 pb-[100px] px-6  relative overflow-hidden items-center">
                     <LinearGradient
@@ -40,11 +40,11 @@ export default function LandingPage({ navigation }) {
                         className="absolute inset-0"
                     />
 
-                    
+
                     {/* Decorative Background Elements */}
                     <View className="absolute -bottom-10 -right-10 w-60 h-60 bg-white/10 rounded-full" />
                     <View className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
-                    
+
                     {/* Logo Area */}
                     <View className="flex-row items-center mb-8 mt-2">
                         <Text className="text-3xl font-bold">🌾</Text>
@@ -95,15 +95,15 @@ export default function LandingPage({ navigation }) {
 
                     {/* Footer / Login Link */}
                     <View className="mt-auto items-center pt-10 pb-4">
-                         <Text className="text-slate-400 text-[11px] mb-3 text-center uppercase tracking-wider font-semibold">
+                        <Text className="text-slate-400 text-[11px] mb-3 text-center uppercase tracking-wider font-semibold">
                             Trusted agriculture marketplace
-                         </Text>
-                         <View className="flex-row items-center">
-                             <Text className="text-gray-500 font-medium">Already have an account? </Text>
-                             <TouchableOpacity onPress={() => navigation.navigate('Login')} className="py-2">
-                                 <Text className="text-[#155e75] font-bold text-base">Login</Text>
-                             </TouchableOpacity>
-                         </View>
+                        </Text>
+                        <View className="flex-row items-center">
+                            <Text className="text-gray-500 font-medium">Already have an account? </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('Login')} className="py-2">
+                                <Text className="text-[#155e75] font-bold text-base">Login</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
 

@@ -263,7 +263,7 @@ export default function MessageWindowScreen({ navigation, route }) {
     };
 
     return (
-        <View className="flex-1 bg-[#123524]" style={{ paddingBottom: Platform.OS === 'android' ? keyboardHeight : 0 }}>
+        <View className="flex-1 bg-[#123524]">
             <StatusBar barStyle="light-content" />
             <SafeAreaView edges={['top']} className="flex-1">
                 <ChatHeader 
