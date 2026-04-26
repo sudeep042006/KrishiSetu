@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/sudeep042006/KrishiSetu/refs/heads/main/assets/logo.png" alt="KrishiSetu Logo" width="120" height="120" />
+<img src="https://res.cloudinary.com/dwji50nl9/image/upload/v1777178237/ic_launcher_round_vvbxyt.png" alt="KrishiSetu Logo" width="120" height="120" />
 
 # 🌾 KrishiSetu
 
