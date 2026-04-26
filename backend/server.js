@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import axios from 'axios';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -53,6 +54,22 @@ app.get("/",(req,res)=>{
     res.send("KrishiSetu is Running");
 })
 
-server.listen(process.env.PORT,()=>{
+server.listen(process.env.PORT, () => {
     console.log(`Server is running on port http://localhost:${process.env.PORT}`);
-})
+
+    // Render Keep-Alive: Self-ping every 14 minutes
+    const keepAlive = () => {
+        const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT}`;
+        if (url.includes('render.com') || url.includes('localhost')) {
+            setInterval(async () => {
+                try {
+                    await axios.get(url);
+                    console.log('Keep-Alive: Ping successful');
+                } catch (err) {
+                    console.log('Keep-Alive: Ping failed', err.message);
+                }
+            }, 14 * 60 * 1000); // 14 minutes
+        }
+    };
+    keepAlive();
+});
