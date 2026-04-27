@@ -53,18 +53,20 @@ export default function CropProjectScreen({ navigation }) {
                 ...form,
             };
             const response = await CropService.createProject(payload);
-            
+
             if (cropImage && !cropImage.startsWith('http') && response?.project?._id) {
-                 await CropService.uploadProjectPhoto(response.project._id, cropImage);
+                await CropService.uploadProjectPhoto(response.project._id, cropImage);
             }
-            
+
             console.log('Payload:', payload);
             Alert.alert('Listed!', `${form.cropName} is now live for buyers.`, [
-                { text: 'OK', onPress: () => { 
-                    setModalVisible(false); 
-                    resetForm(); 
-                    if(navigation) navigation.navigate('Crops'); 
-                } },
+                {
+                    text: 'OK', onPress: () => {
+                        setModalVisible(false);
+                        resetForm();
+                        if (navigation) navigation.navigate('Crops');
+                    }
+                },
             ]);
         } catch (e) {
             console.error("Project Create Error: ", e);
@@ -182,11 +184,10 @@ export default function CropProjectScreen({ navigation }) {
                                                 <TouchableOpacity
                                                     key={c}
                                                     onPress={() => set('category', c)}
-                                                    className={`px-4 py-2 rounded-full border ${
-                                                        form.category === c
+                                                    className={`px-4 py-2 rounded-full border ${form.category === c
                                                             ? 'bg-[#1e4a3b] border-[#1e4a3b]'
                                                             : 'bg-white border-gray-200'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <Text className={`text-sm font-semibold ${form.category === c ? 'text-white' : 'text-gray-600'}`}>
                                                         {c}
@@ -290,11 +291,10 @@ export default function CropProjectScreen({ navigation }) {
                                             <TouchableOpacity
                                                 key={g.key}
                                                 onPress={() => set('quality', g.key)}
-                                                className={`flex-1 py-3 rounded-xl border items-center ${
-                                                    form.quality === g.key
+                                                className={`flex-1 py-3 rounded-xl border items-center ${form.quality === g.key
                                                         ? 'bg-[#1e4a3b] border-[#1e4a3b]'
                                                         : 'bg-gray-50 border-gray-200'
-                                                }`}
+                                                    }`}
                                             >
                                                 <Text className={`text-sm font-bold ${form.quality === g.key ? 'text-white' : 'text-gray-700'}`}>{g.label}</Text>
                                                 <Text className={`text-xs mt-0.5 ${form.quality === g.key ? 'text-[#6ebd8a]' : 'text-gray-400'}`}>{g.sub}</Text>
@@ -307,7 +307,7 @@ export default function CropProjectScreen({ navigation }) {
                                 <SectionLabel>Harvest & Location</SectionLabel>
 
                                 <Field label="Expected Harvest Date">
-                                    <DateBox 
+                                    <DateBox
                                         value={form.harvestDate}
                                         onChange={(v) => set('harvestDate', v)}
                                     />

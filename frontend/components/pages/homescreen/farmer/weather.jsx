@@ -365,6 +365,12 @@ export default function WeatherScreen() {
 
     useEffect(() => { initializeWeather(); }, []);
 
+    useEffect(() => {
+        if (weatherData && aqiData && !insights && !loadingInsights) {
+            fetchDeepseekInsights();
+        }
+    }, [weatherData, aqiData]);
+
     const onRefresh = () => { setRefreshing(true); loadLiveWeather(); };
 
     // ── Sub-components ────────────────────────────────────────────────────────
@@ -549,7 +555,7 @@ export default function WeatherScreen() {
         <View style={styles.aiCard}>
             <View style={styles.aiHeader}>
                 <Text style={styles.aiEmoji}>🧠</Text>
-                <Text style={styles.aiTitle}>DeepSeek Agro AI</Text>
+                <Text style={styles.aiTitle}>Agro AI</Text>
             </View>
             {loadingInsights ? (
                 <ActivityIndicator size="small" color="#047857" style={{ marginVertical: 8 }} />

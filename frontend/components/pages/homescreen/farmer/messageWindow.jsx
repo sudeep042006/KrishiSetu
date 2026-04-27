@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    KeyboardAvoidingView, 
-    Platform, 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
     ActivityIndicator,
     StatusBar,
     Keyboard,
@@ -14,12 +14,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { 
-    ChevronLeft, 
-    MoreVertical, 
-    Send, 
-    Paperclip, 
-    Mic, 
+import {
+    ChevronLeft,
+    MoreVertical,
+    Send,
+    Paperclip,
+    Mic,
     CheckCheck,
     Lock,
     Trash2,
@@ -60,8 +60,8 @@ function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selec
             <TouchableOpacity onPress={() => navigation.goBack()} className="mr-2 p-1.5 rounded-full bg-white/10">
                 <ChevronLeft size={22} color="#fff" />
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
                 className="flex-row items-center flex-1"
                 onPress={() => navigation.navigate('ProfileWindow', { userId: otherUserId })}
             >
@@ -88,7 +88,7 @@ function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSe
     const messageTime = new Date(message.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <TouchableOpacity 
+        <TouchableOpacity
             onLongPress={() => onLongPress(message._id)}
             onPress={() => isSelectionMode ? onPress(message._id) : null}
             activeOpacity={0.7}
@@ -104,7 +104,7 @@ function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSe
                         )}
                     </View>
                 )}
-                
+
                 <View className={`${isMine ? 'bg-[#123524] rounded-tr-sm' : 'bg-white rounded-tl-sm border border-gray-100'} rounded-2xl px-4 py-2.5 shadow-sm`}>
                     <Text className={`${isMine ? 'text-white font-medium' : 'text-gray-800'} text-sm leading-6`}>
                         {message.message}
@@ -160,22 +160,22 @@ export default function MessageWindowScreen({ navigation, route }) {
             setLoading(true);
             const uid = await AsyncStorage.getItem('userId');
             setCurrentUserId(uid);
-            
+
             const res = await getChatMessages(chatId);
             if (res.success) {
                 setMessages(res.messages);
             }
 
             socketService.joinChatRoom(chatId);
-            
+
             socketService.subscribeToMessages((err, msg) => {
                 if (err) return;
                 setMessages(prev => {
-                    if(prev.find(m => (m._id && m._id === msg._id) || (m.tempId && msg.tempId && m.tempId === msg.tempId))) return prev;
+                    if (prev.find(m => (m._id && m._id === msg._id) || (m.tempId && msg.tempId && m.tempId === msg.tempId))) return prev;
                     return [...prev, msg];
                 });
             });
-            
+
         } catch (error) {
             console.error("Error setting up chat:", error);
         } finally {
@@ -184,7 +184,7 @@ export default function MessageWindowScreen({ navigation, route }) {
     };
 
     const scrollToBottom = () => {
-        if(messages.length > 0) {
+        if (messages.length > 0) {
             flatListRef.current?.scrollToEnd({ animated: true });
         }
     }
@@ -205,7 +205,7 @@ export default function MessageWindowScreen({ navigation, route }) {
 
         setMessages((prev) => [...prev, newMsg]);
         setInputText('');
-        
+
         socketService.sendMessage(newMsg);
     };
 
@@ -242,8 +242,8 @@ export default function MessageWindowScreen({ navigation, route }) {
             `Are you sure you want to delete ${selectedMessages.size} selected messages?`,
             [
                 { text: "Cancel", style: "cancel" },
-                { 
-                    text: "Delete", 
+                {
+                    text: "Delete",
                     style: "destructive",
                     onPress: async () => {
                         try {
@@ -266,20 +266,20 @@ export default function MessageWindowScreen({ navigation, route }) {
         <View className="flex-1 bg-[#123524]">
             <StatusBar barStyle="light-content" />
             <SafeAreaView edges={['top']} className="flex-1">
-                <ChatHeader 
-                    chatTitle={chatTitle} 
-                    otherUserId={otherUserId} 
-                    navigation={navigation} 
+                <ChatHeader
+                    chatTitle={chatTitle}
+                    otherUserId={otherUserId}
+                    navigation={navigation}
                     isSelectionMode={isSelectionMode}
                     selectedCount={selectedMessages.size}
                     onCancelSelection={cancelSelection}
                     onDeleteSelected={deleteSelected}
                 />
 
-                <KeyboardAvoidingView 
+                <KeyboardAvoidingView
                     className="flex-1"
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={0}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
                 >
                     <View className="flex-1 bg-[#f8faf9] rounded-t-[40px] overflow-hidden">
                         <View className="py-3 items-center bg-white/50 border-b border-gray-100">
@@ -303,9 +303,9 @@ export default function MessageWindowScreen({ navigation, route }) {
                                     contentContainerStyle={{ paddingVertical: 20 }}
                                     showsVerticalScrollIndicator={false}
                                     renderItem={({ item }) => (
-                                        <MessageBubble 
-                                            message={item} 
-                                            isMine={item.senderId === currentUserId} 
+                                        <MessageBubble
+                                            message={item}
+                                            isMine={item.senderId === currentUserId}
                                             onLongPress={handleLongPress}
                                             onPress={handlePress}
                                             isSelected={selectedMessages.has(item._id)}
@@ -336,8 +336,8 @@ export default function MessageWindowScreen({ navigation, route }) {
                                             />
                                         </View>
 
-                                        <TouchableOpacity 
-                                            onPress={inputText.trim() ? sendMessage : undefined} 
+                                        <TouchableOpacity
+                                            onPress={inputText.trim() ? sendMessage : undefined}
                                             className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#123524] shadow-emerald-900/30' : 'bg-gray-100'}`}
                                             activeOpacity={0.8}
                                         >

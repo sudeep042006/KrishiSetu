@@ -208,10 +208,13 @@ export default function CropListScreen({ navigation }) {
     };
 
     // ── Stats ──────────────────────────────────────────────────────────
-    const totalActive = listings.filter(l => l.status === 'active').length;
-    const totalValue  = listings
-        .filter(l => l.status === 'active')
-        .reduce((sum, l) => sum + (l.quantity * l.pricePerUnit), 0)
+    const displayCount = filtered.length;
+    const displayValue = filtered
+        .reduce((sum, l) => sum + (parseFloat(l.quantity) * parseFloat(l.pricePerUnit)), 0)
+        .toLocaleString('en-IN');
+
+    const totalOverallValue = listings
+        .reduce((sum, l) => sum + (parseFloat(l.quantity) * parseFloat(l.pricePerUnit)), 0)
         .toLocaleString('en-IN');
 
     // ── Crop image component with fallback ─────────────────────────────
@@ -308,12 +311,16 @@ export default function CropListScreen({ navigation }) {
                             </TouchableOpacity>
                         </View>
                         <View className="flex-1 bg-white rounded-2xl px-4 py-3 border border-gray-100">
-                            <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Active Listings</Text>
-                            <Text className="text-2xl font-black text-[#1e4a3b] mt-1">{filtered.length}</Text>
+                            <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                                {activeFilter === 'All' ? 'Total Items' : `${activeFilter} Items`}
+                            </Text>
+                            <Text className="text-2xl font-black text-[#1e4a3b] mt-1">{displayCount}</Text>
                         </View>
                         <View className="flex-1 bg-white rounded-2xl px-4 py-3 border border-gray-100">
-                            <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Total Value</Text>
-                            <Text className="text-2xl font-black text-[#1e4a3b] mt-1">₹{totalValue}</Text>
+                            <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+                                {activeFilter === 'All' ? 'Total Value' : 'Filtered Value'}
+                            </Text>
+                            <Text className="text-2xl font-black text-[#1e4a3b] mt-1">₹{displayValue}</Text>
                         </View>
                     </View>
 

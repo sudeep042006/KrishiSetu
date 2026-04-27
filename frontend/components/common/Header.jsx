@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Menu, Bell } from 'lucide-react-native';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { Menu, Bell, Sparkles } from 'lucide-react-native';
+import { useNavigation, DrawerActions, useRoute } from '@react-navigation/native';
+import { DeviceEventEmitter } from 'react-native';
 import { ThemeContext } from '../../context/ThemeContext';
 
 export default function Header({ title, showNotification = false, rightIcon = null }) {
@@ -20,16 +21,23 @@ export default function Header({ title, showNotification = false, rightIcon = nu
 
             <Text className="text-lg font-bold text-white dark:text-gray-100 tracking-wide -mt-8">{title}</Text>
 
-            <View className="items-end min-w-[24px] -mt-8">
-                {showNotification ? (
+            <View className="items-end min-w-[24px] -mt-8 flex-row gap-x-2">
+                {showNotification && (
                     <TouchableOpacity activeOpacity={0.7} className="bg-white/10 p-2 rounded-full">
                         <Bell color="#ffffff" size={20} />
                     </TouchableOpacity>
-                ) : rightIcon ? (
-                    rightIcon
-                ) : (
-                    <View style={{ width: 24 }} />
                 )}
+                
+                {/* Apla Sarthi Icon in Header */}
+                <TouchableOpacity 
+                    activeOpacity={0.7} 
+                    className="bg-emerald-500/20 p-2 rounded-full border border-emerald-400/30"
+                    onPress={() => DeviceEventEmitter.emit('openAplaSarthi')}
+                >
+                    <Sparkles color="#4ade80" size={20} />
+                </TouchableOpacity>
+
+                {rightIcon}
             </View>
         </View>
     );

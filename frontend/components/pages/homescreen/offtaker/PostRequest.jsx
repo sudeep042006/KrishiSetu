@@ -14,7 +14,7 @@ export default function PostRequest({ navigation }) {
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [proposals, setProposals] = useState([]);
-    
+
     // For farmer selection
     const [farmers, setFarmers] = useState([]);
     const [farmerDropdownOpen, setFarmerDropdownOpen] = useState(false);
@@ -67,11 +67,13 @@ export default function PostRequest({ navigation }) {
             const response = await ProposalService.createProposal(form);
             if (response.success) {
                 Alert.alert('Success!', `Proposal sent to ${form.farmerName}.`, [
-                    { text: 'OK', onPress: () => { 
-                        setModalVisible(false); 
-                        resetForm(); 
-                        fetchProposals(); 
-                    } },
+                    {
+                        text: 'OK', onPress: () => {
+                            setModalVisible(false);
+                            resetForm();
+                            fetchProposals();
+                        }
+                    },
                 ]);
             }
         } catch (e) {
@@ -270,7 +272,7 @@ export default function PostRequest({ navigation }) {
 
                                 <SectionLabel>Logistics</SectionLabel>
                                 <Field label="Expected Delivery Date *">
-                                    <DateBox 
+                                    <DateBox
                                         value={form.deliveryDate}
                                         onChange={(v) => set('deliveryDate', v)}
                                     />

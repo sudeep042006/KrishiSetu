@@ -36,6 +36,7 @@ export default function Home() {
     const [weatherData, setWeatherData] = useState(null);
     const [loadingWeather, setLoadingWeather] = useState(true);
     const [cropCount, setCropCount] = useState(0);
+    const [totalValue, setTotalValue] = useState(0);
     const [refreshing, setRefreshing] = useState(false);
 
     const [showFertilizerModal, setShowFertilizerModal] = useState(false);
@@ -193,7 +194,16 @@ export default function Home() {
     const fetchCrops = async () => {
         try {
             const res = await CropService.getProjects();
-            setCropCount(res.projects?.length || 0);
+            const projects = res.projects || [];
+            setCropCount(projects.length);
+            
+            const total = projects.reduce((sum, item) => {
+                const price = parseFloat(item.expectedPrice) || 0;
+                const qty = parseFloat(item.quantityRequired) || 0;
+                return sum + (price * qty);
+            }, 0);
+            
+            setTotalValue(total.toLocaleString('en-IN'));
         } catch (error) {
             console.log('Error fetching crops for home:', error);
         }
@@ -286,8 +296,9 @@ export default function Home() {
                                 />
                                 <View className="p-4 w-full h-full justify-between">
                                     <View>
-                                        <Text className="text-white/80 text-xs mb-1">Crops to Harvest</Text>
-                                        <Text className="text-white text-lg font-extrabold">{cropCount} Crops</Text>
+                                        <Text className="text-white/80 text-xs mb-1">Crops Value</Text>
+                                        <Text className="text-white text-lg font-extrabold">₹{totalValue}</Text>
+                                        <Text className="text-white/60 text-[10px] mt-1">{cropCount} Listings</Text>
                                     </View>
                                     <View className="flex-row justify-end">
                                         <Leaf color="#86efac" size={28} />

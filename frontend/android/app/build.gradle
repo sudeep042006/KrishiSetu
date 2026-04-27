@@ -86,9 +86,9 @@ android {
         versionCode 1
         versionName "1.0"
 
-        ndk {
+        /* ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
-        }
+        } */
     }
     signingConfigs {
         debug {
@@ -125,6 +125,7 @@ android {
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false
             include "armeabi-v7a", "arm64-v8a"
+            universalApk false
         }
     }
 }

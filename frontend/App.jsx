@@ -2,7 +2,7 @@ import './global.css';
 import React, { useState, createContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { View, ActivityIndicator, Alert, DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './services/supabase';
 import apiClient from './components/pages/service/api';
@@ -17,6 +17,7 @@ import BuyerDrawerNavigator from './components/navigation/BuyerDrawerNavigator';
 import LandDetailsScreen from './components/pages/homescreen/farmer/LandDetails';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import NetworkStatus from './components/common/NetworkStatus';
+import AplaSarthi from './components/common/AplaSarthi';
 
 export const AuthContext = createContext();
 
@@ -120,26 +121,40 @@ export default function App() {
       <SafeAreaProvider>
         <AuthContext.Provider value={authContext}>
           <NetworkStatus />
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <NavigationContainer
+              onStateChange={(state) => {
+                const route = state.routes[state.index];
+                // Handle nested routes (Bottom Tabs/Drawer)
+                let currentRouteName = route.name;
+                let nestedState = route.state;
+                while (nestedState) {
+                  const nestedRoute = nestedState.routes[nestedState.index];
+                  currentRouteName = nestedRoute.name;
+                  nestedState = nestedRoute.state;
+                }
+                DeviceEventEmitter.emit('onRouteChange', currentRouteName);
+              }}
+            >
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
 
-              {isAuthenticated ? (
-                userRole === 'Farmer' ? (
-                  <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
+                {isAuthenticated ? (
+                  userRole === 'Farmer' ? (
+                    <Stack.Screen name="FarmerApp" component={FarmerDrawerNavigator} />
+                  ) : (
+                    <Stack.Screen name="OfftakerApp" component={BuyerDrawerNavigator} />
+                  )
                 ) : (
-                  <Stack.Screen name="OfftakerApp" component={BuyerDrawerNavigator} />
-                )
-              ) : (
-                <>
-                  <Stack.Screen name="Landing" component={LandingPage} />
-                  <Stack.Screen name="Login" component={LoginScreen} />
-                  <Stack.Screen name="Register" component={RegisterScreen} />
-                  <Stack.Screen name="LandDetails" component={LandDetailsScreen} />
-                </>
-              )}
+                  <>
+                    <Stack.Screen name="Landing" component={LandingPage} />
+                    <Stack.Screen name="Login" component={LoginScreen} />
+                    <Stack.Screen name="Register" component={RegisterScreen} />
+                    <Stack.Screen name="LandDetails" component={LandDetailsScreen} />
+                  </>
+                )}
 
-            </Stack.Navigator>
-          </NavigationContainer>
+              </Stack.Navigator>
+            </NavigationContainer>
+            <AplaSarthi />
         </AuthContext.Provider>
       </SafeAreaProvider>
     </ThemeProvider>
