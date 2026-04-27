@@ -10,20 +10,29 @@ import {
 } from 'react-native';
 import { Sparkles, X, Bot } from 'lucide-react-native';
 import { ThemeContext } from '../../context/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 export default function AplaSarthi() {
     const { isDarkMode } = useContext(ThemeContext);
     const [visible, setVisible] = useState(false);
-    const [currentRoute, setCurrentRoute] = useState('Home');
+    const [currentRoute, setCurrentRoute] = useState(null);
+    const [role, setRole] = useState(null);
+
+    const checkRole = async () => {
+        const storedRole = await AsyncStorage.getItem('userRole');
+        setRole(storedRole);
+    };
 
     useEffect(() => {
+        checkRole();
         const sub = DeviceEventEmitter.addListener('openAplaSarthi', () => {
             setVisible(true);
         });
         const routeSub = DeviceEventEmitter.addListener('onRouteChange', (routeName) => {
             setCurrentRoute(routeName);
+            checkRole();
         });
         return () => {
             sub.remove();
@@ -31,18 +40,23 @@ export default function AplaSarthi() {
         };
     }, []);
 
+    const excludedRoutes = ['Landing', 'Login', 'Register'];
     const isHome = currentRoute === 'Home';
+    const showFAB = isHome && !excludedRoutes.includes(currentRoute);
+    const isBuyer = role === 'Buyer';
+    const primaryColor = isBuyer ? '#1e4e8c' : '#123524';
+    
     const bg = isDarkMode ? '#0f172a' : '#ffffff';
     const textColor = isDarkMode ? '#f8fafc' : '#1e293b';
 
     return (
         <>
             {/* Floating Action Button - Only on Home Page */}
-            {isHome && (
+            {showFAB && (
                 <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => setVisible(true)}
-                    style={styles.fab}
+                    style={[styles.fab, { backgroundColor: primaryColor }]}
                 >
                     <View style={styles.fabInner}>
                         <Sparkles size={24} color="#fff" />
@@ -60,7 +74,7 @@ export default function AplaSarthi() {
                 <View style={styles.overlay}>
                     <View style={[styles.card, { backgroundColor: bg }]}>
                         <View style={styles.header}>
-                            <View style={styles.iconCircle}>
+                            <View style={[styles.iconCircle, { backgroundColor: primaryColor }]}>
                                 <Bot size={24} color="#fff" />
                             </View>
                             <TouchableOpacity onPress={() => setVisible(false)}>
@@ -78,7 +92,7 @@ export default function AplaSarthi() {
                             </Text>
                             
                             <TouchableOpacity 
-                                style={styles.button}
+                                style={[styles.button, { backgroundColor: primaryColor }]}
                                 onPress={() => setVisible(false)}
                             >
                                 <Text style={styles.buttonText}>Got it!</Text>

@@ -11,6 +11,7 @@ import {
     Keyboard,
     Alert
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -63,7 +64,7 @@ function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selec
 
             <TouchableOpacity
                 className="flex-row items-center flex-1"
-                onPress={() => navigation.navigate('ProfileWindow', { userId: otherUserId })}
+                onPress={() => navigation.navigate('OfftakerProfileWindow', { userId: otherUserId })}
             >
                 <AvatarPlaceholder name={chatTitle} size={40} />
                 <View className="ml-3">
@@ -89,8 +90,8 @@ function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSe
 
     return (
         <TouchableOpacity
-            onLongPress={() => onLongPress(message._id)}
-            onPress={() => isSelectionMode ? onPress(message._id) : null}
+            onLongPress={() => onLongPress(message._id || message.tempId)}
+            onPress={() => isSelectionMode ? onPress(message._id || message.tempId) : null}
             activeOpacity={0.7}
             className={`flex-row mb-3 px-4 ${isMine ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-emerald-500/10' : ''}`}
         >
@@ -171,7 +172,16 @@ export default function MessageWindowScreen({ navigation, route }) {
             socketService.subscribeToMessages((err, msg) => {
                 if (err) return;
                 setMessages(prev => {
-                    if (prev.find(m => (m._id && m._id === msg._id) || (m.tempId && msg.tempId && m.tempId === msg.tempId))) return prev;
+                    const index = prev.findIndex(m =>
+                        (m._id && m._id === msg._id) ||
+                        (m.tempId && msg.tempId && m.tempId === msg.tempId)
+                    );
+
+                    if (index !== -1) {
+                        const updated = [...prev];
+                        updated[index] = { ...updated[index], ...msg };
+                        return updated;
+                    }
                     return [...prev, msg];
                 });
             });
@@ -192,6 +202,50 @@ export default function MessageWindowScreen({ navigation, route }) {
     const sendMessage = () => {
         const text = inputText.trim();
         if (!text) return;
+
+        // 1. Detect 10 digits in current message (robustly)
+        const currentDigits = text.replace(/\D/g, '');
+
+        // 2. Prevent 10+ digits in a single message (obfuscated or not)
+        if (currentDigits.length >= 10) {
+            Alert.alert(
+                "Security Alert",
+                "Sharing phone numbers or contact details is strictly prohibited to ensure platform security. Please use the app for all communications.",
+                [{ text: "I Understand", style: "cancel" }]
+            );
+            return;
+        }
+
+        // 3. Prevent "chunking" (sending a number across multiple messages)
+        // Check last 5 messages from the same user sent within the last 5 minutes
+        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+        let previousDigits = "";
+
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const msg = messages[i];
+            const msgTime = new Date(msg.createdAt).getTime();
+
+            // Stop if message is too old or from another user (consecutive check)
+            if (msg.senderId !== currentUserId || msgTime < fiveMinutesAgo) {
+                break;
+            }
+
+            previousDigits = msg.message.replace(/\D/g, '') + previousDigits;
+
+            // Only look back at most 5 messages to avoid extreme false positives
+            if (i < messages.length - 5) break;
+        }
+
+        const totalDigits = previousDigits + currentDigits;
+
+        if (totalDigits.length >= 10 && currentDigits.length > 0) {
+            Alert.alert(
+                "Security Alert",
+                "Sharing phone numbers in parts is also prohibited. Please keep all business communication within the app to ensure your security.",
+                [{ text: "I Understand", style: "cancel" }]
+            );
+            return;
+        }
 
         const tempId = Date.now().toString();
         const newMsg = {
@@ -247,10 +301,10 @@ export default function MessageWindowScreen({ navigation, route }) {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            const idsToDelete = Array.from(selectedMessages);
+                            const idsToDelete = Array.from(selectedMessages).filter(id => !id.startsWith('17')); // Filter out tempIds (which start with timestamp)
                             const res = await deleteMessages(idsToDelete);
                             if (res.success) {
-                                setMessages(prev => prev.filter(m => !selectedMessages.has(m._id)));
+                                setMessages(prev => prev.filter(m => !selectedMessages.has(m._id || m.tempId)));
                                 cancelSelection();
                             }
                         } catch (error) {
@@ -263,8 +317,15 @@ export default function MessageWindowScreen({ navigation, route }) {
     };
 
     return (
-        <View className="flex-1 bg-[#123524]">
+        <View className="flex-1 bg-white">
             <StatusBar barStyle="light-content" />
+            
+            {/* Top Gradient Header Area */}
+            <LinearGradient
+                colors={['#000000ff', '#1e4a3b']}
+                className="absolute top-0 left-0 right-0 h-40"
+            />
+            
             <SafeAreaView edges={['top']} className="flex-1">
                 <ChatHeader
                     chatTitle={chatTitle}
@@ -276,12 +337,11 @@ export default function MessageWindowScreen({ navigation, route }) {
                     onDeleteSelected={deleteSelected}
                 />
 
-                <KeyboardAvoidingView
-                    className="flex-1"
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                <View 
+                    className="flex-1" 
+                    style={{ paddingBottom: keyboardHeight }}
                 >
-                    <View className="flex-1 bg-[#f8faf9] rounded-t-[40px] overflow-hidden">
+                    <View className="flex-1 bg-white rounded-t-[40px] overflow-hidden">
                         <View className="py-3 items-center bg-white/50 border-b border-gray-100">
                             <View className="flex-row items-center px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100/50">
                                 <Lock size={10} color="#059669" />
@@ -308,7 +368,7 @@ export default function MessageWindowScreen({ navigation, route }) {
                                             isMine={item.senderId === currentUserId}
                                             onLongPress={handleLongPress}
                                             onPress={handlePress}
-                                            isSelected={selectedMessages.has(item._id)}
+                                            isSelected={selectedMessages.has(item._id || item.tempId)}
                                             isSelectionMode={isSelectionMode}
                                         />
                                     )}
@@ -319,40 +379,38 @@ export default function MessageWindowScreen({ navigation, route }) {
 
                         {!isSelectionMode && (
                             <View className="bg-white border-t border-gray-100">
-                                <SafeAreaView edges={['bottom']}>
-                                    <View className="flex-row items-center px-4 py-3 gap-x-2">
-                                        <TouchableOpacity className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
-                                            <Paperclip size={20} color="#6b7280" />
-                                        </TouchableOpacity>
+                                <View className="flex-row items-center px-2 pt-3 pb-9 gap-x-2">
+                                    <TouchableOpacity className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
+                                        <Paperclip size={20} color="#6b7280" />
+                                    </TouchableOpacity>
 
-                                        <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
-                                            <TextInput
-                                                className="text-sm text-gray-800 min-h-[40px] max-h-32"
-                                                placeholder="Type a message..."
-                                                placeholderTextColor="#9ca3af"
-                                                value={inputText}
-                                                onChangeText={setInputText}
-                                                multiline
-                                            />
-                                        </View>
-
-                                        <TouchableOpacity
-                                            onPress={inputText.trim() ? sendMessage : undefined}
-                                            className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#123524] shadow-emerald-900/30' : 'bg-gray-100'}`}
-                                            activeOpacity={0.8}
-                                        >
-                                            {inputText.trim() ? (
-                                                <Send size={20} color="#fff" />
-                                            ) : (
-                                                <Mic size={20} color="#6b7280" />
-                                            )}
-                                        </TouchableOpacity>
+                                    <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
+                                        <TextInput
+                                            className="text-sm text-gray-800 min-h-[40px] max-h-32"
+                                            placeholder="Type a message..."
+                                            placeholderTextColor="#9ca3af"
+                                            value={inputText}
+                                            onChangeText={setInputText}
+                                            multiline
+                                        />
                                     </View>
-                                </SafeAreaView>
+
+                                    <TouchableOpacity
+                                        onPress={inputText.trim() ? sendMessage : undefined}
+                                        className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#123524] shadow-emerald-900/30' : 'bg-gray-100'}`}
+                                        activeOpacity={0.8}
+                                    >
+                                        {inputText.trim() ? (
+                                            <Send size={20} color="#fff" />
+                                        ) : (
+                                            <Mic size={20} color="#6b7280" />
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         )}
                     </View>
-                </KeyboardAvoidingView>
+                </View>
             </SafeAreaView>
         </View>
     );

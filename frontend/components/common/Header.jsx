@@ -8,6 +8,20 @@ import { ThemeContext } from '../../context/ThemeContext';
 export default function Header({ title, showNotification = false, rightIcon = null }) {
     const navigation = useNavigation();
     const { isDarkMode } = React.useContext(ThemeContext);
+    const [role, setRole] = React.useState(null);
+
+    React.useEffect(() => {
+        const getRole = async () => {
+            const r = await require('@react-native-async-storage/async-storage').default.getItem('userRole');
+            setRole(r);
+        };
+        getRole();
+    }, []);
+
+    const isBuyer = role === 'Buyer';
+    const sarthiBg = isBuyer ? 'bg-blue-500/20' : 'bg-emerald-500/20';
+    const sarthiBorder = isBuyer ? 'border-blue-400/30' : 'border-emerald-400/30';
+    const sarthiIconColor = isBuyer ? '#60a5fa' : '#4ade80';
 
     return (
         <View className="flex-row items-center justify-between h-10 px-4 pt-12 pb-5 bg-[#020f04e9] dark:bg-[#000000] rounded-b-3xl">
@@ -31,10 +45,10 @@ export default function Header({ title, showNotification = false, rightIcon = nu
                 {/* Apla Sarthi Icon in Header */}
                 <TouchableOpacity 
                     activeOpacity={0.7} 
-                    className="bg-emerald-500/20 p-2 rounded-full border border-emerald-400/30"
+                    className={`${sarthiBg} p-2 rounded-full border ${sarthiBorder}`}
                     onPress={() => DeviceEventEmitter.emit('openAplaSarthi')}
                 >
-                    <Sparkles color="#4ade80" size={20} />
+                    <Sparkles color={sarthiIconColor} size={20} />
                 </TouchableOpacity>
 
                 {rightIcon}

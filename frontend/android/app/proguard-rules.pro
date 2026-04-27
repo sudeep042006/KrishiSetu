@@ -8,3 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Fix for R8 missing class error (from pdfbox)
+-dontwarn com.gemalto.jp2.**
+-dontwarn com.tom_roush.pdfbox.**

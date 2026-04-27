@@ -47,6 +47,20 @@ export default function CropProjectScreen({ navigation }) {
             Alert.alert('Missing Fields', 'Crop name, description, location, quantity and price are required.');
             return;
         }
+
+        // Phone number blocking logic
+        const phoneRegex = /(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/;
+        const simplePhoneRegex = /\d{10}/;
+        const combinedText = `${form.cropName} ${form.description} ${form.location}`;
+        
+        if (phoneRegex.test(combinedText) || simplePhoneRegex.test(combinedText.replace(/[-\s]/g, ''))) {
+            Alert.alert(
+                "Security Policy", 
+                "Sharing phone numbers or direct contact information in listings is not allowed for security reasons. Please use our secure chat for all communications.",
+                [{ text: "I Understand", style: "cancel" }]
+            );
+            return;
+        }
         try {
             setSaving(true);
             const payload = {

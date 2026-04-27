@@ -24,6 +24,7 @@ import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfil
 import CropPriceScreen from '../pages/homescreen/farmer/cropPrice';
 import RequestFromOfftaker from '../pages/homescreen/farmer/RequestFromOfftaker'; 
 
+
 const Drawer = createDrawerNavigator();
 
 function CustomFarmerDrawerContent(props) {
@@ -174,6 +175,7 @@ export default function FarmerDrawerNavigator() {
             <Drawer.Screen name="MessageWindow" component={MessageWindowScreen} options={{ drawerItemStyle: { display: 'none' } }} />
             <Drawer.Screen name="OfftakerProfileWindow" component={OfftakerProfileWindowScreen} options={{ drawerItemStyle: { display: 'none' } }} />
             <Drawer.Screen name="FarmerProfileWindow" component={FarmerProfileWindowScreen} options={{ drawerItemStyle: { display: 'none' } }} />
+            <Drawer.Screen name="BuyerProfileWindow" component={OfftakerProfileWindowScreen} options={{ drawerItemStyle: { display: 'none' } }} />
         </Drawer.Navigator>
     );
 }

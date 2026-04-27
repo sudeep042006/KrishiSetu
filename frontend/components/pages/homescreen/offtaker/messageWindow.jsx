@@ -11,6 +11,7 @@ import {
     Keyboard,
     Alert
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -129,9 +130,30 @@ export default function MessageWindowScreen({ navigation, route }) {
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [selectedMessages, setSelectedMessages] = useState(new Set());
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const flatListRef = useRef(null);
+
+    useEffect(() => {
+        const showSub = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+                setTimeout(() => {
+                    if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true });
+                }, 50);
+            }
+        );
+        const hideSub = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => setKeyboardHeight(0)
+        );
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, [messages.length]);
 
     useEffect(() => {
         socketService.initiateSocketConnection();
@@ -178,6 +200,20 @@ export default function MessageWindowScreen({ navigation, route }) {
     const sendMessage = () => {
         const text = inputText.trim();
         if (!text) return;
+
+        // Block phone numbers
+        const phoneRegex = /(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/;
+        const simplePhoneRegex = /\d{10}/;
+        const spacedPhoneRegex = /(\d\s*){10}/;
+
+        if (phoneRegex.test(text) || simplePhoneRegex.test(text) || spacedPhoneRegex.test(text.replace(/[-\s]/g, ''))) {
+            Alert.alert(
+                "Security Alert", 
+                "Sharing phone numbers or contact details is strictly prohibited to ensure platform security. Please use the app for all communications.",
+                [{ text: "I Understand", style: "cancel" }]
+            );
+            return;
+        }
 
         const tempId = Date.now().toString();
         const newMsg = {
@@ -261,11 +297,19 @@ export default function MessageWindowScreen({ navigation, route }) {
     const iconColor = isDarkMode ? '#475569' : '#6b7280';
 
     return (
-        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#0a0f1e' : '#1e4e8c' }}>
+        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#0d1117' : '#ffffff' }}>
             <StatusBar barStyle="light-content" />
+            
+            {!isDarkMode && (
+                <LinearGradient
+                    colors={['#1e4e8c', '#1e3a5f']}
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160 }}
+                />
+            )}
+
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 {/* Header */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: headerBg, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: isDarkMode ? '#0f1f3d' : 'transparent', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
                     {isSelectionMode ? (
                         <>
                             <TouchableOpacity onPress={cancelSelection} style={{ marginRight: 16, padding: 6, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }}>
@@ -297,13 +341,12 @@ export default function MessageWindowScreen({ navigation, route }) {
                         </>
                     )}
                 </View>
+            </SafeAreaView>
 
-                <KeyboardAvoidingView
-                    style={{ flex: 1 }}
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-                >
-                    <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
+            <View 
+                style={{ flex: 1, paddingBottom: keyboardHeight }}
+            >
+                <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
                         {/* Encrypted label */}
                         <View style={{ paddingVertical: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4, backgroundColor: encryptBg, borderRadius: 20, borderWidth: 1, borderColor: encryptBorderColor, gap: 6 }}>
@@ -366,36 +409,33 @@ export default function MessageWindowScreen({ navigation, route }) {
 
                         {!isSelectionMode && (
                             <View style={{ backgroundColor: inputAreaBg, borderTopWidth: 1, borderTopColor: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
-                                <SafeAreaView edges={['bottom']}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
-                                        <TouchableOpacity style={{ width: 40, height: 40, backgroundColor: inputBg, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: inputBorder }}>
-                                            <Paperclip size={20} color={iconColor} />
-                                        </TouchableOpacity>
-                                        <View style={{ flex: 1, backgroundColor: inputBg, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, borderColor: inputBorder }}>
-                                            <TextInput
-                                                style={{ fontSize: 14, color: inputTextColor, minHeight: 40, maxHeight: 128 }}
-                                                placeholder="Type a message..."
-                                                placeholderTextColor={iconColor}
-                                                value={inputText}
-                                                onChangeText={setInputText}
-                                                multiline
-                                                onFocus={() => setTimeout(() => { if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true }); }, 300)}
-                                            />
-                                        </View>
-                                        <TouchableOpacity
-                                            onPress={inputText.trim() ? sendMessage : undefined}
-                                            style={{ width: 48, height: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: inputText.trim() ? sendBg : inputBg }}
-                                            activeOpacity={0.8}
-                                        >
-                                            {inputText.trim() ? <Send size={20} color="#fff" /> : <Mic size={20} color={iconColor} />}
-                                        </TouchableOpacity>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, paddingBottom: 32, gap: 8 }}>
+                                    <TouchableOpacity style={{ width: 40, height: 40, backgroundColor: inputBg, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: inputBorder }}>
+                                        <Paperclip size={20} color={iconColor} />
+                                    </TouchableOpacity>
+                                    <View style={{ flex: 1, backgroundColor: inputBg, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, borderColor: inputBorder }}>
+                                        <TextInput
+                                            style={{ fontSize: 14, color: inputTextColor, minHeight: 40, maxHeight: 128 }}
+                                            placeholder="Type a message..."
+                                            placeholderTextColor={iconColor}
+                                            value={inputText}
+                                            onChangeText={setInputText}
+                                            multiline
+                                            onFocus={() => setTimeout(() => { if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true }); }, 300)}
+                                        />
                                     </View>
-                                </SafeAreaView>
+                                    <TouchableOpacity
+                                        onPress={inputText.trim() ? sendMessage : undefined}
+                                        style={{ width: 48, height: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: inputText.trim() ? sendBg : inputBg }}
+                                        activeOpacity={0.8}
+                                    >
+                                        {inputText.trim() ? <Send size={20} color="#fff" /> : <Mic size={20} color={iconColor} />}
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         )}
-                    </View>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
+                </View>
+            </View>
         </View>
     );
 }
