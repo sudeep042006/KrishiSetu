@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     View,
     Text,
@@ -29,15 +29,14 @@ import {
 } from 'lucide-react-native';
 import { getChatMessages, deleteMessages } from '../../../../services/chatApi';
 import socketService from '../../../../services/socket';
-import { ThemeContext } from '../../../../context/ThemeContext';
 
 function AvatarPlaceholder({ name = "Unknown", size = 40 }) {
     const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
     const colors = ['#1e4e8c', '#1d4ed8', '#2563eb', '#1e40af'];
     const color = colors[name.charCodeAt(0) % colors.length];
     return (
-        <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.35 }}>{initials}</Text>
+        <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} className="justify-center items-center shadow-sm">
+            <Text className="text-white font-bold" style={{ fontSize: size * 0.35 }}>{initials}</Text>
         </View>
     );
 }
@@ -45,7 +44,7 @@ function AvatarPlaceholder({ name = "Unknown", size = 40 }) {
 function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selectedCount, onCancelSelection, onDeleteSelected }) {
     if (isSelectionMode) {
         return (
-            <View className="flex-row items-center px-4 py-3 bg-[#123524] border-b border-white/5">
+            <View className="flex-row items-center px-4 py-3 bg-[#1e4e8c] border-b border-white/5">
                 <TouchableOpacity onPress={onCancelSelection} className="mr-4 p-1.5 rounded-full bg-white/10">
                     <X size={22} color="#fff" />
                 </TouchableOpacity>
@@ -58,7 +57,7 @@ function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selec
     }
 
     return (
-        <View className="flex-row items-center px-4 py-3 bg-[#123524] border-b border-white/5">
+        <View className="flex-row items-center px-4 py-3 bg-[#1e4e8c] border-b border-white/5">
             <TouchableOpacity onPress={() => navigation.goBack()} className="mr-2 p-1.5 rounded-full bg-white/10">
                 <ChevronLeft size={22} color="#fff" />
             </TouchableOpacity>
@@ -73,8 +72,8 @@ function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selec
                         {chatTitle}
                     </Text>
                     <View className="flex-row items-center">
-                        <View className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5" />
-                        <Text className="text-emerald-300/80 text-[10px] font-bold uppercase tracking-widest">Active Now</Text>
+                        <View className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5" />
+                        <Text className="text-blue-300/80 text-[10px] font-bold uppercase tracking-widest">Active Now</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -91,31 +90,31 @@ function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSe
 
     return (
         <TouchableOpacity
-            onLongPress={() => onLongPress(message._id)}
-            onPress={() => isSelectionMode ? onPress(message._id) : null}
+            onLongPress={() => onLongPress(message._id || message.tempId)}
+            onPress={() => isSelectionMode ? onPress(message._id || message.tempId) : null}
             activeOpacity={0.7}
-            className={`flex-row mb-3 px-4 ${isMine ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-emerald-500/10' : ''}`}
+            className={`flex-row mb-3 px-4 ${isMine ? 'justify-end' : 'justify-start'} ${isSelected ? 'bg-blue-500/10' : ''}`}
         >
             <View className="flex-row items-end max-w-[85%]">
                 {isSelectionMode && (
                     <View className="mr-2 mb-2">
                         {isSelected ? (
-                            <CheckCircle2 size={18} color="#10b981" fill="#10b981" />
+                            <CheckCircle2 size={18} color="#3b82f6" fill="#3b82f6" />
                         ) : (
                             <View className="w-[18px] h-[18px] rounded-full border border-gray-300" />
                         )}
                     </View>
                 )}
 
-                <View className={`${isMine ? 'bg-[#123524] rounded-tr-sm' : 'bg-white rounded-tl-sm border border-gray-100'} rounded-2xl px-4 py-2.5 shadow-sm`}>
+                <View className={`${isMine ? 'bg-[#1e4e8c] rounded-tr-sm' : 'bg-white rounded-tl-sm border border-gray-100'} rounded-2xl px-4 py-2.5 shadow-sm`}>
                     <Text className={`${isMine ? 'text-white font-medium' : 'text-gray-800'} text-sm leading-6`}>
                         {message.message}
                     </Text>
                     <View className="flex-row justify-end items-center mt-1 gap-x-1 opacity-70">
-                        <Text className={`${isMine ? 'text-emerald-200' : 'text-gray-400'} text-[9px] font-bold uppercase`}>
+                        <Text className={`${isMine ? 'text-blue-200' : 'text-gray-400'} text-[9px] font-bold uppercase`}>
                             {messageTime}
                         </Text>
-                        {isMine && <CheckCheck size={12} color="#A7F3D0" />}
+                        {isMine && <CheckCheck size={12} color="#93c5fd" />}
                     </View>
                 </View>
             </View>
@@ -125,7 +124,6 @@ function MessageBubble({ message, isMine, onLongPress, onPress, isSelected, isSe
 
 export default function MessageWindowScreen({ navigation, route }) {
     const { chatId, chatTitle, otherUserId } = route.params;
-    const { isDarkMode } = useContext(ThemeContext);
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const [loading, setLoading] = useState(true);
@@ -136,30 +134,25 @@ export default function MessageWindowScreen({ navigation, route }) {
     const flatListRef = useRef(null);
 
     useEffect(() => {
+        socketService.initiateSocketConnection();
+        setupChat();
+
         const showSub = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
             (e) => {
                 setKeyboardHeight(e.endCoordinates.height);
-                setTimeout(() => {
-                    if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true });
-                }, 50);
+                setTimeout(scrollToBottom, 50);
             }
         );
         const hideSub = Keyboard.addListener(
             Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
             () => setKeyboardHeight(0)
         );
-        return () => {
-            showSub.remove();
-            hideSub.remove();
-        };
-    }, [messages.length]);
 
-    useEffect(() => {
-        socketService.initiateSocketConnection();
-        setupChat();
         return () => {
             socketService.leaveChatRoom(chatId);
+            showSub.remove();
+            hideSub.remove();
         };
     }, [chatId]);
 
@@ -179,7 +172,16 @@ export default function MessageWindowScreen({ navigation, route }) {
             socketService.subscribeToMessages((err, msg) => {
                 if (err) return;
                 setMessages(prev => {
-                    if (prev.find(m => (m._id && m._id === msg._id) || (m.tempId && msg.tempId && m.tempId === msg.tempId))) return prev;
+                    const index = prev.findIndex(m =>
+                        (m._id && m._id === msg._id) ||
+                        (m.tempId && msg.tempId && m.tempId === msg.tempId)
+                    );
+
+                    if (index !== -1) {
+                        const updated = [...prev];
+                        updated[index] = { ...updated[index], ...msg };
+                        return updated;
+                    }
                     return [...prev, msg];
                 });
             });
@@ -201,15 +203,32 @@ export default function MessageWindowScreen({ navigation, route }) {
         const text = inputText.trim();
         if (!text) return;
 
-        // Block phone numbers
-        const phoneRegex = /(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/;
-        const simplePhoneRegex = /\d{10}/;
-        const spacedPhoneRegex = /(\d\s*){10}/;
-
-        if (phoneRegex.test(text) || simplePhoneRegex.test(text) || spacedPhoneRegex.test(text.replace(/[-\s]/g, ''))) {
+        // Phone number detection logic
+        const currentDigits = text.replace(/\D/g, '');
+        if (currentDigits.length >= 10) {
             Alert.alert(
-                "Security Alert", 
+                "Security Alert",
                 "Sharing phone numbers or contact details is strictly prohibited to ensure platform security. Please use the app for all communications.",
+                [{ text: "I Understand", style: "cancel" }]
+            );
+            return;
+        }
+
+        const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+        let previousDigits = "";
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const msg = messages[i];
+            const msgTime = new Date(msg.createdAt).getTime();
+            if (msg.senderId !== currentUserId || msgTime < fiveMinutesAgo) break;
+            previousDigits = msg.message.replace(/\D/g, '') + previousDigits;
+            if (i < messages.length - 5) break;
+        }
+
+        const totalDigits = previousDigits + currentDigits;
+        if (totalDigits.length >= 10 && currentDigits.length > 0) {
+            Alert.alert(
+                "Security Alert",
+                "Sharing phone numbers in parts is also prohibited. Please keep all business communication within the app to ensure your security.",
                 [{ text: "I Understand", style: "cancel" }]
             );
             return;
@@ -227,12 +246,11 @@ export default function MessageWindowScreen({ navigation, route }) {
 
         setMessages((prev) => [...prev, newMsg]);
         setInputText('');
-
         socketService.sendMessage(newMsg);
     };
 
     const handleLongPress = (id) => {
-        if (!id) return; // Ignore messages without ID (temp messages)
+        if (!id) return;
         setIsSelectionMode(true);
         const next = new Set(selectedMessages);
         next.add(id);
@@ -269,10 +287,10 @@ export default function MessageWindowScreen({ navigation, route }) {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            const idsToDelete = Array.from(selectedMessages);
+                            const idsToDelete = Array.from(selectedMessages).filter(id => !id.startsWith('17'));
                             const res = await deleteMessages(idsToDelete);
                             if (res.success) {
-                                setMessages(prev => prev.filter(m => !selectedMessages.has(m._id)));
+                                setMessages(prev => prev.filter(m => !selectedMessages.has(m._id || m.tempId)));
                                 cancelSelection();
                             }
                         } catch (error) {
@@ -284,81 +302,43 @@ export default function MessageWindowScreen({ navigation, route }) {
         );
     };
 
-    const headerBg = isDarkMode ? '#0f1f3d' : '#1e4e8c';
-    const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
-    const encryptBg = isDarkMode ? 'rgba(30,58,96,0.3)' : '#eff6ff';
-    const encryptBorderColor = isDarkMode ? '#1e3a5f' : '#bfdbfe';
-    const encryptTextColor = isDarkMode ? '#3b82f6' : '#1e4e8c';
-    const inputAreaBg = isDarkMode ? '#0f172a' : '#ffffff';
-    const inputBg = isDarkMode ? '#1e293b' : '#f8fafc';
-    const inputBorder = isDarkMode ? '#334155' : '#f1f5f9';
-    const inputTextColor = isDarkMode ? '#e2e8f0' : '#1e293b';
-    const sendBg = isDarkMode ? '#1d4ed8' : '#1e4e8c';
-    const iconColor = isDarkMode ? '#475569' : '#6b7280';
-
     return (
-        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#0d1117' : '#ffffff' }}>
+        <View className="flex-1 bg-white">
             <StatusBar barStyle="light-content" />
             
-            {!isDarkMode && (
-                <LinearGradient
-                    colors={['#1e4e8c', '#1e3a5f']}
-                    style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160 }}
+            {/* Top Gradient Header Area (Blue) */}
+            <LinearGradient
+                colors={['#1e4e8c', '#1e3a5f']}
+                className="absolute top-0 left-0 right-0 h-40"
+            />
+            
+            <SafeAreaView edges={['top']} className="flex-1">
+                <ChatHeader
+                    chatTitle={chatTitle}
+                    otherUserId={otherUserId}
+                    navigation={navigation}
+                    isSelectionMode={isSelectionMode}
+                    selectedCount={selectedMessages.size}
+                    onCancelSelection={cancelSelection}
+                    onDeleteSelected={deleteSelected}
                 />
-            )}
 
-            <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                {/* Header */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: isDarkMode ? '#0f1f3d' : 'transparent', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' }}>
-                    {isSelectionMode ? (
-                        <>
-                            <TouchableOpacity onPress={cancelSelection} style={{ marginRight: 16, padding: 6, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                                <X size={22} color="#fff" />
-                            </TouchableOpacity>
-                            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 17, flex: 1 }}>{selectedMessages.size} selected</Text>
-                            <TouchableOpacity onPress={deleteSelected} style={{ padding: 8, borderRadius: 20, backgroundColor: 'rgba(248,113,113,0.2)' }}>
-                                <Trash2 size={22} color="#f87171" />
-                            </TouchableOpacity>
-                        </>
-                    ) : (
-                        <>
-                            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 8, padding: 6, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                                <ChevronLeft size={22} color="#fff" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} onPress={() => navigation.navigate('FarmerProfileWindow', { userId: otherUserId })}>
-                                <AvatarPlaceholder name={chatTitle} size={40} />
-                                <View style={{ marginLeft: 12 }}>
-                                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>{chatTitle}</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ade80', marginRight: 6 }} />
-                                        <Text style={{ color: 'rgba(134,239,172,0.8)', fontSize: 10, fontWeight: '700', textTransform: 'uppercase' }}>Active Now</Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={{ padding: 8, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                                <MoreVertical size={20} color="#fff" />
-                            </TouchableOpacity>
-                        </>
-                    )}
-                </View>
-            </SafeAreaView>
-
-            <View 
-                style={{ flex: 1, paddingBottom: keyboardHeight }}
-            >
-                <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 28, borderTopRightRadius: 28, overflow: 'hidden' }}>
-                        {/* Encrypted label */}
-                        <View style={{ paddingVertical: 10, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4, backgroundColor: encryptBg, borderRadius: 20, borderWidth: 1, borderColor: encryptBorderColor, gap: 6 }}>
-                                <Lock size={10} color={encryptTextColor} />
-                                <Text style={{ fontSize: 10, color: encryptTextColor, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.8 }}>Encrypted Communication</Text>
+                <View 
+                    className="flex-1" 
+                    style={{ paddingBottom: keyboardHeight }}
+                >
+                    <View className="flex-1 bg-white rounded-t-[40px] overflow-hidden">
+                        <View className="py-3 items-center bg-white/50 border-b border-gray-100">
+                            <View className="flex-row items-center px-3 py-1 bg-blue-50 rounded-full border border-blue-100/50">
+                                <Lock size={10} color="#2563eb" />
+                                <Text className="text-[10px] text-blue-700 font-bold ml-1 uppercase tracking-tighter">Encrypted Communication</Text>
                             </View>
                         </View>
 
-                        <View style={{ flex: 1 }}>
+                        <View className="flex-1">
                             {loading ? (
-                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                    <ActivityIndicator size="large" color={isDarkMode ? '#3b82f6' : '#1e4e8c'} />
+                                <View className="flex-1 justify-center items-center">
+                                    <ActivityIndicator size="large" color="#1e4e8c" />
                                 </View>
                             ) : (
                                 <FlashList
@@ -368,74 +348,56 @@ export default function MessageWindowScreen({ navigation, route }) {
                                     estimatedItemSize={80}
                                     contentContainerStyle={{ paddingVertical: 20 }}
                                     showsVerticalScrollIndicator={false}
-                                    renderItem={({ item }) => {
-                                        const isMine = item.senderId === currentUserId;
-                                        const isSelected = selectedMessages.has(item._id);
-                                        const myBg = isDarkMode ? '#1e3a5f' : '#1e4e8c';
-                                        const otherBg = isDarkMode ? '#1e293b' : '#ffffff';
-                                        const otherBorder = isDarkMode ? '#334155' : '#f1f5f9';
-                                        const otherText = isDarkMode ? '#e2e8f0' : '#1e293b';
-                                        const timeMine = isDarkMode ? '#93c5fd' : '#bfdbfe';
-                                        const timeOther = isDarkMode ? '#475569' : '#94a3b8';
-                                        const msgTime = new Date(item.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        return (
-                                            <TouchableOpacity
-                                                onLongPress={() => { if (item._id) { setIsSelectionMode(true); const s = new Set(selectedMessages); s.add(item._id); setSelectedMessages(s); } }}
-                                                onPress={() => { if (isSelectionMode && item._id) { const s = new Set(selectedMessages); s.has(item._id) ? s.delete(item._id) : s.add(item._id); if (s.size === 0) setIsSelectionMode(false); setSelectedMessages(s); } }}
-                                                activeOpacity={0.7}
-                                                style={{ flexDirection: 'row', marginBottom: 12, paddingHorizontal: 16, justifyContent: isMine ? 'flex-end' : 'flex-start', backgroundColor: isSelected ? (isDarkMode ? 'rgba(59,130,246,0.12)' : 'rgba(30,78,140,0.06)') : 'transparent' }}
-                                            >
-                                                <View style={{ flexDirection: 'row', alignItems: 'flex-end', maxWidth: '85%' }}>
-                                                    {isSelectionMode && (
-                                                        <View style={{ marginRight: 8, marginBottom: 8 }}>
-                                                            {isSelected ? <CheckCircle2 size={18} color="#3b82f6" fill="#3b82f6" /> : <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: '#94a3b8' }} />}
-                                                        </View>
-                                                    )}
-                                                    <View style={[{ borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10 }, isMine ? { backgroundColor: myBg, borderTopRightRadius: 4 } : { backgroundColor: otherBg, borderTopLeftRadius: 4, borderWidth: 1, borderColor: otherBorder }]}>
-                                                        <Text style={{ color: isMine ? '#fff' : otherText, fontSize: 14, lineHeight: 22 }}>{item.message}</Text>
-                                                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: 4, gap: 4, opacity: 0.7 }}>
-                                                            <Text style={{ color: isMine ? timeMine : timeOther, fontSize: 9, fontWeight: '700' }}>{msgTime}</Text>
-                                                            {isMine && <CheckCheck size={12} color={timeMine} />}
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                            </TouchableOpacity>
-                                        );
-                                    }}
-                                    onContentSizeChange={() => { if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true }); }}
+                                    renderItem={({ item }) => (
+                                        <MessageBubble
+                                            message={item}
+                                            isMine={item.senderId === currentUserId}
+                                            onLongPress={handleLongPress}
+                                            onPress={handlePress}
+                                            isSelected={selectedMessages.has(item._id || item.tempId)}
+                                            isSelectionMode={isSelectionMode}
+                                        />
+                                    )}
+                                    onContentSizeChange={scrollToBottom}
                                 />
                             )}
                         </View>
 
                         {!isSelectionMode && (
-                            <View style={{ backgroundColor: inputAreaBg, borderTopWidth: 1, borderTopColor: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, paddingBottom: 32, gap: 8 }}>
-                                    <TouchableOpacity style={{ width: 40, height: 40, backgroundColor: inputBg, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: inputBorder }}>
-                                        <Paperclip size={20} color={iconColor} />
+                            <View className="bg-white border-t border-gray-100">
+                                <View className="flex-row items-center px-2 pt-3 pb-9 gap-x-2">
+                                    <TouchableOpacity className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
+                                        <Paperclip size={20} color="#6b7280" />
                                     </TouchableOpacity>
-                                    <View style={{ flex: 1, backgroundColor: inputBg, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, borderColor: inputBorder }}>
+
+                                    <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
                                         <TextInput
-                                            style={{ fontSize: 14, color: inputTextColor, minHeight: 40, maxHeight: 128 }}
+                                            className="text-sm text-gray-800 min-h-[40px] max-h-32"
                                             placeholder="Type a message..."
-                                            placeholderTextColor={iconColor}
+                                            placeholderTextColor="#9ca3af"
                                             value={inputText}
                                             onChangeText={setInputText}
                                             multiline
-                                            onFocus={() => setTimeout(() => { if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true }); }, 300)}
                                         />
                                     </View>
+
                                     <TouchableOpacity
                                         onPress={inputText.trim() ? sendMessage : undefined}
-                                        style={{ width: 48, height: 48, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: inputText.trim() ? sendBg : inputBg }}
+                                        className={`w-12 h-12 rounded-2xl items-center justify-center shadow-lg ${inputText.trim() ? 'bg-[#1e4e8c] shadow-blue-900/30' : 'bg-gray-100'}`}
                                         activeOpacity={0.8}
                                     >
-                                        {inputText.trim() ? <Send size={20} color="#fff" /> : <Mic size={20} color={iconColor} />}
+                                        {inputText.trim() ? (
+                                            <Send size={20} color="#fff" />
+                                        ) : (
+                                            <Mic size={20} color="#6b7280" />
+                                        )}
                                     </TouchableOpacity>
                                 </View>
                             </View>
                         )}
+                    </View>
                 </View>
-            </View>
+            </SafeAreaView>
         </View>
     );
 }

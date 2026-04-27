@@ -35,6 +35,8 @@ import BuyerBottomTabs from '../../../navigation/BuyerBottomTabs';
 import Header from '../../../common/BHeader';
 import { Animated, Modal as RNModal } from 'react-native';
 
+import { offtakerService } from '../../service/api';
+
 export default function OfftakerHome() {
     const navigation = useNavigation();
     const [user, setUser] = useState(null);
@@ -77,18 +79,25 @@ export default function OfftakerHome() {
     useEffect(() => {
         fetchUserData();
         initializeWeather();
-        // Simulate procurement data for now
         setProcurementCount(12);
     }, []);
 
     const fetchUserData = async () => {
         try {
+            // 1. Load basic user info from cache
             const userDataStr = await AsyncStorage.getItem('userData');
             if (userDataStr) {
                 const userData = JSON.parse(userDataStr);
                 setUser(userData);
-                // In a real app, offtaker profile photos would come from a service
-                setProfilePhoto(userData.profilePhoto || '');
+                if (userData.profilePhoto) {
+                    setProfilePhoto(userData.profilePhoto);
+                }
+            }
+
+            // 2. Fetch fresh profile photo from server (actual source of truth)
+            const res = await offtakerService.getProfile();
+            if (res?.success && res?.data?.profilePhoto) {
+                setProfilePhoto(res.data.profilePhoto);
             }
         } catch (error) {
             console.log('Error fetching user data:', error);
@@ -196,15 +205,21 @@ export default function OfftakerHome() {
                         </TouchableOpacity>
 
 
-                        <View className="bg-white/20 p-0.5 rounded-full">
-                            <Image
-                                source={profilePhoto ? { uri: profilePhoto } : null}
-                                className="w-10 h-10 rounded-full bg-white/20"
-                            />
+                        <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)', overflow: 'hidden', justifyContent: 'center', alignItems: 'center' }}>
+                            {profilePhoto ? (
+                                <Image
+                                    source={{ uri: profilePhoto }}
+                                    style={{ width: '100%', height: '100%' }}
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 }}>
+                                    {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                                </Text>
+                            )}
                         </View>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('Profile')}
-                        >
+
+                        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                             <View className="ml-3">
                                 <Text className="text-white/70 text-xs font-medium uppercase tracking-wider">Offtaker Portal</Text>
                                 <Text className="text-white text-base font-bold">
