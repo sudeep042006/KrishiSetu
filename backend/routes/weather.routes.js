@@ -25,11 +25,13 @@ router.post('/insights', async (req, res) => {
                 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
             },
             body: JSON.stringify({
-                model: "deepseek-chat",
+                model: "deepseek-v4-pro",
                 messages: [
                     { role: "system", content: "You are a professional agricultural advisor." },
                     { role: "user", content: prompt }
                 ],
+                thinking: { "type": "enabled" },
+                reasoning_effort: "high",
                 stream: false
             })
         });
