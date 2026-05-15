@@ -157,7 +157,7 @@ export const getProjectPhotoById = async (req,res) =>{
     }
 }
 
-export const getProject = async (req,res) =>{
+/* export const getProject = async (req,res) =>{
     try{
         const projects = await Project.find().populate('createdBy', 'name email');
         return res.status(200).json({message:"Projects fetched successfully", projects});
@@ -166,6 +166,32 @@ export const getProject = async (req,res) =>{
         return res.status(500).json({message: "Error fetching projects"});
     }
 }
+ */
+export const getProject = async (req,res) =>{
+    try{
+
+        const farmerId = req.user.id;
+
+        const projects = await Project.find({
+            createdBy: farmerId
+        }).populate('createdBy', 'name email');
+
+        return res.status(200).json({
+            message:"Projects fetched successfully",
+            projects
+        });
+
+    }catch(error){
+
+        console.log("Error in fetching projects",error);
+
+        return res.status(500).json({
+            message: "Error fetching projects"
+        });
+    }
+}
+
+
 
 export const getProjectByCropName = async (req,res) =>{
     try{
@@ -195,7 +221,7 @@ export const updateProject = async (req, res) =>{
     }
 }
 
-export const deleteProject = async (req,res) =>{
+/* export const deleteProject = async (req,res) =>{
     try{
         const {id} = req.params;
         const deletedProject = await Project.findByIdAndDelete(id);
@@ -205,7 +231,48 @@ export const deleteProject = async (req,res) =>{
         console.log("Error in deleting project",error);
         return res.status(500).json({message: "Error deleting project"});
     }
+} */
+
+
+export const deleteProject = async (req,res) =>{
+    try{
+
+        const { id } = req.params;
+
+        // Find project first
+        const project = await Project.findById(id);
+
+        // Check if project exists
+        if(!project){
+            return res.status(404).json({
+                message: "Project not found"
+            });
+        }
+
+        // Check ownership
+        if(project.createdBy.toString() !== req.user.id){
+            return res.status(403).json({
+                message: "Unauthorized to delete this project"
+            });
+        }
+
+        // Delete project
+        await project.deleteOne();
+
+        return res.status(200).json({
+            message:"Project deleted successfully"
+        });
+
+    }catch(error){
+
+        console.log("Error in deleting project",error);
+
+        return res.status(500).json({
+            message: "Error deleting project"
+        });
+    }
 }
+
 
 export const getProjectByLocation = async( req, res ) => {
     try{
@@ -224,4 +291,4 @@ export const getProjectByLocation = async( req, res ) => {
         console.log("Error in fetching projects",error);
         return res.status(500).json({message: "Error fetching projects"});
     }
-}
+}
