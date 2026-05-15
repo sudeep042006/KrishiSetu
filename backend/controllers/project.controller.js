@@ -157,7 +157,7 @@ export const getProjectPhotoById = async (req,res) =>{
     }
 }
 
-/* export const getProject = async (req,res) =>{
+export const getProject = async (req,res) =>{
     try{
         const projects = await Project.find().populate('createdBy', 'name email');
         return res.status(200).json({message:"Projects fetched successfully", projects});
@@ -166,30 +166,8 @@ export const getProjectPhotoById = async (req,res) =>{
         return res.status(500).json({message: "Error fetching projects"});
     }
 }
- */
-export const getProject = async (req,res) =>{
-    try{
+ 
 
-        const farmerId = req.user._id;
-
-        const projects = await Project.find({
-            createdBy: farmerId
-        }).populate('createdBy', 'name email');
-
-        return res.status(200).json({
-            message:"Projects fetched successfully",
-            projects
-        });
-
-    }catch(error){
-
-        console.log("Error in fetching projects",error);
-
-        return res.status(500).json({
-            message: "Error fetching projects"
-        });
-    }
-}
 
 
 
@@ -221,7 +199,7 @@ export const updateProject = async (req, res) =>{
     }
 }
 
-/* export const deleteProject = async (req,res) =>{
+ export const deleteProject = async (req,res) =>{
     try{
         const {id} = req.params;
         const deletedProject = await Project.findByIdAndDelete(id);
@@ -231,44 +209,7 @@ export const updateProject = async (req, res) =>{
         console.log("Error in deleting project",error);
         return res.status(500).json({message: "Error deleting project"});
     }
-} */
-
-
-export const deleteProject = async (req,res) =>{
-    try{
-
-        const {id} = req.params;
-
-        const project = await Project.findById(id);
-
-        if (!project){
-            return res.status(404).json({
-                message: "Project not found"
-            });
-        }
-
-        // Ownership check
-        if(project.createdBy.toString() !== req.user._id.toString()){
-            return res.status(403).json({
-                message: "Unauthorized"
-            });
-        }
-
-        await project.deleteOne();
-
-        return res.status(200).json({
-            message:"Project deleted successfully"
-        });
-
-    }catch(error){
-
-        console.log("Error in deleting project",error);
-
-        return res.status(500).json({
-            message: "Error deleting project"
-        });
-    }
-}
+} 
 
 export const getProjectByLocation = async( req, res ) => {
     try{
