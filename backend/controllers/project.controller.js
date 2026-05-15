@@ -170,7 +170,7 @@ export const getProjectPhotoById = async (req,res) =>{
 export const getProject = async (req,res) =>{
     try{
 
-        const farmerId = req.user.id;
+        const farmerId = req.user._id;
 
         const projects = await Project.find({
             createdBy: farmerId
@@ -237,26 +237,23 @@ export const updateProject = async (req, res) =>{
 export const deleteProject = async (req,res) =>{
     try{
 
-        const { id } = req.params;
+        const {id} = req.params;
 
-        // Find project first
         const project = await Project.findById(id);
 
-        // Check if project exists
-        if(!project){
+        if (!project){
             return res.status(404).json({
                 message: "Project not found"
             });
         }
 
-        // Check ownership
-        if(project.createdBy.toString() !== req.user.id){
+        // Ownership check
+        if(project.createdBy.toString() !== req.user._id.toString()){
             return res.status(403).json({
-                message: "Unauthorized to delete this project"
+                message: "Unauthorized"
             });
         }
 
-        // Delete project
         await project.deleteOne();
 
         return res.status(200).json({
@@ -272,7 +269,6 @@ export const deleteProject = async (req,res) =>{
         });
     }
 }
-
 
 export const getProjectByLocation = async( req, res ) => {
     try{
