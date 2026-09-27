@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     View,
     Text,
@@ -30,6 +31,7 @@ import { paymentService, CropService } from '../../service/api';
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen({ navigation }) {
+    const { t } = useTranslation();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -102,10 +104,10 @@ export default function DashboardScreen({ navigation }) {
     };
 
     const stats = [
-        { id: 1, label: 'Active Crops', value: dashboardStats.activeCrops.toString(), icon: Sprout, color: '#16a34a', bg: '#f0fdf4' },
-        { id: 2, label: 'Total Sales', value: formatCurrency(dashboardStats.totalEarnings), icon: Wallet, color: '#0891b2', bg: '#ecfeff' },
-        { id: 3, label: 'Buyers Reach', value: dashboardStats.buyersReach.toString(), icon: Users, color: '#7c3aed', bg: '#f5f3ff' },
-        { id: 4, label: 'Sales Done', value: dashboardStats.salesDone.toString(), icon: ShoppingBag, color: '#ea580c', bg: '#fff7ed' },
+        { id: 1, label: t('dashboard.stats.activeCrops'), value: dashboardStats.activeCrops.toString(), icon: Sprout, color: '#16a34a', bg: '#f0fdf4' },
+        { id: 2, label: t('dashboard.stats.totalSales'), value: formatCurrency(dashboardStats.totalEarnings), icon: Wallet, color: '#0891b2', bg: '#ecfeff' },
+        { id: 3, label: t('dashboard.stats.buyersReach'), value: dashboardStats.buyersReach.toString(), icon: Users, color: '#7c3aed', bg: '#f5f3ff' },
+        { id: 4, label: t('dashboard.stats.salesDone'), value: dashboardStats.salesDone.toString(), icon: ShoppingBag, color: '#ea580c', bg: '#fff7ed' },
     ];
 
     if (loading && !refreshing) {
@@ -119,7 +121,7 @@ export default function DashboardScreen({ navigation }) {
     return (
         <View className="flex-1 bg-[#123524]">
             <SafeAreaView edges={['top']} className="flex-1">
-                <Header title="Dashboard" showNotification={true} />
+                <Header title={t('nav.dashboard')} showNotification={true} />
 
                 <View className="flex-1 bg-[#f8fafc] rounded-t-[40px] overflow-hidden">
                     <ScrollView
@@ -129,8 +131,8 @@ export default function DashboardScreen({ navigation }) {
                     >
                         {/* ── Welcome Section ── */}
                         <View className="p-6">
-                            <Text className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Welcome Back,</Text>
-                            <Text className="text-slate-900 text-3xl font-black mt-1">Namaste, {user?.name || 'Farmer'}! 👋</Text>
+                            <Text className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{t('dashboard.welcomeBack')}</Text>
+                            <Text className="text-slate-900 text-3xl font-black mt-1">{t('dashboard.namaste')}, {user?.name || t('dashboard.farmer')}! 👋</Text>
                         </View>
 
                         {/* ── Stats Grid ── */}
@@ -160,7 +162,7 @@ export default function DashboardScreen({ navigation }) {
                                     <Wallet size={32} color="#fff" />
                                 </View>
                                 <View className="ml-4 flex-1">
-                                    <Text className="text-green-200/80 text-xs font-bold uppercase tracking-widest">Farm Wallet</Text>
+                                    <Text className="text-green-200/80 text-xs font-bold uppercase tracking-widest">{t('dashboard.farmWallet')}</Text>
                                     <Text className="text-white text-2xl font-black">
                                         ₹{walletData ? walletData.availableBalance.toLocaleString('en-IN') : '0.00'}
                                     </Text>
@@ -175,9 +177,9 @@ export default function DashboardScreen({ navigation }) {
 
                         {/* ── Active Listings Section ── */}
                         <View className="px-5 flex-row justify-between items-center mb-4 mt-2">
-                            <Text className="text-slate-900 text-xl font-black">Active Listings</Text>
+                            <Text className="text-slate-900 text-xl font-black">{t('dashboard.activeListings')}</Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Crops')}>
-                                <Text className="text-[#123524] font-bold">View All</Text>
+                                <Text className="text-[#123524] font-bold">{t('dashboard.viewAll')}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -192,16 +194,16 @@ export default function DashboardScreen({ navigation }) {
                                     <View className="bg-orange-50 px-3 py-1 rounded-full">
                                         <Text className="text-orange-600 text-[10px] font-black uppercase">Premium Wheat</Text>
                                     </View>
-                                    <Text className="text-slate-400 text-[10px] font-bold">Ref: #8821</Text>
+                                    <Text className="text-slate-400 text-[10px] font-bold">{t('dashboard.ref')}: #8821</Text>
                                 </View>
                                 <Text className="text-slate-900 text-lg font-bold">Sharbati Wheat (Grade A)</Text>
                                 <View className="flex-row items-center mt-2 justify-between">
                                     <View>
-                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Quantity</Text>
+                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">{t('dashboard.quantity')}</Text>
                                         <Text className="text-slate-900 font-bold">250 Quintals</Text>
                                     </View>
                                     <View className="items-end">
-                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Exp. Price</Text>
+                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">{t('dashboard.expectedPrice')}</Text>
                                         <Text className="text-green-600 font-black text-lg">₹2,450/q</Text>
                                     </View>
                                 </View>
@@ -212,16 +214,16 @@ export default function DashboardScreen({ navigation }) {
                                     <View className="bg-blue-50 px-3 py-1 rounded-full">
                                         <Text className="text-blue-600 text-[10px] font-black uppercase">Soybean</Text>
                                     </View>
-                                    <Text className="text-slate-400 text-[10px] font-bold">Ref: #8822</Text>
+                                    <Text className="text-slate-400 text-[10px] font-bold">{t('dashboard.ref')}: #8822</Text>
                                 </View>
                                 <Text className="text-slate-900 text-lg font-bold">Yellow Soybean (Moist 12%)</Text>
                                 <View className="flex-row items-center mt-2 justify-between">
                                     <View>
-                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Quantity</Text>
+                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">{t('dashboard.quantity')}</Text>
                                         <Text className="text-slate-900 font-bold">120 Quintals</Text>
                                     </View>
                                     <View className="items-end">
-                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">Exp. Price</Text>
+                                        <Text className="text-slate-400 text-[10px] font-bold uppercase">{t('dashboard.expectedPrice')}</Text>
                                         <Text className="text-green-600 font-black text-lg">₹4,200/q</Text>
                                     </View>
                                 </View>
@@ -235,8 +237,8 @@ export default function DashboardScreen({ navigation }) {
                                     <CloudSun size={32} color="#3b82f6" />
                                 </View>
                                 <View className="ml-4 flex-1">
-                                    <Text className="text-slate-900 font-black text-lg">Weather Sync</Text>
-                                    <Text className="text-slate-400 text-xs font-medium">Check the weather screen for detailed farm-level alerts.</Text>
+                                    <Text className="text-slate-900 font-black text-lg">{t('dashboard.weatherSync')}</Text>
+                                    <Text className="text-slate-400 text-xs font-medium">{t('dashboard.weatherSyncSub')}</Text>
                                 </View>
                                 <TouchableOpacity 
                                     onPress={() => navigation.navigate('Weather')}

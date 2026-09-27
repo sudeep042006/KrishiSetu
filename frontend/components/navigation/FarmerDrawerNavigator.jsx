@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemeContext } from '../../context/ThemeContext';
@@ -28,6 +29,7 @@ import RequestFromOfftaker from '../pages/homescreen/farmer/RequestFromOfftaker'
 const Drawer = createDrawerNavigator();
 
 function CustomFarmerDrawerContent(props) {
+    const { t } = useTranslation();
     const { isDarkMode } = React.useContext(ThemeContext);
     const theme = {
         primary: '#143d0f', // Deep Forest Green
@@ -51,13 +53,13 @@ function CustomFarmerDrawerContent(props) {
             {/* Simple Text-Only Header */}
             <View style={[styles.header, { backgroundColor: theme.primary }]}>
                 <Text style={styles.headerTitle}>KrishiSetu</Text>
-                <Text style={styles.headerSubtitle}>Farmer Dashboard</Text>
+                <Text style={styles.headerSubtitle}>{t('nav.farmerDashboard')}</Text>
             </View>
 
             <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 10 }}>
                 <View style={styles.drawerItemsSection}>
                     <DrawerItem
-                        label="Dashboard"
+                        label={t('nav.dashboard')}
                         onPress={() => navigation.navigate('FarmerMainTabs')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -66,7 +68,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('FarmerMainTabs')}
                     />
                     <DrawerItem
-                        label="My Crops"
+                        label={t('nav.myCrops')}
                         onPress={() => navigation.navigate('Crops')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -75,7 +77,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('Crops')}
                     />
                     <DrawerItem
-                        label="Crop Prices"
+                        label={t('nav.cropPrices')}
                         onPress={() => navigation.navigate('Crop Prices')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -84,7 +86,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('Crop Prices')}
                     />
                     <DrawerItem
-                        label="Crop Health"
+                        label={t('nav.cropHealth')}
                         onPress={() => navigation.navigate('Crop Diseases')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -93,7 +95,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('Crop Diseases')}
                     />
                     <DrawerItem
-                        label="Buyer Directory"
+                        label={t('nav.buyerDirectory')}
                         onPress={() => navigation.navigate('Offtaker Profiles')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -102,7 +104,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('Offtaker Profiles')}
                     />
                     <DrawerItem
-                        label="Demands & Requests"
+                        label={t('nav.demandsAndRequests')}
                         onPress={() => navigation.navigate('Requests')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -111,7 +113,7 @@ function CustomFarmerDrawerContent(props) {
                         focused={isActive('Requests')}
                     />
                     <DrawerItem
-                        label="My Wallet"
+                        label={t('nav.myWallet')}
                         onPress={() => navigation.navigate('Wallet')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -125,7 +127,7 @@ function CustomFarmerDrawerContent(props) {
             {/* Bottom Pinned Section */}
             <View style={[styles.bottomSection, { borderTopColor: theme.border }]}>
                 <DrawerItem
-                    label="My Profile"
+                    label={t('nav.myProfile')}
                     onPress={() => navigation.navigate('Profile')}
                     labelStyle={styles.drawerLabel}
                     activeTintColor={theme.primary}
@@ -134,7 +136,7 @@ function CustomFarmerDrawerContent(props) {
                     focused={isActive('Profile')}
                 />
                 <DrawerItem
-                    label="Settings"
+                    label={t('nav.settings')}
                     onPress={() => navigation.navigate('Settings')}
                     labelStyle={styles.drawerLabel}
                     activeTintColor={theme.primary}

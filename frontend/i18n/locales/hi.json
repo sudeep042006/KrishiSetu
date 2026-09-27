@@ -1,0 +1,158 @@
+{
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "back": "वापस",
+    "loading": "लोड हो रहा है...",
+    "required": "आवश्यक",
+    "success": "सफलता",
+    "error": "त्रुटि",
+    "notSet": "दर्ज नहीं"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "selectLanguage": "भाषा चुनें",
+    "sections": {
+      "account": "अकाउंट",
+      "preferences": "प्राथमिकताएं",
+      "security": "सुरक्षा",
+      "support": "सहायता"
+    },
+    "items": {
+      "profileInfo": "प्रोफ़ाइल जानकारी",
+      "profileInfoSub": "अपनी व्यक्तिगत जानकारी अपडेट करें",
+      "linkedDevices": "जुड़े डिवाइस",
+      "linkedDevicesSub": "अपने सक्रिय सत्र प्रबंधित करें",
+      "privacySettings": "गोपनीयता सेटिंग्स",
+      "privacySettingsSub": "अपनी डेटा दृश्यता नियंत्रित करें",
+      "darkMode": "डार्क मोड",
+      "darkModeOn": "अभी डार्क है",
+      "darkModeOff": "अभी लाइट है",
+      "notifications": "सूचनाएं",
+      "notificationsSub": "पुश, ईमेल और SMS",
+      "appLanguage": "ऐप की भाषा",
+      "changePassword": "पासवर्ड बदलें",
+      "twoFactor": "दो-चरण सुरक्षा",
+      "twoFactorSub": "अत्यधिक अनुशंसित",
+      "helpCenter": "सहायता केंद्र",
+      "about": "KrishiSetu के बारे में",
+      "version": "संस्करण 2.4.1"
+    },
+    "signOut": "साइन आउट",
+    "footer": "© 2026 KrishiSetu. सर्वाधिकार सुरक्षित।"
+  },
+  "logout": {
+    "title": "लॉगआउट",
+    "message": "क्या आप वाकई लॉगआउट करना चाहते हैं?",
+    "confirm": "लॉगआउट",
+    "cancel": "रद्द करें"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी"
+  },
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "home": "होम",
+    "marketplace": "बाज़ार",
+    "messages": "संदेश",
+    "settings": "सेटिंग्स",
+    "farmerDashboard": "किसान डैशबोर्ड",
+    "myCrops": "मेरी फसलें",
+    "cropPrices": "फसल भाव",
+    "cropHealth": "फसल स्वास्थ्य",
+    "buyerDirectory": "खरीदार डायरेक्टरी",
+    "demandsAndRequests": "मांग एवं अनुरोध",
+    "myWallet": "मेरा वॉलेट",
+    "myProfile": "मेरी प्रोफ़ाइल"
+  },
+  "dashboard": {
+    "farmWallet": "किसान वॉलेट",
+    "activeListings": "सक्रिय लिस्टिंग",
+    "weatherSync": "मौसम जानकारी",
+    "weatherSyncSub": "विस्तृत खेत-स्तरीय अलर्ट के लिए मौसम स्क्रीन देखें।",
+    "realtimeSync": "+रियल-टाइम सिंक",
+    "viewAll": "सभी देखें",
+    "welcomeBack": "वापसी पर स्वागत,",
+    "namaste": "नमस्ते",
+    "farmer": "किसान",
+    "stats": {
+      "activeCrops": "सक्रिय फसलें",
+      "totalSales": "कुल बिक्री",
+      "buyersReach": "खरीदार पहुंच",
+      "salesDone": "पूर्ण बिक्री"
+    },
+    "quantity": "मात्रा",
+    "expectedPrice": "अनुमानित भाव",
+    "ref": "संदर्भ"
+  },
+  "diseases": {},
+  "profile": {
+    "title": "किसान प्रोफ़ाइल",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "saveChanges": "बदलाव सहेजें",
+    "modalSubtitle": "अपनी जानकारी और कृषि विवरण प्रबंधित करें",
+    "validationRequired": "कृपया अपना नाम और मोबाइल नंबर दर्ज करें।",
+    "saveSuccess": "प्रोफ़ाइल सफलतापूर्वक सहेजी गई!",
+    "saveError": "प्रोफ़ाइल सहेजने में विफल। कृपया पुनः प्रयास करें।",
+    "addAddressPrompt": "पता जोड़ने के लिए \"प्रोफ़ाइल संपादित करें\" पर टैप करें",
+    "setYourName": "अपना नाम दर्ज करें",
+    "status": {
+      "complete": "प्रोफ़ाइल पूर्ण है",
+      "incomplete": "प्रोफ़ाइल अधूरी है — कृपया अपनी जानकारी भरें"
+    },
+    "sections": {
+      "personalInfo": "व्यक्तिगत जानकारी",
+      "locationAddress": "स्थान एवं पता",
+      "farmDetails": "खेत का विवरण",
+      "farmingOverview": "कृषि अवलोकन",
+      "landDetails": "जमीन का विवरण",
+      "recentActivity": "हाल की गतिविधि"
+    },
+    "overview": {
+      "totalLand": "कुल जमीन",
+      "mainCrops": "मुख्य फसलें",
+      "experience": "अनुभव",
+      "farmerId": "किसान आईडी",
+      "years": "वर्ष"
+    },
+    "units": {
+      "hectares": "हेक्टेयर"
+    },
+    "land": {
+      "mainField": "मुख्य खेत",
+      "irrigated": "सिंचित",
+      "owned": "स्वामित्व",
+      "soilType": "मिट्टी का प्रकार",
+      "blackSoil": "काली मिट्टी"
+    },
+    "activity": {
+      "profileUpdatedTitle": "प्रोफ़ाइल अपडेट की गई",
+      "profileUpdatedSub": "फ़ोन नंबर और जमीन का विवरण अपडेट किया गया",
+      "twoDaysAgo": "2 दिन पहले",
+      "joinedTitle": "KrishiSetu से जुड़े",
+      "joinedSub": "डिजिटल कृषि बाज़ार में आपका स्वागत है",
+      "fifteenDaysAgo": "15 दिन पहले"
+    },
+    "fields": {
+      "fullName": "पूरा नाम",
+      "phone": "फ़ोन नंबर",
+      "aadhaar": "आधार नंबर",
+      "village": "गाँव / कस्बा",
+      "district": "जिला",
+      "state": "राज्य",
+      "landArea": "जमीन का क्षेत्रफल (हेक्टेयर)",
+      "cropsGrown": "उगाई जाने वाली फसलें"
+    },
+    "placeholders": {
+      "fullName": "उदा. रमेश चंद्र",
+      "phone": "उदा. 98765 43210",
+      "aadhaar": "12 अंकों का आधार नंबर",
+      "village": "उदा. रामपुर",
+      "district": "उदा. रीवा",
+      "state": "उदा. मध्य प्रदेश",
+      "landArea": "उदा. 1.80",
+      "cropsGrown": "उदा. गेहूं, सोयाबीन, चना"
+    }
+  }
+}

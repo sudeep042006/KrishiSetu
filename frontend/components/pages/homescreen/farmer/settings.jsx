@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   User,
@@ -12,15 +12,22 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  Check
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import Header from '../../../common/Header';
 import { ThemeContext } from '../../../../context/ThemeContext';
 import { AuthContext } from '../../../../App';
+import { useLanguage, SUPPORTED_LANGUAGES } from '../../../../context/LanguageContext';
 
 export default function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const { logout } = useContext(AuthContext);
+  const { t } = useTranslation();
+  const { currentLanguage, changeLanguage } = useLanguage();
+
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
 
   const SettingItem = ({ icon: Icon, title, value, onPress, type = 'link', showBorder = true }) => (
     <TouchableOpacity
@@ -61,19 +68,27 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
+      t('logout.title'),
+      t('logout.message'),
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Logout", style: "destructive", onPress: logout }
+        { text: t('logout.cancel'), style: "cancel" },
+        { text: t('logout.confirm'), style: "destructive", onPress: logout }
       ]
     );
   };
 
+  const handleSelectLanguage = async (langCode) => {
+    setShowLanguageModal(false);
+    await changeLanguage(langCode);
+  };
+
+  const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLanguage);
+  const currentLangLabel = currentLangObj ? currentLangObj.nativeLabel : 'English';
+
   return (
     <View className="flex-1 bg-[#123524] dark:bg-[#0a0a0a]">
       <SafeAreaView edges={['top']} className="flex-1">
-        <Header title="Settings" />
+        <Header title={t('settings.title')} />
 
         <ScrollView
           className="flex-1 bg-white dark:bg-[#121212] rounded-t-3xl mt-2"
@@ -81,80 +96,80 @@ export default function SettingsScreen() {
         >
           <View className="pb-10">
 
-            <SectionTitle title="Account" />
+            <SectionTitle title={t('settings.sections.account')} />
             <View className="bg-white dark:bg-[#1e1e1e] mx-4 rounded-2xl shadow-sm overflow-hidden">
               <SettingItem
                 icon={User}
-                title="Profile Information"
-                value="Update your personal details"
+                title={t('settings.items.profileInfo')}
+                value={t('settings.items.profileInfoSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Smartphone}
-                title="Linked Devices"
-                value="Manage your active sessions"
+                title={t('settings.items.linkedDevices')}
+                value={t('settings.items.linkedDevicesSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={ShieldCheck}
-                title="Privacy Settings"
-                value="Control your data visibility"
+                title={t('settings.items.privacySettings')}
+                value={t('settings.items.privacySettingsSub')}
                 onPress={() => { }}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="Preferences" />
+            <SectionTitle title={t('settings.sections.preferences')} />
             <View className="bg-white dark:bg-[#1e1e1e] mx-4 rounded-2xl shadow-sm overflow-hidden">
               <SettingItem
                 icon={Moon}
-                title="Dark Mode"
-                value={isDarkMode ? "Currently Dark" : "Currently Light"}
+                title={t('settings.items.darkMode')}
+                value={isDarkMode ? t('settings.items.darkModeOn') : t('settings.items.darkModeOff')}
                 onPress={toggleTheme}
                 type="toggle"
               />
               <SettingItem
                 icon={Bell}
-                title="Notifications"
-                value="Push, Email & SMS"
+                title={t('settings.items.notifications')}
+                value={t('settings.items.notificationsSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Globe}
-                title="App Language"
-                value="English (US)"
-                onPress={() => { }}
+                title={t('settings.items.appLanguage')}
+                value={currentLangLabel}
+                onPress={() => setShowLanguageModal(true)}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="Security" />
+            <SectionTitle title={t('settings.sections.security')} />
             <View className="bg-white dark:bg-[#1e1e1e] mx-4 rounded-2xl shadow-sm overflow-hidden">
               <SettingItem
                 icon={Lock}
-                title="Change Password"
+                title={t('settings.items.changePassword')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={ShieldCheck}
-                title="Two-Factor Auth"
-                value="Highly Recommended"
+                title={t('settings.items.twoFactor')}
+                value={t('settings.items.twoFactorSub')}
                 onPress={() => { }}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="Support" />
+            <SectionTitle title={t('settings.sections.support')} />
             <View className="bg-white dark:bg-[#1e1e1e] mx-4 rounded-2xl shadow-sm overflow-hidden">
               <SettingItem
                 icon={HelpCircle}
-                title="Help Center"
+                title={t('settings.items.helpCenter')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Info}
-                title="About KrishiSetu"
-                value="Version 2.4.1"
+                title={t('settings.items.about')}
+                value={t('settings.items.version')}
                 onPress={() => { }}
                 showBorder={false}
               />
@@ -165,16 +180,93 @@ export default function SettingsScreen() {
               className="mt-8 mx-4 bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl flex-row items-center justify-center border border-red-100 dark:border-red-900/20"
             >
               <LogOut size={20} color="#ef4444" className="mr-2" />
-              <Text className="text-red-500 font-bold text-lg">Sign Out</Text>
+              <Text className="text-red-500 font-bold text-lg">{t('settings.signOut')}</Text>
             </TouchableOpacity>
 
             <Text className="text-center text-gray-400 dark:text-gray-600 text-xs mt-6">
-              © 2026 KrishiSetu. All rights reserved.
+              {t('settings.footer')}
             </Text>
 
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={showLanguageModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}
+          onPress={() => setShowLanguageModal(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+              borderRadius: 20,
+              width: '82%',
+              paddingVertical: 8,
+              shadowColor: '#000',
+              shadowOpacity: 0.25,
+              shadowRadius: 16,
+              elevation: 8,
+            }}
+            onPress={() => {}}
+          >
+            <Text style={{
+              fontSize: 17,
+              fontWeight: '700',
+              color: isDarkMode ? '#f3f4f6' : '#111827',
+              paddingHorizontal: 20,
+              paddingTop: 16,
+              paddingBottom: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: isDarkMode ? '#374151' : '#f3f4f6',
+            }}>
+              {t('settings.selectLanguage')}
+            </Text>
+
+            {SUPPORTED_LANGUAGES.map((lang, index) => {
+              const isSelected = currentLanguage === lang.code;
+              const isLast = index === SUPPORTED_LANGUAGES.length - 1;
+              return (
+                <TouchableOpacity
+                  key={lang.code}
+                  activeOpacity={0.7}
+                  onPress={() => handleSelectLanguage(lang.code)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 20,
+                    paddingVertical: 16,
+                    borderBottomWidth: isLast ? 0 : 1,
+                    borderBottomColor: isDarkMode ? '#374151' : '#f3f4f6',
+                    backgroundColor: isSelected
+                      ? (isDarkMode ? '#14532d20' : '#f0fdf4')
+                      : 'transparent',
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 16,
+                    fontWeight: isSelected ? '700' : '500',
+                    color: isSelected
+                      ? (isDarkMode ? '#4ade80' : '#1e4a3b')
+                      : (isDarkMode ? '#d1d5db' : '#374151'),
+                  }}>
+                    {lang.nativeLabel}
+                  </Text>
+                  {isSelected && (
+                    <Check size={18} color={isDarkMode ? '#4ade80' : '#1e4a3b'} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

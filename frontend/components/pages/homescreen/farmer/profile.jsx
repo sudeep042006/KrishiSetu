@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     View,
     Text,
@@ -51,6 +52,7 @@ const C = {
 };
 
 export default function ProfileScreen() {
+    const { t } = useTranslation();
     const authContext = useContext(AuthContext);
     const navigation = useNavigation();
 
@@ -112,7 +114,7 @@ export default function ProfileScreen() {
 
     const handleSaveProfile = async () => {
         if (!profileData.name.trim() || !profileData.phone.trim()) {
-            Alert.alert('Required', 'Please fill in your name and phone number.');
+            Alert.alert(t('common.required'), t('profile.validationRequired'));
             return;
         }
         try {
@@ -126,12 +128,12 @@ export default function ProfileScreen() {
                 const uploadRes = await farmerService.uploadProfilePhoto(profileImage);
                 setProfileImage(uploadRes.profilePhoto);
             }
-            Alert.alert('Success', 'Profile saved successfully!');
+            Alert.alert(t('common.success'), t('profile.saveSuccess'));
             setModalVisible(false);
             fetchProfile();
         } catch (e) {
             console.error(e);
-            Alert.alert('Error', 'Failed to save profile. Please try again.');
+            Alert.alert(t('common.error'), t('profile.saveError'));
         } finally {
             setUploading(false);
         }
@@ -141,10 +143,10 @@ export default function ProfileScreen() {
         setProfileData(prev => ({ ...prev, [field]: value }));
 
     const handleLogout = () => {
-        Alert.alert('Logout', 'Are you sure you want to logout?', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('logout.title'), t('logout.message'), [
+            { text: t('logout.cancel'), style: 'cancel' },
             {
-                text: 'Logout',
+                text: t('logout.confirm'),
                 style: 'destructive',
                 onPress: () => authContext?.logout(),
             },
@@ -155,7 +157,7 @@ export default function ProfileScreen() {
     const farmerId = `KS${profileData.phone?.slice(-9) || '123456789'}`;
     const locationLine = profileData.village
         ? `Village ${profileData.village}, Dist. ${profileData.district}, ${profileData.state}`
-        : 'Tap "Edit Profile" to add address';
+        : t('profile.addAddressPrompt');
 
     return (
         <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -163,14 +165,14 @@ export default function ProfileScreen() {
 
                 {/* ── Header ─────────────────────────────────────────────── */}
                 <Header
-                    title="Farmer Profile"
+                    title={t('profile.title')}
                     rightIcon={
                         <TouchableOpacity
                             onPress={() => setModalVisible(true)}
                             style={styles.editBtn}
                         >
                             <Settings size={14} color={C.accent} />
-                            <Text style={styles.editBtnText}>Edit Profile</Text>
+                            <Text style={styles.editBtnText}>{t('profile.editProfile')}</Text>
                         </TouchableOpacity>
                     }
                 />
@@ -202,10 +204,10 @@ export default function ProfileScreen() {
                         {/* Info */}
                         <View style={{ flex: 1 }}>
                             <Text style={styles.farmerName}>
-                                {profileData.name || 'Set your name'}
+                                {profileData.name || t('profile.setYourName')}
                             </Text>
 
-                            <InfoRow icon={<Phone size={13} color={C.accent} />} text={`+91 ${profileData.phone || 'Not set'}`} />
+                            <InfoRow icon={<Phone size={13} color={C.accent} />} text={`+91 ${profileData.phone || t('common.notSet')}`} />
                             {!!profileData.email && (
                                 <InfoRow icon={<Mail size={13} color={C.accent} />} text={profileData.email} />
                             )}
@@ -217,27 +219,27 @@ export default function ProfileScreen() {
                     <View style={[styles.badge, { backgroundColor: isComplete ? '#d1fae5' : '#fef3c7' }]}>
                         <CheckCircle2 size={14} color={isComplete ? '#059669' : '#d97706'} />
                         <Text style={[styles.badgeText, { color: isComplete ? '#065f46' : '#92400e' }]}>
-                            {isComplete ? 'Profile Complete' : 'Profile Incomplete — fill in your details'}
+                            {isComplete ? t('profile.status.complete') : t('profile.status.incomplete')}
                         </Text>
                     </View>
 
                     {/* ─ Farming Overview ─ */}
-                    <SectionTitle icon={<Leaf size={16} color={C.accent} />} title="Farming Overview" />
+                    <SectionTitle icon={<Leaf size={16} color={C.accent} />} title={t('profile.sections.farmingOverview')} />
                     <View style={styles.overviewGrid}>
-                        <OverviewCard emoji="🌾" label="Total Land" value={profileData.landArea || '—'} sub="Hectares" bg="#f0fdf4" />
-                        <OverviewCard emoji="🌱" label="Main Crops" value={profileData.cropTypes || '—'} sub="" bg="#eff6ff" />
-                        <OverviewCard emoji="📅" label="Experience" value="12 Years" sub="" bg="#fffbeb" />
-                        <OverviewCard emoji="🪪" label="Farmer ID" value={farmerId} sub="" bg="#f5f3ff" />
+                        <OverviewCard emoji="🌾" label={t('profile.overview.totalLand')} value={profileData.landArea || '—'} sub={t('profile.units.hectares')} bg="#f0fdf4" />
+                        <OverviewCard emoji="🌱" label={t('profile.overview.mainCrops')} value={profileData.cropTypes || '—'} sub="" bg="#eff6ff" />
+                        <OverviewCard emoji="📅" label={t('profile.overview.experience')} value={`12 ${t('profile.overview.years')}`} sub="" bg="#fffbeb" />
+                        <OverviewCard emoji="🪪" label={t('profile.overview.farmerId')} value={farmerId} sub="" bg="#f5f3ff" />
                     </View>
 
                     {/* ─ Land Details ─ */}
                     <View style={styles.rowBetween}>
-                        <SectionTitle icon={<MapIcon size={16} color={C.accent} />} title="Land Details" inline />
+                        <SectionTitle icon={<MapIcon size={16} color={C.accent} />} title={t('profile.sections.landDetails')} inline />
                         <TouchableOpacity
                             onPress={() => navigation.navigate('LandDetails', { profileData })}
                             style={styles.viewAllBtn}
                         >
-                            <Text style={styles.viewAllText}>View All</Text>
+                            <Text style={styles.viewAllText}>{t('dashboard.viewAll')}</Text>
                             <ChevronRight size={15} color={C.accent} />
                         </TouchableOpacity>
                     </View>
@@ -251,18 +253,18 @@ export default function ProfileScreen() {
                             <Text style={{ fontSize: 28 }}>🗺️</Text>
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.landCardTitle}>Main Field</Text>
-                            <Text style={styles.landCardSub}>{profileData.landArea || '0.0'} Hectares</Text>
-                            <Text style={styles.landCardTag}>Irrigated • Owned</Text>
+                            <Text style={styles.landCardTitle}>{t('profile.land.mainField')}</Text>
+                            <Text style={styles.landCardSub}>{profileData.landArea || '0.0'} {t('profile.units.hectares')}</Text>
+                            <Text style={styles.landCardTag}>{t('profile.land.irrigated')} • {t('profile.land.owned')}</Text>
                         </View>
                         <View style={{ alignItems: 'flex-end' }}>
-                            <Text style={styles.soilLabel}>Soil Type</Text>
-                            <Text style={styles.soilValue}>Black Soil</Text>
+                            <Text style={styles.soilLabel}>{t('profile.land.soilType')}</Text>
+                            <Text style={styles.soilValue}>{t('profile.land.blackSoil')}</Text>
                         </View>
                     </TouchableOpacity>
 
                     {/* ─ Recent Activity ─ */}
-                    <SectionTitle icon={<History size={16} color={C.accent} />} title="Recent Activity" />
+                    <SectionTitle icon={<History size={16} color={C.accent} />} title={t('profile.sections.recentActivity')} />
                     <View style={{ paddingHorizontal: 16, gap: 8 }}>
                         <ActivityRow
                             icon="🌿" iconBg="#d1fae5"
@@ -281,7 +283,7 @@ export default function ProfileScreen() {
                     {/* ─ Logout button ─ */}
                     <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
                         <LogOut size={18} color="#dc2626" />
-                        <Text style={styles.logoutText}>Logout</Text>
+                        <Text style={styles.logoutText}>{t('logout.title')}</Text>
                     </TouchableOpacity>
 
                 </ScrollView>
@@ -301,8 +303,8 @@ export default function ProfileScreen() {
 
                             <View style={styles.sheetHeader}>
                                 <View>
-                                    <Text style={styles.sheetTitle}>Edit Profile</Text>
-                                    <Text style={styles.sheetSubtitle}>Manage your details and farming information</Text>
+                                    <Text style={styles.sheetTitle}>{t('profile.editProfile')}</Text>
+                                    <Text style={styles.sheetSubtitle}>{t('profile.modalSubtitle')}</Text>
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => setModalVisible(false)}
@@ -313,21 +315,21 @@ export default function ProfileScreen() {
                             </View>
 
                             <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 24 }}>
-                                <FormSection title="Personal Information">
-                                    <FormInput label="Full Name" placeholder="e.g. Ramesh Chandra" value={profileData.name} onChangeText={v => updateField('name', v)} />
-                                    <FormInput label="Phone Number" placeholder="e.g. 98765 43210" value={profileData.phone} onChangeText={v => updateField('phone', v)} keyboardType="phone-pad" />
-                                    <FormInput label="Aadhaar Number" placeholder="12-digit Aadhaar" value={profileData.aadhaar} onChangeText={v => updateField('aadhaar', v)} keyboardType="numeric" maxLength={12} />
+                                <FormSection title={t('profile.sections.personalInfo')}>
+                                    <FormInput label={t('profile.fields.fullName')} placeholder={t('profile.placeholders.fullName')} value={profileData.name} onChangeText={v => updateField('name', v)} />
+                                    <FormInput label={t('profile.fields.phone')} placeholder={t('profile.placeholders.phone')} value={profileData.phone} onChangeText={v => updateField('phone', v)} keyboardType="phone-pad" />
+                                    <FormInput label={t('profile.fields.aadhaar')} placeholder={t('profile.placeholders.aadhaar')} value={profileData.aadhaar} onChangeText={v => updateField('aadhaar', v)} keyboardType="numeric" maxLength={12} />
                                 </FormSection>
 
-                                <FormSection title="Location & Address">
-                                    <FormInput label="Village / Town" placeholder="e.g. Village Rampur" value={profileData.village} onChangeText={v => updateField('village', v)} />
-                                    <FormInput label="District" placeholder="e.g. Rewa" value={profileData.district} onChangeText={v => updateField('district', v)} />
-                                    <FormInput label="State" placeholder="e.g. Madhya Pradesh" value={profileData.state} onChangeText={v => updateField('state', v)} />
+                                <FormSection title={t('profile.sections.locationAddress')}>
+                                    <FormInput label={t('profile.fields.village')} placeholder={t('profile.placeholders.village')} value={profileData.village} onChangeText={v => updateField('village', v)} />
+                                    <FormInput label={t('profile.fields.district')} placeholder={t('profile.placeholders.district')} value={profileData.district} onChangeText={v => updateField('district', v)} />
+                                    <FormInput label={t('profile.fields.state')} placeholder={t('profile.placeholders.state')} value={profileData.state} onChangeText={v => updateField('state', v)} />
                                 </FormSection>
 
-                                <FormSection title="Farm Details">
-                                    <FormInput label="Land Area (Hectares)" placeholder="e.g. 1.80" value={profileData.landArea} onChangeText={v => updateField('landArea', v)} keyboardType="decimal-pad" />
-                                    <FormInput label="Crops Grown" placeholder="e.g. Wheat, Soybean, Chana" value={profileData.cropTypes} onChangeText={v => updateField('cropTypes', v)} />
+                                <FormSection title={t('profile.sections.farmDetails')}>
+                                    <FormInput label={t('profile.fields.landArea')} placeholder={t('profile.placeholders.landArea')} value={profileData.landArea} onChangeText={v => updateField('landArea', v)} keyboardType="decimal-pad" />
+                                    <FormInput label={t('profile.fields.cropsGrown')} placeholder={t('profile.placeholders.cropsGrown')} value={profileData.cropTypes} onChangeText={v => updateField('cropTypes', v)} />
                                 </FormSection>
 
                                 <TouchableOpacity
@@ -337,7 +339,7 @@ export default function ProfileScreen() {
                                 >
                                     {uploading
                                         ? <ActivityIndicator color="#fff" />
-                                        : <Text style={styles.saveBtnText}>Save Changes</Text>
+                                        : <Text style={styles.saveBtnText}>{t('profile.saveChanges')}</Text>
                                     }
                                 </TouchableOpacity>
                                 <View style={{ height: 40 }} />

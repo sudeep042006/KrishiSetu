@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../../context/ThemeContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
@@ -16,6 +17,7 @@ import FarmerProfileWindowScreen from '../pages/homescreen/offtaker/farmerProfil
 const Tab = createBottomTabNavigator();
 
 export default function FarmerBottomTabs() {
+    const { t } = useTranslation();
     const { isDarkMode } = useContext(ThemeContext);
 
     return (
@@ -46,10 +48,10 @@ export default function FarmerBottomTabs() {
                 },
             })}
         >
-            <Tab.Screen name="Dashboard" component={DashboardScreen} />
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Marketplace" component={MarketplaceScreen} />
-            <Tab.Screen name="Message" component={MessageScreen} />
+            <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: t('nav.dashboard') }} />
+            <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('nav.home') }} />
+            <Tab.Screen name="Marketplace" component={MarketplaceScreen} options={{ tabBarLabel: t('nav.marketplace') }} />
+            <Tab.Screen name="Message" component={MessageScreen} options={{ tabBarLabel: t('nav.messages') }} />
         </Tab.Navigator>
     );
 }

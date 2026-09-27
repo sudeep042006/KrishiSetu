@@ -1,4 +1,5 @@
 import './global.css';
+import './i18n';
 import React, { useState, createContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -7,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './services/supabase';
 import apiClient from './components/pages/service/api';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 
 // Import Screens
 import LoginScreen from './components/pages/auth/login';
@@ -118,7 +120,8 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <SafeAreaProvider>
+      <LanguageProvider>
+        <SafeAreaProvider>
         <AuthContext.Provider value={authContext}>
           <NetworkStatus />
             <NavigationContainer
@@ -157,6 +160,7 @@ export default function App() {
             <AplaSarthi />
         </AuthContext.Provider>
       </SafeAreaProvider>
+    </LanguageProvider>
     </ThemeProvider>
   );
 }

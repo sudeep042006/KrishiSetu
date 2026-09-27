@@ -1,0 +1,158 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "loading": "Loading...",
+    "required": "Required",
+    "success": "Success",
+    "error": "Error",
+    "notSet": "Not set"
+  },
+  "settings": {
+    "title": "Settings",
+    "selectLanguage": "Select Language",
+    "sections": {
+      "account": "Account",
+      "preferences": "Preferences",
+      "security": "Security",
+      "support": "Support"
+    },
+    "items": {
+      "profileInfo": "Profile Information",
+      "profileInfoSub": "Update your personal details",
+      "linkedDevices": "Linked Devices",
+      "linkedDevicesSub": "Manage your active sessions",
+      "privacySettings": "Privacy Settings",
+      "privacySettingsSub": "Control your data visibility",
+      "darkMode": "Dark Mode",
+      "darkModeOn": "Currently Dark",
+      "darkModeOff": "Currently Light",
+      "notifications": "Notifications",
+      "notificationsSub": "Push, Email & SMS",
+      "appLanguage": "App Language",
+      "changePassword": "Change Password",
+      "twoFactor": "Two-Factor Auth",
+      "twoFactorSub": "Highly Recommended",
+      "helpCenter": "Help Center",
+      "about": "About KrishiSetu",
+      "version": "Version 2.4.1"
+    },
+    "signOut": "Sign Out",
+    "footer": "© 2026 KrishiSetu. All rights reserved."
+  },
+  "logout": {
+    "title": "Logout",
+    "message": "Are you sure you want to logout?",
+    "confirm": "Logout",
+    "cancel": "Cancel"
+  },
+  "languages": {
+    "en": "English",
+    "hi": "हिन्दी"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "messages": "Messages",
+    "settings": "Settings",
+    "farmerDashboard": "Farmer Dashboard",
+    "myCrops": "My Crops",
+    "cropPrices": "Crop Prices",
+    "cropHealth": "Crop Health",
+    "buyerDirectory": "Buyer Directory",
+    "demandsAndRequests": "Demands & Requests",
+    "myWallet": "My Wallet",
+    "myProfile": "My Profile"
+  },
+  "dashboard": {
+    "farmWallet": "Farm Wallet",
+    "activeListings": "Active Listings",
+    "weatherSync": "Weather Sync",
+    "weatherSyncSub": "Check the weather screen for detailed farm-level alerts.",
+    "realtimeSync": "+Real-time sync",
+    "viewAll": "View All",
+    "welcomeBack": "Welcome Back,",
+    "namaste": "Namaste",
+    "farmer": "Farmer",
+    "stats": {
+      "activeCrops": "Active Crops",
+      "totalSales": "Total Sales",
+      "buyersReach": "Buyers Reach",
+      "salesDone": "Sales Done"
+    },
+    "quantity": "Quantity",
+    "expectedPrice": "Exp. Price",
+    "ref": "Ref"
+  },
+  "diseases": {},
+  "profile": {
+    "title": "Farmer Profile",
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "modalSubtitle": "Manage your details and farming information",
+    "validationRequired": "Please fill in your name and phone number.",
+    "saveSuccess": "Profile saved successfully!",
+    "saveError": "Failed to save profile. Please try again.",
+    "addAddressPrompt": "Tap \"Edit Profile\" to add address",
+    "setYourName": "Set your name",
+    "status": {
+      "complete": "Profile Complete",
+      "incomplete": "Profile Incomplete — fill in your details"
+    },
+    "sections": {
+      "personalInfo": "Personal Information",
+      "locationAddress": "Location & Address",
+      "farmDetails": "Farm Details",
+      "farmingOverview": "Farming Overview",
+      "landDetails": "Land Details",
+      "recentActivity": "Recent Activity"
+    },
+    "overview": {
+      "totalLand": "Total Land",
+      "mainCrops": "Main Crops",
+      "experience": "Experience",
+      "farmerId": "Farmer ID",
+      "years": "Years"
+    },
+    "units": {
+      "hectares": "Hectares"
+    },
+    "land": {
+      "mainField": "Main Field",
+      "irrigated": "Irrigated",
+      "owned": "Owned",
+      "soilType": "Soil Type",
+      "blackSoil": "Black Soil"
+    },
+    "activity": {
+      "profileUpdatedTitle": "Profile Updated",
+      "profileUpdatedSub": "Phone number and land details updated",
+      "twoDaysAgo": "2 days ago",
+      "joinedTitle": "Joined KrishiSetu",
+      "joinedSub": "Welcome to the digital agri marketplace",
+      "fifteenDaysAgo": "15 days ago"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "phone": "Phone Number",
+      "aadhaar": "Aadhaar Number",
+      "village": "Village / Town",
+      "district": "District",
+      "state": "State",
+      "landArea": "Land Area (Hectares)",
+      "cropsGrown": "Crops Grown"
+    },
+    "placeholders": {
+      "fullName": "e.g. Ramesh Chandra",
+      "phone": "e.g. 98765 43210",
+      "aadhaar": "12-digit Aadhaar",
+      "village": "e.g. Village Rampur",
+      "district": "e.g. Rewa",
+      "state": "e.g. Madhya Pradesh",
+      "landArea": "e.g. 1.80",
+      "cropsGrown": "e.g. Wheat, Soybean, Chana"
+    }
+  }
+}
