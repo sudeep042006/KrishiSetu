@@ -21,8 +21,8 @@ router.post("/create", authenticate, upload.single("photo"), CreateProject);
 router.post("/upload-photo", authenticate, upload.single("photo"), uploadProjectPhoto);
 
 // Get projects
-router.get("/get", getProject);
-router.get("/getPhoto/:id", getProjectPhotoById);
+router.get("/get", authenticate, getProject);
+router.get("/getPhoto/:id", authenticate, getProjectPhotoById);
 
 // Update/Delete - should ideally be protected
 router.post("/update/:id", authenticate, updateProject);
