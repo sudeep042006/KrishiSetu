@@ -29,10 +29,12 @@ import {
 import { getUserOrProfile, createOrGetChat } from '../../../../services/chatApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContext } from '../../../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 export default function FarmerProfileWindow({ navigation, route }) {
+    const { t } = useTranslation();
     const { userId } = route.params;
     const { isDarkMode } = useContext(ThemeContext);
     const [loading, setLoading] = useState(true);

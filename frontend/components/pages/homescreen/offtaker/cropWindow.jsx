@@ -32,10 +32,12 @@ import { RAZORPAY_KEY_ID } from '@env';
 import { paymentService } from '../../service/api';
 import apiClient from '../../service/api';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
 export default function CropWindow() {
+    const { t } = useTranslation();
     const route = useRoute();
     const navigation = useNavigation();
     const crop = route.params?.crop;
@@ -57,12 +59,12 @@ export default function CropWindow() {
     if (!crop) {
         return (
             <SafeAreaView className="flex-1 bg-[#f8fafc] justify-center items-center px-6">
-                <Text className="text-slate-900 text-lg font-bold">Crop Data Missing</Text>
+                <Text className="text-slate-900 text-lg font-bold">{t("offtaker.cropWindow.cropDataMissing")}</Text>
                 <TouchableOpacity 
                     onPress={() => navigation.goBack()} 
                     className="mt-6 bg-[#1e4e8c] px-8 py-3 rounded-2xl"
                 >
-                    <Text className="text-white font-bold">Go Back</Text>
+                    <Text className="text-white font-bold">{t("profileWindow.goBack")}</Text>
                 </TouchableOpacity>
             </SafeAreaView>
         );
@@ -276,7 +278,7 @@ export default function CropWindow() {
                         <ActivityIndicator color="#fff" />
                     ) : (
                         <>
-                            <Text className="text-white font-black text-lg mr-2 uppercase tracking-wider">Buy Now</Text>
+                            <Text className="text-white font-black text-lg mr-2 uppercase tracking-wider">{t("offtaker.cropWindow.buyNow")}</Text>
                             <ArrowRight size={20} color="#fff" />
                         </>
                     )}

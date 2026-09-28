@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect, useContext } from 'react';
 import WeatherCard from '../../../CreatedComponents/weatherCard';
 import { ThemeContext } from '../../../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 
 import {
     Menu,
@@ -31,6 +32,7 @@ import { farmerService, CropService } from '../../service/api';
 
 export default function Home() {
     const navigation = useNavigation();
+    const { t } = useTranslation();
     const [farmer, setFarmer] = useState(null);
     const [getProfilePhotobyId, setProfilePhoto] = useState('');
     const [weatherData, setWeatherData] = useState(null);
@@ -83,11 +85,11 @@ export default function Home() {
                 const granted = await PermissionsAndroid.request(
                     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
                     {
-                        title: 'KrishiSetu Location Permission',
-                        message: 'We need your location to show accurate farm weather and alerts.',
-                        buttonNeutral: 'Ask Me Later',
-                        buttonNegative: 'Cancel',
-                        buttonPositive: 'OK',
+                        title: t('home.locationTitle'),
+                        message: t('home.locationMessage'),
+                        buttonNeutral: t('home.askMeLater'),
+                        buttonNegative: t('common.cancel'),
+                        buttonPositive: t('common.ok'),
                     },
                 );
                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
@@ -259,9 +261,9 @@ export default function Home() {
                         />
                         <View className="ml-3">
                             <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                                <Text className="text-white/80 dark:text-gray-400 text-xs">Welcome back</Text>
+                                <Text className="text-white/80 dark:text-gray-400 text-xs">{t('home.welcomeBack')}</Text>
                                 <Text className="text-white dark:text-white text-base font-bold">
-                                    {farmer?.name || 'Loading...'}
+                                    {farmer?.name || t('common.loading')}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -296,9 +298,9 @@ export default function Home() {
                                 />
                                 <View className="p-4 w-full h-full justify-between">
                                     <View>
-                                        <Text className="text-white/80 text-xs mb-1">Crops Value</Text>
+                                        <Text className="text-white/80 text-xs mb-1">{t('home.cropsValue')}</Text>
                                         <Text className="text-white text-lg font-extrabold">₹{totalValue}</Text>
-                                        <Text className="text-white/60 text-[10px] mt-1">{cropCount} Listings</Text>
+                                        <Text className="text-white/60 text-[10px] mt-1">{cropCount} {t('home.listings')}</Text>
                                     </View>
                                     <View className="flex-row justify-end">
                                         <Leaf color="#86efac" size={28} />
@@ -326,8 +328,8 @@ export default function Home() {
                                 <Sparkles color="#4ade80" size={24} />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-white font-bold text-sm mb-1">AI Insight: Your Crop Advisory</Text>
-                                <Text className="text-white/70 text-xs">Get quick tips for your crop health cues</Text>
+                                <Text className="text-white font-bold text-sm mb-1">{t('home.aiInsight')}</Text>
+                                <Text className="text-white/70 text-xs">{t('home.aiInsightSub')}</Text>
                             </View>
                             <ChevronRight color="#4ade80" size={20} />
                         </View>
@@ -342,105 +344,87 @@ export default function Home() {
                     >
 
                         {/* Quick Actions */}
-                        <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold mb-4">Quick Actions</Text>
+                        <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold mb-4">{t('home.quickActions')}</Text>
                         <View className="flex-row justify-between mb-8">
                             <TouchableOpacity className="items-center">
                                 <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
                                     <MessageCircleQuestion color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Q&A</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">{t('home.qa')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => navigation.navigate('Marketplace')} className="items-center">
                                 <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
                                     <Store color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Sell Produce</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">{t('home.sellProduce')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => toggleFertilizerModal(true)} className="items-center">
                                 <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
                                     <FlaskConical color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Fertilizer</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">{t('home.fertilizer')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => navigation.navigate('Weather')} className="items-center">
                                 <View className="bg-white dark:bg-[#2a2a2a] p-4 rounded-full shadow-sm shadow-gray-200 mb-2 border border-green-50 dark:border-gray-800">
                                     <CloudSun color={isDarkMode ? "#4ade80" : "#16a34a"} size={26} />
                                 </View>
-                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">Weather</Text>
+                                <Text className="text-gray-600 dark:text-gray-300 text-xs font-semibold">{t('home.weather')}</Text>
                             </TouchableOpacity>
                         </View>
 
                         {/* Ads Grid Section */}
                         <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold">Agricultural Offers</Text>
+                            <Text className="text-[#1e4a3b] dark:text-[#4ade80] text-base font-bold">{t('home.agriculturalOffers')}</Text>
                             <TouchableOpacity>
-                                <Text className="text-gray-400 text-xs font-bold">View All</Text>
+                                <Text className="text-gray-400 text-xs font-bold">{t('home.viewAll')}</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View className="flex-row flex-wrap justify-between" style={{ gap: 12 }}>
                             {/* Ad Card 1 */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-[#123524] px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">20% OFF</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Premium Hybrid Seeds</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerPremiumSeeds')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <BadgePercent size={12} color="#16a34a" />
-                                        <Text className="text-[#16a34a] text-[10px] font-bold ml-1">Kharif Special</Text>
+                                        <Text className="text-[#16a34a] text-[10px] font-bold ml-1">{t('home.offerKharifSpecial')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
 
                             {/* Ad Card 2 */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=2068&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=2068&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-amber-500 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">LATEST</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Nano Urea Liquid</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerNanoUrea')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Sparkles size={12} color="#f59e0b" />
-                                        <Text className="text-amber-600 text-[10px] font-bold ml-1">Higher Yield</Text>
+                                        <Text className="text-amber-600 text-[10px] font-bold ml-1">{t('home.offerHigherYield')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
 
                             {/* Ad Card 3 */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1530267981375-f0de937f5f13?q=80&w=2070&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1530267981375-f0de937f5f13?q=80&w=2070&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-blue-600 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">RENTAL</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Modern Machinery</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerMachinery')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Tractor size={12} color="#2563eb" />
                                         <Text className="text-blue-600 text-[10px] font-bold ml-1">Starting ₹499/hr</Text>
@@ -449,43 +433,32 @@ export default function Home() {
                             </TouchableOpacity>
 
                             {/* Ad Card 4 */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?q=80&w=2070&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?q=80&w=2070&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-emerald-600 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">BIO</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Organic Fertilizer</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerOrganicFert')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Leaf size={12} color="#059669" />
-                                        <Text className="text-emerald-600 text-[10px] font-bold ml-1">Soil Health</Text>
+                                        <Text className="text-emerald-600 text-[10px] font-bold ml-1">{t('home.offerSoilHealth')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
+
                             {/* Ad Card 5: Solar Pumps */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=2072&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?q=80&w=2072&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-orange-600 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">SUBSIDY</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Solar Water Pumps</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerSolarPumps')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Sparkles size={12} color="#ea580c" />
                                         <Text className="text-orange-600 text-[10px] font-bold ml-1">PM-KUSUM Scheme</Text>
@@ -494,44 +467,32 @@ export default function Home() {
                             </TouchableOpacity>
 
                             {/* Ad Card 6: Agri Loans */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2022&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=2022&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-indigo-600 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">LOW ROI</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Kisan Credit Card</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerKisanCard')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <TrendingUp size={12} color="#4f46e5" />
-                                        <Text className="text-indigo-600 text-[10px] font-bold ml-1">Instant Approval</Text>
+                                        <Text className="text-indigo-600 text-[10px] font-bold ml-1">{t('home.offerInstantApproval')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
 
                             {/* Ad Card 7: Smart Irrigation */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?q=80&w=2071&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?q=80&w=2071&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-blue-500 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">IOT</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Smart Drip System</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerSmartDrip')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Text className="text-blue-600 text-[10px] font-bold ml-1">Save 40% Water</Text>
                                     </View>
@@ -539,24 +500,18 @@ export default function Home() {
                             </TouchableOpacity>
 
                             {/* Ad Card 8: Agri Drones */}
-                            <TouchableOpacity
-                                className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-                                activeOpacity={0.9}
-                            >
+                            <TouchableOpacity className="w-[48%] bg-white dark:bg-[#2a2a2a] rounded-[28px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800" activeOpacity={0.9}>
                                 <View className="h-32 w-full relative">
-                                    <Image
-                                        source={{ uri: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop' }}
-                                        className="w-full h-full"
-                                    />
+                                    <Image source={{ uri: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=2070&auto=format&fit=crop' }} className="w-full h-full" />
                                     <View className="absolute top-2 left-2 bg-red-600 px-2 py-1 rounded-lg">
                                         <Text className="text-white text-[9px] font-bold">NEW TECH</Text>
                                     </View>
                                 </View>
                                 <View className="p-3">
-                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>Drone Spraying</Text>
+                                    <Text className="text-[#1e4a3b] dark:text-gray-100 font-bold text-xs" numberOfLines={1}>{t('home.offerDrone')}</Text>
                                     <View className="flex-row items-center mt-1">
                                         <Sparkles size={12} color="#dc2626" />
-                                        <Text className="text-red-600 text-[10px] font-bold ml-1">Book a Service</Text>
+                                        <Text className="text-red-600 text-[10px] font-bold ml-1">{t('home.offerBookService')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -584,19 +539,19 @@ export default function Home() {
                             <View className="bg-green-50 dark:bg-green-900/20 w-24 h-24 rounded-full items-center justify-center mb-6 border border-green-100/50">
                                 <FlaskConical color="#16a34a" size={40} />
                             </View>
-                            <Text className="text-[#1e4a3b] dark:text-white text-2xl font-black text-center mb-3">Fertilizer Advisory</Text>
+                            <Text className="text-[#1e4a3b] dark:text-white text-2xl font-black text-center mb-3">{t('home.fertilizerAdvisory')}</Text>
                             <View className="bg-green-600 px-4 py-1.5 rounded-full mb-4">
-                                <Text className="text-white text-[10px] font-black uppercase tracking-widest">Coming Soon</Text>
+                                <Text className="text-white text-[10px] font-black uppercase tracking-widest">{t('home.comingSoon')}</Text>
                             </View>
                             <Text className="text-gray-500 dark:text-gray-400 text-center text-sm leading-6">
-                                We're developing a smart soil testing and fertilizer recommendation engine. <Text className="text-green-600 font-bold">Stay tuned</Text> for personalized nutrient plans!
+                                {t('home.fertilizerDesc')}<Text className="text-green-600 font-bold"> {t('home.stayTuned')}</Text> {t('home.fertilizerDescEnd')}
                             </Text>
                             
                             <TouchableOpacity 
                                 onPress={() => toggleFertilizerModal(false)}
                                 className="mt-8 bg-[#1e4a3b] dark:bg-green-600 px-10 py-4 rounded-2xl"
                             >
-                                <Text className="text-white font-bold">Got it!</Text>
+                                <Text className="text-white font-bold">{t('home.gotIt')}</Text>
                             </TouchableOpacity>
                         </Animated.View>
                     </TouchableOpacity>
@@ -605,4 +560,3 @@ export default function Home() {
         </LinearGradient>
     );
 }
-

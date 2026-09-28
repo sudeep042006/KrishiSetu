@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch, Alert, StatusBar, Modal, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   User,
@@ -15,15 +15,22 @@ import {
   Smartphone,
   CreditCard,
   Target,
-  FileText
+  FileText,
+  Check,
+  X
 } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
 import { ThemeContext } from '../../../../context/ThemeContext';
 import { AuthContext } from '../../../../App';
+import { useLanguage, SUPPORTED_LANGUAGES } from '../../../../context/LanguageContext';
+import { useTranslation } from 'react-i18next';
 
 export default function SettingsScreen() {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const { logout } = useContext(AuthContext);
+  const { currentLanguage, changeLanguage } = useLanguage();
+  const { t } = useTranslation();
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   const SettingItem = ({ icon: Icon, title, value, onPress, type = 'link', showBorder = true }) => (
     <TouchableOpacity
@@ -64,20 +71,22 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      "Sign Out",
-      "Are you sure you want to exit the application?",
+      t('offtaker.settings.signOutTitle'),
+      t('offtaker.settings.signOutMessage'),
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Log Out", style: "destructive", onPress: logout }
+        { text: t('common.cancel'), style: "cancel" },
+        { text: t('offtaker.settings.logOut'), style: "destructive", onPress: logout }
       ]
     );
   };
+
+  const currentLangLabel = SUPPORTED_LANGUAGES.find(l => l.code === currentLanguage)?.nativeName || 'English';
 
   return (
     <View className="flex-1 bg-[#1e4e8c] dark:bg-[#05070a]">
       <StatusBar barStyle="light-content" backgroundColor="#1e4e8c" />
       <SafeAreaView edges={['top']} className="flex-1">
-        <Header title="Offtaker Settings" />
+        <Header title={t('offtaker.settings.title')} />
 
         <ScrollView
           className="flex-1 bg-[#f8fafc] dark:bg-[#080a0f] rounded-t-[40px] mt-4"
@@ -86,80 +95,80 @@ export default function SettingsScreen() {
         >
           <View className="pt-2 px-2">
 
-            <SectionTitle title="Procurement Account" />
+            <SectionTitle title={t('offtaker.settings.procurementAccount')} />
             <View className="bg-white dark:bg-[#0f1218] mx-4 rounded-[32px] shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800/50">
               <SettingItem
                 icon={User}
-                title="Business Profile"
-                value="Manage organization details"
+                title={t('offtaker.settings.businessProfile')}
+                value={t('offtaker.settings.businessProfileSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Target}
-                title="Procurement Zones"
-                value="Set active buying locations"
+                title={t('offtaker.settings.procurementZones')}
+                value={t('offtaker.settings.procurementZonesSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={CreditCard}
-                title="Payment Methods"
-                value="Razorpay & Bank Settings"
+                title={t('offtaker.settings.paymentMethods')}
+                value={t('offtaker.settings.paymentMethodsSub')}
                 onPress={() => { }}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="App Preferences" />
+            <SectionTitle title={t('offtaker.settings.appPreferences')} />
             <View className="bg-white dark:bg-[#0f1218] mx-4 rounded-[32px] shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800/50">
               <SettingItem
                 icon={Moon}
-                title="Dark Theme"
-                value={isDarkMode ? "Optimized for night" : "Optimized for day"}
+                title={t('offtaker.settings.darkTheme')}
+                value={isDarkMode ? t('offtaker.settings.darkThemeOn') : t('offtaker.settings.darkThemeOff')}
                 onPress={toggleTheme}
                 type="toggle"
               />
               <SettingItem
                 icon={Bell}
-                title="Notifications"
-                value="Trade alerts & messages"
+                title={t('offtaker.settings.notifications')}
+                value={t('offtaker.settings.notificationsSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Globe}
-                title="Market Language"
-                value="English (India)"
-                onPress={() => { }}
+                title={t('offtaker.settings.marketLanguage')}
+                value={currentLangLabel}
+                onPress={() => setLanguageModalVisible(true)}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="Security & Compliance" />
+            <SectionTitle title={t('offtaker.settings.securityCompliance')} />
             <View className="bg-white dark:bg-[#0f1218] mx-4 rounded-[32px] shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800/50">
               <SettingItem
                 icon={Lock}
-                title="Access Control"
-                value="Change PIN & Passwords"
+                title={t('offtaker.settings.accessControl')}
+                value={t('offtaker.settings.accessControlSub')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={ShieldCheck}
-                title="KYC Verification"
-                value="Verified Business Tier"
+                title={t('offtaker.settings.kycVerification')}
+                value={t('offtaker.settings.kycSub')}
                 onPress={() => { }}
                 showBorder={false}
               />
             </View>
 
-            <SectionTitle title="Information" />
+            <SectionTitle title={t('offtaker.settings.information')} />
             <View className="bg-white dark:bg-[#0f1218] mx-4 rounded-[32px] shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800/50">
               <SettingItem
                 icon={FileText}
-                title="Trade Terms"
+                title={t('offtaker.settings.tradeTerms')}
                 onPress={() => { }}
               />
               <SettingItem
                 icon={Info}
-                title="KrishiSetu Core"
+                title={t('offtaker.settings.core')}
                 value="Enterprise v2.8.5"
                 onPress={() => { }}
                 showBorder={false}
@@ -172,16 +181,114 @@ export default function SettingsScreen() {
               className="mt-10 mx-6 bg-red-50 dark:bg-red-900/10 h-16 rounded-[24px] flex-row items-center justify-center border border-red-100 dark:border-red-900/20"
             >
               <LogOut size={20} color="#ef4444" />
-              <Text className="text-red-500 font-black text-lg ml-3">Log Out</Text>
+              <Text className="text-red-500 font-black text-lg ml-3">{t('offtaker.settings.logOut')}</Text>
             </TouchableOpacity>
 
             <Text className="text-center text-slate-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest mt-8">
-              Secured by KrishiSetu Infrastructure
+              {t('offtaker.settings.securedBy')}
             </Text>
 
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={languageModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={modalStyles.overlay}
+          activeOpacity={1}
+          onPress={() => setLanguageModalVisible(false)}
+        >
+          <View style={[modalStyles.modalContainer, { backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }]}>
+            <View style={modalStyles.modalHeader}>
+              <Text style={[modalStyles.modalTitle, { color: isDarkMode ? '#f8fafc' : '#0f172a' }]}>
+                {t('settings.selectLanguage')}
+              </Text>
+              <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
+                <X size={20} color={isDarkMode ? '#94a3b8' : '#64748b'} />
+              </TouchableOpacity>
+            </View>
+
+            {SUPPORTED_LANGUAGES.map((lang) => {
+              const isSelected = currentLanguage === lang.code;
+              return (
+                <TouchableOpacity
+                  key={lang.code}
+                  style={[
+                    modalStyles.languageOption,
+                    isSelected && { backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)' }
+                  ]}
+                  onPress={async () => {
+                    await changeLanguage(lang.code);
+                    setLanguageModalVisible(false);
+                  }}
+                >
+                  <View>
+                    <Text style={[modalStyles.langNative, { color: isDarkMode ? '#f8fafc' : '#0f172a' }]}>
+                      {lang.nativeName}
+                    </Text>
+                    <Text style={[modalStyles.langEnglish, { color: isDarkMode ? '#94a3b8' : '#64748b' }]}>
+                      {lang.name}
+                    </Text>
+                  </View>
+                  {isSelected && <Check size={20} color="#3b82f6" />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    borderRadius: 24,
+    padding: 20,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  languageOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    marginBottom: 8,
+  },
+  langNative: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  langEnglish: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+});

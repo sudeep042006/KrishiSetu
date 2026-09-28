@@ -3,8 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { authService } from '../service/api';
+import { useTranslation } from 'react-i18next';
 
 export default function RegisterScreen({ navigation }) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -29,11 +31,11 @@ export default function RegisterScreen({ navigation }) {
         let isValid = true;
         let newErrors = {};
 
-        if (!formData.fullName.trim()) { newErrors.fullName = "Full name is required"; isValid = false; }
-        if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) { newErrors.email = "Valid email is required"; isValid = false; }
-        if (!formData.mobile.trim() || formData.mobile.length < 10) { newErrors.mobile = "Valid mobile number is required"; isValid = false; }
-        if (!formData.password) { newErrors.password = "Password is required"; isValid = false; }
-        if (formData.password !== formData.confirmPassword) { newErrors.confirmPassword = "Passwords do not match"; isValid = false; }
+        if (!formData.fullName.trim()) { newErrors.fullName = t('auth.validation.fullNameRequired'); isValid = false; }
+        if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) { newErrors.email = t('auth.validation.emailRequired'); isValid = false; }
+        if (!formData.mobile.trim() || formData.mobile.length < 10) { newErrors.mobile = t('auth.validation.mobileRequired'); isValid = false; }
+        if (!formData.password) { newErrors.password = t('auth.validation.passwordRequired'); isValid = false; }
+        if (formData.password !== formData.confirmPassword) { newErrors.confirmPassword = t('auth.validation.passwordsNoMatch'); isValid = false; }
 
         setErrors(newErrors);
         return isValid;
@@ -49,11 +51,11 @@ export default function RegisterScreen({ navigation }) {
             
             await authService.registerUser(dataToSubmit);
             
-            Alert.alert("Success", "Account created successfully!", [
-                { text: "Log In", onPress: () => navigation.navigate('Login') }
+            Alert.alert(t('common.success'), t('auth.accountCreated'), [
+                { text: t('auth.logIn'), onPress: () => navigation.navigate('Login') }
             ]);
         } catch (error) {
-            Alert.alert("Registration Failed", error?.response?.data?.message || "Something went wrong. Please try again.");
+            Alert.alert(t('auth.registrationFailed'), error?.response?.data?.message || t('errors.generic'));
         } finally {
             setLoading(false);
         }
@@ -80,10 +82,10 @@ export default function RegisterScreen({ navigation }) {
                 </View>
 
                 <Text className="text-[28px] font-extrabold text-white text-center mb-2">
-                    Create an Account
+                    {t('auth.createAccount')}
                 </Text>
                 <Text className="text-[14px] text-white/70 text-center font-medium opacity-90">
-                    Join the professional bridge for agricultural trade
+                    {t('auth.registerSubtitle')}
                 </Text>
             </View>
 
@@ -96,7 +98,7 @@ export default function RegisterScreen({ navigation }) {
                 <View className="pb-10">
                     {/* Role Selector */}
                     <View className="mb-5">
-                        <Text className="text-slate-400 text-[11px] font-black mb-3 ml-1 text-center uppercase tracking-widest">Select Your Role</Text>
+                        <Text className="text-slate-400 text-[11px] font-black mb-3 ml-1 text-center uppercase tracking-widest">{t('auth.selectRole')}</Text>
                         <View className="flex-row justify-between">
                             <TouchableOpacity 
                                 activeOpacity={0.8}
@@ -107,7 +109,7 @@ export default function RegisterScreen({ navigation }) {
                             >
                                 <Text className="mr-2 text-lg">👨‍🌾</Text>
                                 <Text className={`font-bold ${formData.role === 'Farmer' ? 'text-blue-600' : 'text-slate-400'}`}>
-                                    Farmer
+                                    {t('auth.farmer')}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
@@ -119,7 +121,7 @@ export default function RegisterScreen({ navigation }) {
                             >
                                 <Text className="mr-2 text-lg">🤝</Text>
                                 <Text className={`font-bold ${formData.role === 'Buyer' ? 'text-blue-600' : 'text-slate-400'}`}>
-                                    Offtaker
+                                    {t('auth.offtaker')}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -127,19 +129,19 @@ export default function RegisterScreen({ navigation }) {
 
                     {/* Inputs */}
                     <View className="mb-4">
-                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">Full Name</Text>
+                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">{t('auth.fullName')}</Text>
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.fullName ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[#113123]`}
                             placeholder="John Doe"
                             placeholderTextColor="#9ca3af"
                             value={formData.fullName}
-                            onChangeText={(t) => handleInput('fullName', t)}
+                            onChangeText={(text) => handleInput('fullName', text)}
                         />
                         {errors.fullName && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.fullName}</Text>}
                     </View>
 
                     <View className="mb-4">
-                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">Email Address</Text>
+                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">{t('auth.emailAddress')}</Text>
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.email ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[#113123]`}
                             placeholder="user@example.com"
@@ -147,46 +149,46 @@ export default function RegisterScreen({ navigation }) {
                             keyboardType="email-address"
                             autoCapitalize="none"
                             value={formData.email}
-                            onChangeText={(t) => handleInput('email', t)}
+                            onChangeText={(text) => handleInput('email', text)}
                         />
                         {errors.email && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.email}</Text>}
                     </View>
 
                     <View className="mb-4">
-                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">Mobile Number</Text>
+                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">{t('auth.mobileNumber')}</Text>
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.mobile ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[#113123]`}
                             placeholder="+91 9876543210"
                             placeholderTextColor="#9ca3af"
                             keyboardType="phone-pad"
                             value={formData.mobile}
-                            onChangeText={(t) => handleInput('mobile', t)}
+                            onChangeText={(text) => handleInput('mobile', text)}
                         />
                         {errors.mobile && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.mobile}</Text>}
                     </View>
 
                     <View className="mb-4">
-                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">Password</Text>
+                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">{t('auth.password')}</Text>
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.password ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[#113123]`}
-                            placeholder="Create Password"
+                            placeholder={t('auth.createPassword')}
                             placeholderTextColor="#9ca3af"
                             secureTextEntry={true}
                             value={formData.password}
-                            onChangeText={(t) => handleInput('password', t)}
+                            onChangeText={(text) => handleInput('password', text)}
                         />
                         {errors.password && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.password}</Text>}
                     </View>
 
                     <View className="mb-8">
-                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">Confirm Password</Text>
+                        <Text className="text-gray-600 text-xs font-semibold mb-1 ml-1 text-[#2b4c3b]">{t('auth.confirmPassword')}</Text>
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.confirmPassword ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-4 text-[#113123]`}
-                            placeholder="Confirm Password"
+                            placeholder={t('auth.confirmPasswordPlaceholder')}
                             placeholderTextColor="#9ca3af"
                             secureTextEntry={true}
                             value={formData.confirmPassword}
-                            onChangeText={(t) => handleInput('confirmPassword', t)}
+                            onChangeText={(text) => handleInput('confirmPassword', text)}
                         />
                         {errors.confirmPassword && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.confirmPassword}</Text>}
                     </View>
@@ -206,15 +208,15 @@ export default function RegisterScreen({ navigation }) {
                             {loading ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Text className="text-white font-black text-lg uppercase tracking-widest">Create Account</Text>
+                                <Text className="text-white font-black text-lg uppercase tracking-widest">{t('auth.createAccountButton')}</Text>
                             )}
                         </LinearGradient>
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center mt-6 mb-8">
-                        <Text className="text-slate-400 font-medium">Already have an account? </Text>
+                        <Text className="text-slate-400 font-medium">{t('auth.alreadyHaveAccount')} </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <Text className="text-blue-600 font-bold">Login</Text>
+                            <Text className="text-blue-600 font-bold">{t('auth.login')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

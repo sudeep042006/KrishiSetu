@@ -8,22 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Header from '../../../common/Header';
 import { CropService } from '../../service/api';
+import { useTranslation } from 'react-i18next';
 
-const FILTERS = ['All', 'Active', 'Pending', 'Sold'];
 const CAT_EMOJI = { Grain: '🌾', Vegetable: '🥦', Fruit: '🍋', Pulse: '🫘', Spice: '🌶️', Oilseed: '🌻', Cotton: '🌿', Other: '📦' };
 const QUALITY_COLOR = { A: '#059669', B: '#D97706', C: '#DC2626' };
-const STATUS_STYLE = {
-    active:  { bg: 'bg-green-50',  text: 'text-green-700',  dot: '#059669', label: 'Active'  },
-    pending: { bg: 'bg-amber-50',  text: 'text-amber-700',  dot: '#D97706', label: 'Pending' },
-    sold:    { bg: 'bg-gray-100',  text: 'text-gray-500',   dot: '#9CA3AF', label: 'Sold'    },
-};
-
 const CATEGORIES = ['Grain', 'Vegetable', 'Fruit', 'Pulse', 'Spice', 'Oilseed', 'Cotton', 'Other'];
-const QUALITY_OPTIONS = [
-    { value: 'premium', label: 'Grade A — Premium' },
-    { value: 'standard', label: 'Grade B — Standard' },
-    { value: 'economy', label: 'Grade C — Economy' },
-];
 const UNIT_OPTIONS = ['kg', 'quintal', 'ton', 'litre', 'piece'];
 
 const normalizeStatus = (status) => {
@@ -35,16 +24,39 @@ const normalizeStatus = (status) => {
 };
 
 export default function CropListScreen({ navigation }) {
+    const { t } = useTranslation();
+
+    // Status styles using translation keys
+    const STATUS_STYLE = {
+        active:  { bg: 'bg-green-50',  text: 'text-green-700',  dot: '#059669', label: t('crops.filterActive')  },
+        pending: { bg: 'bg-amber-50',  text: 'text-amber-700',  dot: '#D97706', label: t('crops.filterPending') },
+        sold:    { bg: 'bg-gray-100',  text: 'text-gray-500',   dot: '#9CA3AF', label: t('crops.filterSold')    },
+    };
+
+    const FILTERS = [
+        t('crops.filterAll'),
+        t('crops.filterActive'),
+        t('crops.filterPending'),
+        t('crops.filterSold'),
+    ];
+
+    const QUALITY_OPTIONS = [
+        { value: 'premium', label: t('crops.gradeA') },
+        { value: 'standard', label: t('crops.gradeB') },
+        { value: 'economy', label: t('crops.gradeC') },
+    ];
+
     const [listings, setListings]   = useState([]);
     const [filtered, setFiltered]   = useState([]);
     const [search, setSearch]       = useState('');
-    const [activeFilter, setFilter] = useState('All');
+    const [activeFilter, setFilter] = useState(FILTERS[0]);
     const [loading, setLoading]     = useState(true);
     const [refreshing, setRefresh]  = useState(false);
     const [selected, setSelected]   = useState(null);
     const [editVisible, setEditVisible] = useState(false);
     const [editForm, setEditForm]   = useState({});
     const [saving, setSaving]       = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
     // ── Fetch ──────────────────────────────────────────────────────────
     const fetchListings = async () => {
@@ -85,7 +97,6 @@ export default function CropListScreen({ navigation }) {
                         : '',
                     status: normalizeStatus(item.status),
                     cropImage,
-                    // Keep raw fields for edit form
                     _raw: item,
                 };
             });
@@ -120,29 +131,36 @@ export default function CropListScreen({ navigation }) {
                 i.location.toLowerCase().includes(lower)
             );
         }
-        if (f !== 'All') res = res.filter(i => i.status === f.toLowerCase());
+        // Map translated filter labels back to status keys
+        const filterStatusMap = {
+            [t('crops.filterActive')]:  'active',
+            [t('crops.filterPending')]: 'pending',
+            [t('crops.filterSold')]:    'sold',
+        };
+        const statusKey = filterStatusMap[f];
+        if (statusKey) res = res.filter(i => i.status === statusKey);
         setFiltered(res);
     };
 
-    const handleSearch = (t) => { setSearch(t); applyFilter(listings, t, activeFilter); };
+    const handleSearch = (val) => { setSearch(val); applyFilter(listings, val, activeFilter); };
     const handleFilter = (f) => { setFilter(f); applyFilter(listings, search, f); };
 
     // ── Delete listing ─────────────────────────────────────────────────
     const handleDelete = (item) => {
-        Alert.alert('Remove Listing', `Remove "${item.cropName}" from marketplace?`, [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('crops.removeListing'), t('crops.removeConfirm', { name: item.cropName }), [
+            { text: t('common.cancel'), style: 'cancel' },
             {
-                text: 'Remove', style: 'destructive', onPress: async () => {
+                text: t('crops.remove'), style: 'destructive', onPress: async () => {
                     try {
                         await CropService.deleteProject(item._id);
                         const updated = listings.filter(l => l._id !== item._id);
                         setListings(updated);
                         applyFilter(updated, search, activeFilter);
                         setSelected(null);
-                        Alert.alert('Success', 'Listing removed successfully');
+                        Alert.alert(t('common.success'), t('crops.removeSuccess'));
                     } catch (e) {
                         console.error('Error deleting project:', e);
-                        Alert.alert('Error', 'Could not remove the listing.');
+                        Alert.alert(t('common.error'), t('crops.removeError'));
                     }
                 },
             },
@@ -170,15 +188,15 @@ export default function CropListScreen({ navigation }) {
     // ── Save edit ──────────────────────────────────────────────────────
     const handleSave = async () => {
         if (!editForm.cropName?.trim()) {
-            Alert.alert('Validation', 'Crop name is required.');
+            Alert.alert(t('common.required'), t('crops.validation.cropNameRequired'));
             return;
         }
         if (!editForm.pricePerUnit || isNaN(parseFloat(editForm.pricePerUnit))) {
-            Alert.alert('Validation', 'Enter a valid price.');
+            Alert.alert(t('common.required'), t('crops.validation.invalidPrice'));
             return;
         }
         if (!editForm.quantity || isNaN(parseFloat(editForm.quantity))) {
-            Alert.alert('Validation', 'Enter a valid quantity.');
+            Alert.alert(t('common.required'), t('crops.validation.invalidQuantity'));
             return;
         }
 
@@ -195,13 +213,13 @@ export default function CropListScreen({ navigation }) {
                 expectedHarvestDate:  editForm.harvestDate || undefined,
             };
 
-            await CropService.updateProject(selected?._id || editingId, payload);
-            Alert.alert('Success', 'Listing updated successfully!');
+            await CropService.updateProject(editingId, payload);
+            Alert.alert(t('common.success'), t('crops.updateSuccess'));
             setEditVisible(false);
             fetchListings();
         } catch (e) {
             console.error('Error updating project:', e);
-            Alert.alert('Error', 'Could not update the listing.');
+            Alert.alert(t('common.error'), t('crops.updateError'));
         } finally {
             setSaving(false);
         }
@@ -210,10 +228,6 @@ export default function CropListScreen({ navigation }) {
     // ── Stats ──────────────────────────────────────────────────────────
     const displayCount = filtered.length;
     const displayValue = filtered
-        .reduce((sum, l) => sum + (parseFloat(l.quantity) * parseFloat(l.pricePerUnit)), 0)
-        .toLocaleString('en-IN');
-
-    const totalOverallValue = listings
         .reduce((sum, l) => sum + (parseFloat(l.quantity) * parseFloat(l.pricePerUnit)), 0)
         .toLocaleString('en-IN');
 
@@ -239,9 +253,6 @@ export default function CropListScreen({ navigation }) {
             </View>
         );
     };
-
-    // keep track of which item we're editing (since selected gets cleared before edit opens)
-    const [editingId, setEditingId] = useState(null);
 
     // ── Render card ────────────────────────────────────────────────────
     const renderItem = ({ item }) => {
@@ -278,12 +289,12 @@ export default function CropListScreen({ navigation }) {
                                     <Text className="text-xs font-normal text-gray-400"> /{item.unit}</Text>
                                 </Text>
                                 <Text className="text-xs text-gray-400 mt-0.5">
-                                    {item.quantity} {item.unit} · Grade {item.quality}
+                                    {item.quantity} {item.unit} · {t('crops.gradeLabel')} {item.quality}
                                 </Text>
                             </View>
                             {item.organic && (
                                 <View className="bg-green-50 px-2 py-1 rounded-full">
-                                    <Text className="text-green-700 text-xs font-semibold">🌿 Organic</Text>
+                                    <Text className="text-green-700 text-xs font-semibold">{t('crops.organic')}</Text>
                                 </View>
                             )}
                         </View>
@@ -293,10 +304,12 @@ export default function CropListScreen({ navigation }) {
         );
     };
 
+    const isAllFilter = activeFilter === FILTERS[0];
+
     return (
         <View className="flex-1 bg-[#123524]">
             <SafeAreaView edges={['top']} className="flex-1">
-                <Header title="My Crop Listings" />
+                <Header title={t('crops.title')} />
 
                 <View className="flex-1 bg-[#f8fafc]">
 
@@ -312,13 +325,13 @@ export default function CropListScreen({ navigation }) {
                         </View>
                         <View className="flex-1 bg-white rounded-2xl px-4 py-3 border border-gray-100">
                             <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-                                {activeFilter === 'All' ? 'Total Items' : `${activeFilter} Items`}
+                                {isAllFilter ? t('crops.totalItems') : t('crops.filteredItems', { filter: activeFilter })}
                             </Text>
                             <Text className="text-2xl font-black text-[#1e4a3b] mt-1">{displayCount}</Text>
                         </View>
                         <View className="flex-1 bg-white rounded-2xl px-4 py-3 border border-gray-100">
                             <Text className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
-                                {activeFilter === 'All' ? 'Total Value' : 'Filtered Value'}
+                                {isAllFilter ? t('crops.totalValue') : t('crops.filteredValue')}
                             </Text>
                             <Text className="text-2xl font-black text-[#1e4a3b] mt-1">₹{displayValue}</Text>
                         </View>
@@ -330,7 +343,7 @@ export default function CropListScreen({ navigation }) {
                         <TextInput
                             className="flex-1 text-sm text-gray-800 ml-2"
                             style={{ paddingVertical: 11 }}
-                            placeholder="Search crop or location..."
+                            placeholder={t('crops.searchPlaceholder')}
                             placeholderTextColor="#9CA3AF"
                             value={search}
                             onChangeText={handleSearch}
@@ -374,21 +387,21 @@ export default function CropListScreen({ navigation }) {
 
                     {/* ── Count label ────────────────────────────────── */}
                     <Text className="text-xs text-gray-400 px-4 mb-2">
-                        {filtered.length} listing{filtered.length !== 1 ? 's' : ''} found
+                        {t(filtered.length === 1 ? 'crops.listingsFound_one' : 'crops.listingsFound_other', { count: filtered.length })}
                     </Text>
 
                     {/* ── List ───────────────────────────────────────── */}
                     {loading ? (
                         <View className="flex-1 justify-center items-center">
                             <ActivityIndicator size="large" color="#1e4a3b" />
-                            <Text className="text-gray-400 text-sm mt-3">Loading your listings...</Text>
+                            <Text className="text-gray-400 text-sm mt-3">{t('crops.loadingListings')}</Text>
                         </View>
                     ) : filtered.length === 0 ? (
                         <View className="flex-1 justify-center items-center px-8">
                             <Text style={{ fontSize: 40 }}>🌾</Text>
-                            <Text className="text-lg font-bold text-gray-700 mt-3">No listings found</Text>
+                            <Text className="text-lg font-bold text-gray-700 mt-3">{t('crops.noListings')}</Text>
                             <Text className="text-sm text-gray-400 mt-1 text-center">
-                                {search ? 'Try a different search term' : 'No listings in this category yet'}
+                                {search ? t('crops.noSearchResults') : t('crops.noListingsCategory')}
                             </Text>
                         </View>
                     ) : (
@@ -448,7 +461,7 @@ export default function CropListScreen({ navigation }) {
                                     </View>
                                     <View className="w-px bg-[#c7ded0] mx-4" />
                                     <View className="flex-1 items-center">
-                                        <Text className="text-xs text-gray-500 uppercase font-semibold tracking-wide">Quantity</Text>
+                                        <Text className="text-xs text-gray-500 uppercase font-semibold tracking-wide">{t('crops.quantity')}</Text>
                                         <Text className="text-2xl font-black text-[#1e4a3b] mt-1">{selected.quantity}</Text>
                                         <Text className="text-xs text-gray-400">{selected.unit}</Text>
                                     </View>
@@ -456,7 +469,7 @@ export default function CropListScreen({ navigation }) {
 
                                 {/* Total value */}
                                 <View className="bg-[#1e4a3b] rounded-xl px-5 py-3 mb-5 flex-row justify-between items-center">
-                                    <Text className="text-[#6ebd8a] text-xs font-semibold uppercase tracking-wider">Total Lot Value</Text>
+                                    <Text className="text-[#6ebd8a] text-xs font-semibold uppercase tracking-wider">{t('crops.totalLotValue')}</Text>
                                     <Text className="text-white text-xl font-black">
                                         ₹{(selected.quantity * selected.pricePerUnit).toLocaleString('en-IN')}
                                     </Text>
@@ -464,12 +477,12 @@ export default function CropListScreen({ navigation }) {
 
                                 {/* Detail rows */}
                                 <View className="bg-gray-50 rounded-2xl overflow-hidden mb-5">
-                                    <DetailRow icon="📍" label="Location"     value={selected.location} />
-                                    <DetailRow icon="🏷️" label="Category"    value={selected.category} />
-                                    <DetailRow icon="⭐" label="Quality"      value={`Grade ${selected.quality} — ${selected.quality === 'A' ? 'Premium' : selected.quality === 'B' ? 'Standard' : 'Economy'}`} />
-                                    <DetailRow icon="📅" label="Harvest Date" value={selected.harvestDate || '—'} />
-                                    <DetailRow icon="🌿" label="Farming"      value={selected.organic ? 'Organic / Natural' : 'Conventional'} />
-                                    <DetailRow icon="📊" label="Status"       value={STATUS_STYLE[selected.status]?.label || selected.status} last />
+                                    <DetailRow icon="📍" label={t('crops.location')}      value={selected.location} />
+                                    <DetailRow icon="🏷️" label={t('crops.category')}     value={selected.category} />
+                                    <DetailRow icon="⭐" label={t('crops.qualityLabel')}  value={t(`crops.grade${selected.quality}`)} />
+                                    <DetailRow icon="📅" label={t('crops.harvestDateLabel')} value={selected.harvestDate || '—'} />
+                                    <DetailRow icon="🌿" label={t('crops.farming')}       value={selected.organic ? t('crops.organicNatural') : t('crops.conventional')} />
+                                    <DetailRow icon="📊" label={t('crops.status')}        value={t(`status.${selected.status}`)} last />
                                 </View>
 
                                 {/* Actions */}
@@ -478,7 +491,7 @@ export default function CropListScreen({ navigation }) {
                                         className="flex-1 border border-red-200 bg-red-50 rounded-xl py-3 items-center"
                                         onPress={() => handleDelete(selected)}
                                     >
-                                        <Text className="text-red-600 font-bold text-sm">Remove</Text>
+                                        <Text className="text-red-600 font-bold text-sm">{t('common.remove')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         className="flex-1 bg-[#1e4a3b] rounded-xl py-3 items-center"
@@ -487,7 +500,7 @@ export default function CropListScreen({ navigation }) {
                                             handleOpenEdit(selected);
                                         }}
                                     >
-                                        <Text className="text-white font-bold text-sm">Edit Listing</Text>
+                                        <Text className="text-white font-bold text-sm">{t('crops.editListing')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </ScrollView>
@@ -517,7 +530,7 @@ export default function CropListScreen({ navigation }) {
 
                             {/* Header */}
                             <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-100">
-                                <Text className="text-lg font-bold text-[#1e4a3b]">Edit Listing</Text>
+                                <Text className="text-lg font-bold text-[#1e4a3b]">{t('crops.editListing')}</Text>
                                 <TouchableOpacity
                                     onPress={() => setEditVisible(false)}
                                     className="w-8 h-8 rounded-full bg-gray-100 justify-center items-center"
@@ -533,7 +546,7 @@ export default function CropListScreen({ navigation }) {
                             >
 
                                 {/* ── Crop Name ── */}
-                                <EditLabel>Crop Name</EditLabel>
+                                <EditLabel>{t('crops.cropName')}</EditLabel>
                                 <TextInput
                                     value={editForm.cropName}
                                     onChangeText={v => setEditForm(f => ({ ...f, cropName: v }))}
@@ -543,7 +556,7 @@ export default function CropListScreen({ navigation }) {
                                 />
 
                                 {/* ── Category ── */}
-                                <EditLabel>Category</EditLabel>
+                                <EditLabel>{t('crops.category')}</EditLabel>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
                                     <View className="flex-row gap-2">
                                         {CATEGORIES.map(cat => (
@@ -571,7 +584,7 @@ export default function CropListScreen({ navigation }) {
                                 {/* ── Price & Quantity side by side ── */}
                                 <View className="flex-row gap-3 mb-4">
                                     <View className="flex-1">
-                                        <EditLabel>Price (₹)</EditLabel>
+                                        <EditLabel>{t('crops.price')}</EditLabel>
                                         <TextInput
                                             value={editForm.pricePerUnit}
                                             onChangeText={v => setEditForm(f => ({ ...f, pricePerUnit: v }))}
@@ -582,7 +595,7 @@ export default function CropListScreen({ navigation }) {
                                         />
                                     </View>
                                     <View className="flex-1">
-                                        <EditLabel>Quantity</EditLabel>
+                                        <EditLabel>{t('crops.quantity')}</EditLabel>
                                         <TextInput
                                             value={editForm.quantity}
                                             onChangeText={v => setEditForm(f => ({ ...f, quantity: v }))}
@@ -595,7 +608,7 @@ export default function CropListScreen({ navigation }) {
                                 </View>
 
                                 {/* ── Unit ── */}
-                                <EditLabel>Unit</EditLabel>
+                                <EditLabel>{t('crops.unit')}</EditLabel>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
                                     <View className="flex-row gap-2">
                                         {UNIT_OPTIONS.map(u => (
@@ -621,7 +634,7 @@ export default function CropListScreen({ navigation }) {
                                 </ScrollView>
 
                                 {/* ── Quality Grade ── */}
-                                <EditLabel>Quality Grade</EditLabel>
+                                <EditLabel>{t('crops.qualityGrade')}</EditLabel>
                                 <View className="flex-row gap-3 mb-4">
                                     {QUALITY_OPTIONS.map(q => (
                                         <TouchableOpacity
@@ -650,7 +663,7 @@ export default function CropListScreen({ navigation }) {
                                 </View>
 
                                 {/* ── Harvest Date ── */}
-                                <EditLabel>Expected Harvest Date (YYYY-MM-DD)</EditLabel>
+                                <EditLabel>{t('crops.harvestDate')}</EditLabel>
                                 <TextInput
                                     value={editForm.harvestDate}
                                     onChangeText={v => setEditForm(f => ({ ...f, harvestDate: v }))}
@@ -660,7 +673,7 @@ export default function CropListScreen({ navigation }) {
                                 />
 
                                 {/* ── Organic toggle ── */}
-                                <EditLabel>Farming Type</EditLabel>
+                                <EditLabel>{t('crops.farmingType')}</EditLabel>
                                 <View className="flex-row gap-3 mb-6">
                                     <TouchableOpacity
                                         onPress={() => setEditForm(f => ({ ...f, organic: true }))}
@@ -672,7 +685,7 @@ export default function CropListScreen({ navigation }) {
                                         }}
                                     >
                                         <Text style={{ fontSize: 13, fontWeight: '700', color: editForm.organic ? '#1e4a3b' : '#6B7280' }}>
-                                            🌿 Organic
+                                            {t('crops.organicFarming')}
                                         </Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -685,7 +698,7 @@ export default function CropListScreen({ navigation }) {
                                         }}
                                     >
                                         <Text style={{ fontSize: 13, fontWeight: '700', color: !editForm.organic ? '#1e4a3b' : '#6B7280' }}>
-                                            🌱 Conventional
+                                            {t('crops.conventionalFarming')}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
@@ -693,7 +706,7 @@ export default function CropListScreen({ navigation }) {
                                 {/* ── Live preview of total value ── */}
                                 {editForm.pricePerUnit && editForm.quantity && (
                                     <View className="bg-[#1e4a3b] rounded-xl px-5 py-3 mb-6 flex-row justify-between items-center">
-                                        <Text className="text-[#6ebd8a] text-xs font-semibold uppercase tracking-wider">Updated Lot Value</Text>
+                                        <Text className="text-[#6ebd8a] text-xs font-semibold uppercase tracking-wider">{t('crops.updatedLotValue')}</Text>
                                         <Text className="text-white text-lg font-black">
                                             ₹{(parseFloat(editForm.quantity || 0) * parseFloat(editForm.pricePerUnit || 0)).toLocaleString('en-IN')}
                                         </Text>
@@ -713,7 +726,7 @@ export default function CropListScreen({ navigation }) {
                                 >
                                     {saving
                                         ? <ActivityIndicator color="#fff" />
-                                        : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>Save & Republish</Text>
+                                        : <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>{t('crops.saveRepublish')}</Text>
                                     }
                                 </TouchableOpacity>
 

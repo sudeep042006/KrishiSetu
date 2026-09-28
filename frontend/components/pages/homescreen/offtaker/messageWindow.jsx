@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { getChatMessages, deleteMessages } from '../../../../services/chatApi';
 import socketService from '../../../../services/socket';
+import { useTranslation } from 'react-i18next';
 
 function AvatarPlaceholder({ name = "Unknown", size = 40 }) {
     const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -73,7 +74,7 @@ function ChatHeader({ chatTitle, otherUserId, navigation, isSelectionMode, selec
                     </Text>
                     <View className="flex-row items-center">
                         <View className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5" />
-                        <Text className="text-blue-300/80 text-[10px] font-bold uppercase tracking-widest">Active Now</Text>
+                        <Text className="text-blue-300/80 text-[10px] font-bold uppercase tracking-widest">{t("profileWindow.activeNow")}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -331,7 +332,7 @@ export default function MessageWindowScreen({ navigation, route }) {
                         <View className="py-3 items-center bg-white/50 border-b border-gray-100">
                             <View className="flex-row items-center px-3 py-1 bg-blue-50 rounded-full border border-blue-100/50">
                                 <Lock size={10} color="#2563eb" />
-                                <Text className="text-[10px] text-blue-700 font-bold ml-1 uppercase tracking-tighter">Encrypted Communication</Text>
+                                <Text className="text-[10px] text-blue-700 font-bold ml-1 uppercase tracking-tighter">{t("profileWindow.encryptedComm")}</Text>
                             </View>
                         </View>
 
@@ -373,7 +374,7 @@ export default function MessageWindowScreen({ navigation, route }) {
                                     <View className="flex-1 bg-gray-50 rounded-2xl px-4 py-1.5 border border-gray-100">
                                         <TextInput
                                             className="text-sm text-gray-800 min-h-[40px] max-h-32"
-                                            placeholder="Type a message..."
+                                            placeholder={t("profileWindow.typeMessage")}
                                             placeholderTextColor="#9ca3af"
                                             value={inputText}
                                             onChangeText={setInputText}

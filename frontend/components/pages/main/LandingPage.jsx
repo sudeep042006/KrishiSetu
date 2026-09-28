@@ -9,8 +9,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from 'react-i18next';
 
 export default function LandingPage({ navigation }) {
+    const { t } = useTranslation();
     const fadeAnim = useSharedValue(0);
     const slideAnim = useSharedValue(30);
 
@@ -53,10 +55,10 @@ export default function LandingPage({ navigation }) {
 
                     <Animated.View style={animatedStyle} className="items-center z-10 w-full">
                         <Text className="text-[34px] font-extrabold text-white text-center leading-[42px] mb-4">
-                            Empowering Farmers to Trade Smarter
+                            {t('landing.tagline')}
                         </Text>
                         <Text className="text-[15px] text-white/80 text-center font-medium px-4 opacity-90 leading-6">
-                            The professional bridge between local harvests and global procurement.
+                            {t('landing.subtitle')}
                         </Text>
                     </Animated.View>
                 </View>
@@ -77,7 +79,7 @@ export default function LandingPage({ navigation }) {
                                     style={{ borderRadius: 30, paddingVertical: 18, alignItems: 'center', justifyContent: 'center', shadowColor: '#10b981', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 5 }}
                                 >
                                     <View className="flex-row items-center">
-                                        <Text className="text-white font-black text-lg mr-2 uppercase tracking-widest">Get Started</Text>
+                                        <Text className="text-white font-black text-lg mr-2 uppercase tracking-widest">{t('landing.getStarted')}</Text>
                                         <Text className="text-white text-lg">→</Text>
                                     </View>
                                 </LinearGradient>
@@ -86,9 +88,9 @@ export default function LandingPage({ navigation }) {
 
                         {/* Feature Highlights */}
                         <View className="flex-row justify-between w-full">
-                            <FeatureItem icon="📦" label="Post & Sell" />
-                            <FeatureItem icon="💰" label="Best Prices" />
-                            <FeatureItem icon="🔒" label="Secure" />
+                            <FeatureItem icon="📦" label={t('landing.postAndSell')} />
+                            <FeatureItem icon="💰" label={t('landing.bestPrices')} />
+                            <FeatureItem icon="🔒" label={t('landing.secure')} />
                         </View>
                     </Animated.View>
 
@@ -96,12 +98,12 @@ export default function LandingPage({ navigation }) {
                     {/* Footer / Login Link */}
                     <View className="mt-auto items-center pt-10 pb-4">
                         <Text className="text-slate-400 text-[11px] mb-3 text-center uppercase tracking-wider font-semibold">
-                            Trusted agriculture marketplace
+                            {t('landing.trustedMarketplace')}
                         </Text>
                         <View className="flex-row items-center">
-                            <Text className="text-gray-500 font-medium">Already have an account? </Text>
+                            <Text className="text-gray-500 font-medium">{t('landing.alreadyHaveAccount')} </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Login')} className="py-2">
-                                <Text className="text-[#155e75] font-bold text-base">Login</Text>
+                                <Text className="text-[#155e75] font-bold text-base">{t('landing.login')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -120,4 +122,3 @@ const FeatureItem = ({ icon, label }) => (
         <Text className="text-slate-700 font-bold text-[10px] text-center uppercase tracking-tight">{label}</Text>
     </View>
 );
-

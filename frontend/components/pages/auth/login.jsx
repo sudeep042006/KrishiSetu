@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { authService } from '../service/api';
 import { AuthContext } from '../../../App';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen({ navigation }) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         mobileOrEmail: '',
         password: '',
@@ -29,8 +31,8 @@ export default function LoginScreen({ navigation }) {
         let isValid = true;
         let newErrors = {};
 
-        if (!formData.mobileOrEmail.trim()) { newErrors.mobileOrEmail = "Mobile or email is required"; isValid = false; }
-        if (!formData.password) { newErrors.password = "Password is required"; isValid = false; }
+        if (!formData.mobileOrEmail.trim()) { newErrors.mobileOrEmail = t('auth.mobileOrEmailRequired'); isValid = false; }
+        if (!formData.password) { newErrors.password = t('auth.validation.passwordRequired'); isValid = false; }
 
         setErrors(newErrors);
         return isValid;
@@ -56,7 +58,7 @@ export default function LoginScreen({ navigation }) {
                 }
             }
         } catch (error) {
-            Alert.alert("Login Failed", error?.response?.data?.message || "Invalid credentials. Please try again.");
+            Alert.alert(t('auth.loginFailed'), error?.response?.data?.message || t('auth.invalidCredentials'));
         } finally {
             setLoading(false);
         }
@@ -84,10 +86,10 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <Text className="text-[28px] font-extrabold text-white text-center mb-2 mt-2">
-                    Welcome Back!
+                    {t('auth.welcomeBack')}
                 </Text>
                 <Text className="text-[14px] text-white/70 text-center font-medium opacity-90">
-                    The bridge to smarter agricultural trade
+                    {t('auth.loginSubtitle')}
                 </Text>
             </View>
 
@@ -101,7 +103,7 @@ export default function LoginScreen({ navigation }) {
                 <View className="pb-10">
                     {/* Role Selector */}
                     <View className="mb-6">
-                        <Text className="text-slate-400 text-[11px] font-black mb-4 ml-1 text-center uppercase tracking-widest">Identify Yourself</Text>
+                        <Text className="text-slate-400 text-[11px] font-black mb-4 ml-1 text-center uppercase tracking-widest">{t('auth.identifyYourself')}</Text>
                         <View className="flex-row justify-center space-x-4">
                             <TouchableOpacity 
                                 activeOpacity={0.8}
@@ -112,7 +114,7 @@ export default function LoginScreen({ navigation }) {
                             >
                                 <Text className="mr-2 text-lg">👨‍🌾</Text>
                                 <Text className={`font-bold ${formData.role === 'Farmer' ? 'text-blue-600' : 'text-slate-400'}`}>
-                                    Farmer
+                                    {t('auth.farmer')}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity 
@@ -124,7 +126,7 @@ export default function LoginScreen({ navigation }) {
                             >
                                 <Text className="mr-2 text-lg">🤝</Text>
                                 <Text className={`font-bold ${formData.role === 'Buyer' ? 'text-blue-600' : 'text-slate-400'}`}>
-                                    Offtaker
+                                    {t('auth.offtaker')}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -134,7 +136,7 @@ export default function LoginScreen({ navigation }) {
                     <View className="mb-4 mt-2">
                         <TextInput 
                             className={`w-full bg-[#f9fafb] border ${errors.mobileOrEmail ? 'border-red-400' : 'border-gray-200'} rounded-2xl px-5 py-[16px] text-[#113123]`}
-                            placeholder="Mobile Number or Email"
+                            placeholder={t('auth.mobileOrEmail')}
                             placeholderTextColor="#9ca3af"
                             keyboardType="email-address"
                             autoCapitalize="none"
@@ -147,16 +149,16 @@ export default function LoginScreen({ navigation }) {
                     <View className="mb-6">
                         <TextInput 
                             className={`w-full bg-slate-50 border ${errors.password ? 'border-red-400' : 'border-slate-100'} rounded-2xl px-5 py-[18px] text-slate-900 font-medium`}
-                            placeholder="Password"
+                            placeholder={t('auth.password')}
                             placeholderTextColor="#94a3b8"
                             secureTextEntry={true}
                             value={formData.password}
-                            onChangeText={(t) => handleInput('password', t)}
+                            onChangeText={(text) => handleInput('password', text)}
                         />
                         {errors.password && <Text className="text-red-500 text-xs mt-1 ml-1">{errors.password}</Text>}
                         
                         <TouchableOpacity className="mt-4 w-full items-end pr-2">
-                            <Text className="text-blue-600 font-bold text-xs">Forgot password?</Text>
+                            <Text className="text-blue-600 font-bold text-xs">{t('auth.forgotPassword')}</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -175,15 +177,15 @@ export default function LoginScreen({ navigation }) {
                             {loading ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Text className="text-white font-black text-lg uppercase tracking-widest">Login to Portal</Text>
+                                <Text className="text-white font-black text-lg uppercase tracking-widest">{t('auth.loginButton')}</Text>
                             )}
                         </LinearGradient>
                     </TouchableOpacity>
 
                     <View className="flex-row justify-center mt-10 mb-8">
-                        <Text className="text-slate-400 font-medium">Don't have an account? </Text>
+                        <Text className="text-slate-400 font-medium">{t('auth.noAccount')} </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                            <Text className="text-blue-600 font-bold">Register</Text>
+                            <Text className="text-blue-600 font-bold">{t('auth.register')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

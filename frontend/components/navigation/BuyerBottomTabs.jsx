@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../../context/ThemeContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Platform, StyleSheet } from 'react-native';
@@ -17,6 +18,7 @@ const Tab = createBottomTabNavigator();
 
 export default function BuyerBottomTabs() {
     const { isDarkMode } = useContext(ThemeContext);
+    const { t } = useTranslation();
 
     return (
         <Tab.Navigator
@@ -46,10 +48,10 @@ export default function BuyerBottomTabs() {
                 },
             })}
         >
-            <Tab.Screen name="Home" component={OfftakerHome} />
-            <Tab.Screen name="Marketplace" component={OfftakerMarketplace} options={{ tabBarLabel: 'Sellers' }} />
-            <Tab.Screen name="Dashboard" component={OfftakerDashboard} />
-            <Tab.Screen name="Message" component={MessageScreen} />
+            <Tab.Screen name="Home" component={OfftakerHome} options={{ tabBarLabel: t('nav.home') }} />
+            <Tab.Screen name="Marketplace" component={OfftakerMarketplace} options={{ tabBarLabel: t('nav.sellers') }} />
+            <Tab.Screen name="Dashboard" component={OfftakerDashboard} options={{ tabBarLabel: t('nav.dashboard') }} />
+            <Tab.Screen name="Message" component={MessageScreen} options={{ tabBarLabel: t('nav.messages') }} />
         </Tab.Navigator>
     );
 }

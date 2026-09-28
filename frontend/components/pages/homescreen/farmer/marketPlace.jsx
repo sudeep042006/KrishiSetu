@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Mic, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
 import { Linking } from 'react-native';
 import Header from '../../../common/Header';
+import { useTranslation } from 'react-i18next';
 import Geolocation from 'react-native-geolocation-service';
 import { offtakerService } from '../../service/api';
 import { createOrGetChat } from '../../../../services/chatApi';
@@ -388,6 +389,7 @@ const MapSection = memo(({ buyers, onMarkerPress, externalCenter }) => {
 
 // ─── BUYER CARD ───────────────────────────────────────────────────────────────
 const BuyerCard = memo(({ item, onPress }) => {
+    const { t } = useTranslation();
     const scale = useRef(new Animated.Value(1)).current;
 
     const onPressIn = () => Animated.spring(scale, { toValue: 0.975, useNativeDriver: true, speed: 60 }).start();
@@ -427,7 +429,7 @@ const BuyerCard = memo(({ item, onPress }) => {
                             <Star size={12} color="#f59e0b" fill="#f59e0b" />
                             <Text className="text-[12px] font-bold text-amber-500">{item.rating}</Text>
                             <Text className="text-[12px] text-gray-400"> ({item.reviews})</Text>
-                            <Text className="text-[12px] text-gray-400 ml-1">🤝 {item.deals} Deals</Text>
+                            <Text className="text-[12px] text-gray-400 ml-1">🤝 {item.deals} {t('marketplace.deals')}</Text>
                         </View>
 
                         {/* Tags */}
@@ -452,12 +454,12 @@ const BuyerCard = memo(({ item, onPress }) => {
                     {/* Price + Button */}
                     <View className="items-end" style={{ minWidth: 82 }}>
                         <Text className="text-[18px] font-extrabold text-[#1e4a3b]">₹{item.price.toLocaleString('en-IN')}</Text>
-                        <Text className="text-[10px] text-gray-400 -mt-0.5">per quintal</Text>
+                        <Text className="text-[10px] text-gray-400 -mt-0.5">{t('marketplace.perQuintalShort')}</Text>
                         <TouchableOpacity
                             className="mt-3 bg-[#123524] rounded-xl px-3 py-2"
                             onPress={() => onPress(item)}
                         >
-                            <Text className="text-white text-[12px] font-bold">View Details</Text>
+                            <Text className="text-white text-[12px] font-bold">{t('marketplace.viewDetails')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -468,6 +470,7 @@ const BuyerCard = memo(({ item, onPress }) => {
 
 // ─── DETAILED BUYER MODAL ─────────────────────────────────────────────────────
 const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     if (!buyer) return null;
 
@@ -507,7 +510,7 @@ const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
                                 </View>
                                 <View className="flex-row items-center mt-1" style={{ gap: 4 }}>
                                     <MapPin size={14} color="#64748b" />
-                                    <Text className="text-gray-500 font-medium">{buyer.location} • {buyer.distance} away</Text>
+                                    <Text className="text-gray-500 font-medium">{buyer.location} • {buyer.distance} {t('marketplace.away')}</Text>
                                 </View>
                             </View>
                         </View>
@@ -517,26 +520,26 @@ const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
                             <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
                                 <Star size={18} color="#f59e0b" fill="#f59e0b" />
                                 <Text className="text-gray-900 font-bold mt-1">{buyer.rating}</Text>
-                                <Text className="text-[10px] text-gray-400">Rating</Text>
+                                <Text className="text-[10px] text-gray-400">{t('marketplace.rating')}</Text>
                             </View>
                             <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
                                 <TrendingUp size={18} color="#10b981" />
                                 <Text className="text-gray-900 font-bold mt-1">{buyer.deals}</Text>
-                                <Text className="text-[10px] text-gray-400">Deals Done</Text>
+                                <Text className="text-[10px] text-gray-400">{t('marketplace.dealsDone')}</Text>
                             </View>
                             <View className="flex-1 bg-white p-3 rounded-2xl items-center border border-gray-100">
                                 <Zap size={18} color="#3b82f6" />
                                 <Text className="text-gray-900 font-bold mt-1">98%</Text>
-                                <Text className="text-[10px] text-gray-400">Response</Text>
+                                <Text className="text-[10px] text-gray-400">{t('marketplace.response')}</Text>
                             </View>
                         </View>
 
                         {/* Pricing Highlight */}
                         <View className="bg-white p-5 rounded-3xl mb-6 shadow-sm border border-green-50">
-                            <Text className="text-gray-400 font-bold text-[11px] tracking-widest uppercase">Current Buying Price</Text>
+                            <Text className="text-gray-400 font-bold text-[11px] tracking-widest uppercase">{t('marketplace.currentBuyingPrice')}</Text>
                             <View className="flex-row items-baseline mt-1" style={{ gap: 4 }}>
                                 <Text className="text-3xl font-extrabold text-[#123524]">₹{buyer.price.toLocaleString('en-IN')}</Text>
-                                <Text className="text-gray-500 font-bold">/ quintal</Text>
+                                <Text className="text-gray-500 font-bold">{t('marketplace.perQuintal')}</Text>
                             </View>
                             <View className="mt-3 flex-row items-center bg-green-50 self-start px-2 py-1 rounded-lg" style={{ gap: 4 }}>
                                 <TrendingUp size={12} color="#16a34a" />
@@ -546,13 +549,13 @@ const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
 
                         {/* About Section */}
                         <View className="mb-6">
-                            <Text className="text-lg font-bold text-gray-900 mb-2">About Business</Text>
+                            <Text className="text-lg font-bold text-gray-900 mb-2">{t('marketplace.aboutBusiness')}</Text>
                             <Text className="text-gray-600 leading-6 text-[14px]">{buyer.description}</Text>
                         </View>
 
                         {/* Crops Section */}
                         <View className="mb-8">
-                            <Text className="text-lg font-bold text-gray-900 mb-3">Crops they Buy</Text>
+                            <Text className="text-lg font-bold text-gray-900 mb-3">{t('marketplace.cropsTheyBuy')}</Text>
                             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
                                 {buyer.crops.map((crop) => (
                                     <View key={crop} className="bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm flex-row items-center" style={{ gap: 6 }}>
@@ -577,7 +580,7 @@ const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
                             ) : (
                                 <>
                                     <MessageSquare size={20} color="#fff" />
-                                    <Text className="text-white font-bold text-lg">Start Chat</Text>
+                                    <Text className="text-white font-bold text-lg">{t('marketplace.startChat')}</Text>
                                 </>
                             )}
                         </TouchableOpacity>
@@ -590,6 +593,7 @@ const BuyerDetailModal = memo(({ buyer, onClose, onChat, chattingId }) => {
 
 // ─── MAIN SCREEN ──────────────────────────────────────────────────────────────
 export default function MarketplaceScreen() {
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [activeChip, setActiveChip] = useState('Wheat');
     const [isFarmer, setIsFarmer] = useState(true);
@@ -616,7 +620,7 @@ export default function MarketplaceScreen() {
         // In this component's mapping, buyer.userId is already the ID string
         const receiverId = buyer.userId;
         if (!currentUserId || !receiverId) {
-            if (!currentUserId) Alert.alert("Login Required", "Please login to chat.");
+            if (!currentUserId) Alert.alert(t("marketplace.loginRequired"), t("marketplace.loginToChat"));
             return;
         }
 
@@ -634,7 +638,7 @@ export default function MarketplaceScreen() {
             }
         } catch (error) {
             console.error("Error creating chat:", error);
-            Alert.alert("Chat Error", "Could not start conversation.");
+            Alert.alert(t("marketplace.chatError"), t("marketplace.couldNotStart"));
         } finally {
             setChattingId(null);
         }
@@ -725,7 +729,7 @@ export default function MarketplaceScreen() {
                     <Search size={16} color="#9ca3af" />
                     <TextInput
                         className="flex-1 text-[14px] text-gray-800 p-0"
-                        placeholder="Search buyers, crops..."
+                        placeholder={t("marketplace.searchPlaceholder")}
                         placeholderTextColor="#9ca3af"
                         value={search}
                         onChangeText={setSearch}
@@ -739,7 +743,7 @@ export default function MarketplaceScreen() {
                     style={{ paddingVertical: Platform.OS === 'ios' ? 12 : 10, gap: 5 }}
                 >
                     <SlidersHorizontal size={14} color="#fff" />
-                    <Text className="text-white text-[13px] font-semibold">Filters</Text>
+                    <Text className="text-white text-[13px] font-semibold">{t('marketplace.filters')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -779,8 +783,8 @@ export default function MarketplaceScreen() {
                     <View className="w-9 h-9 rounded-xl bg-[#dcf0e3] items-center justify-center mb-1.5">
                         <Users size={18} color="#1e4a3b" />
                     </View>
-                    <Text className="text-[13px] font-bold text-gray-900 text-center">12 Buyers</Text>
-                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">Within 25 km</Text>
+                    <Text className="text-[13px] font-bold text-gray-900 text-center">{t('marketplace.buyers12')}</Text>
+                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">{t('marketplace.withinKm')}</Text>
                 </View>
 
                 {/* Price */}
@@ -792,7 +796,7 @@ export default function MarketplaceScreen() {
                         <Text className="text-[18px]" style={{ color: '#d97706' }}>₹</Text>
                     </View>
                     <Text className="text-[13px] font-bold text-gray-900 text-center">₹2,250</Text>
-                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">Avg. Wheat Price</Text>
+                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">{t('marketplace.avgWheatPrice')}</Text>
                 </View>
 
                 {/* Response */}
@@ -804,7 +808,7 @@ export default function MarketplaceScreen() {
                         <Zap size={18} color="#3b82f6" />
                     </View>
                     <Text className="text-[13px] font-bold text-gray-900 text-center">98%</Text>
-                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">Response Rate</Text>
+                    <Text className="text-[10px] text-gray-400 text-center mt-0.5">{t('marketplace.responseRate')}</Text>
                 </View>
             </View>
 
@@ -821,7 +825,7 @@ export default function MarketplaceScreen() {
                     <View className="flex-row items-center" style={{ gap: 8 }}>
                         <Locate size={16} color="#1e4a3b" />
                         <View>
-                            <Text className="text-[10px] text-gray-400 font-medium">SELECTED REGION</Text>
+                            <Text className="text-[10px] text-gray-400 font-medium">{t('marketplace.selectedRegion')}</Text>
                             <Text className="text-[14px] font-bold text-gray-900">{selectedRegion.label}</Text>
                         </View>
                     </View>
@@ -831,13 +835,13 @@ export default function MarketplaceScreen() {
 
             {/* ── Nearby Buyers header ── */}
             <View className="flex-row items-center justify-between px-4 mb-3">
-                <Text className="text-[18px] font-bold text-gray-900">Nearby Buyers</Text>
+                <Text className="text-[18px] font-bold text-gray-900">{t('marketplace.nearbyBuyers')}</Text>
                 <TouchableOpacity
                     className="flex-row items-center bg-white rounded-full px-3 py-1.5 border border-gray-200"
                     style={{ gap: 4 }}
                     onPress={() => setSortBy(s => s === 'Distance' ? 'Rating' : 'Distance')}
                 >
-                    <Text className="text-[12px] text-gray-600">Sort: <Text className="font-bold text-gray-800">{sortBy}</Text></Text>
+                    <Text className="text-[12px] text-gray-600">{t('marketplace.sort')} <Text className="font-bold text-gray-800">{sortBy}</Text></Text>
                     <ChevronDown size={13} color="#374151" />
                 </TouchableOpacity>
             </View>
@@ -852,10 +856,10 @@ export default function MarketplaceScreen() {
         >
             <Sprout size={28} color="#16a34a" />
             <Text className="flex-1 text-[13px] font-semibold text-green-800 leading-5">
-                Tip: Add your crops & quantity{'\n'}to get better matches!
+                {t('marketplace.tipTitle')}
             </Text>
             <TouchableOpacity>
-                <Text className="text-[13px] font-bold text-[#1e4a3b]">Update Profile →</Text>
+                <Text className="text-[13px] font-bold text-[#1e4a3b]">{t('marketplace.updateProfile')}</Text>
             </TouchableOpacity>
         </View>
     ), []);
@@ -866,7 +870,7 @@ export default function MarketplaceScreen() {
 
                 {/* ── Header ── */}
                 <Header
-                    title="Marketplace"
+                    title={t("marketplace.title")}
                     showNotification={true}
                 />
 
@@ -901,7 +905,7 @@ export default function MarketplaceScreen() {
                 >
                     <View className="bg-white w-full rounded-2xl overflow-hidden shadow-xl" onPress={(e) => e.stopPropagation()}>
                         <View className="bg-[#123524] p-4 flex-row items-center justify-between">
-                            <Text className="text-white font-bold text-lg">Select Region</Text>
+                            <Text className="text-white font-bold text-lg">{t('marketplace.selectRegion')}</Text>
                             <TouchableOpacity onPress={() => setIsRegionModalVisible(false)}>
                                 <X size={20} color="#fff" />
                             </TouchableOpacity>

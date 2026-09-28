@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../../common/Header';
 import { fetchLiveCropPrices } from '../../service/api';
 import MapPickerModal from '../../../common/MapPickerModal';
+import { useTranslation } from 'react-i18next';
 
 // ── Reverse geocode via Nominatim ────────────────────────────────────────────
 const reverseGeocode = async (lat, lng) => {
@@ -23,10 +24,7 @@ const reverseGeocode = async (lat, lng) => {
         );
         const data = await res.json();
         const addr = data?.address || {};
-        // Prioritize state_district as it usually maps to the 'District' used in crop prices
         let result = addr.state_district || addr.county || addr.city || addr.town || addr.village || '';
-        
-        // Clean up common suffixes that might prevent a match (e.g., "Nagpur District" -> "Nagpur")
         return result.replace(/\s+(District|Taluka|Tehsil|Subdivision)$/i, '').trim();
     } catch {
         return '';
@@ -34,7 +32,7 @@ const reverseGeocode = async (lat, lng) => {
 };
 
 // ── Price Card ───────────────────────────────────────────────────────────────
-const PriceCard = ({ item }) => {
+const PriceCard = ({ item, t }) => {
     const date = item.arrivalDate
         ? new Date(item.arrivalDate).toLocaleDateString('en-IN', {
               day: '2-digit', month: 'short', year: 'numeric',
@@ -59,7 +57,7 @@ const PriceCard = ({ item }) => {
 
             <View style={styles.priceRow}>
                 <View style={styles.priceBlock}>
-                    <Text style={styles.priceLabel}>Min Price</Text>
+                    <Text style={styles.priceLabel}>{t('cropPrices.minPrice')}</Text>
                     <Text style={styles.priceAmt}>₹{item.minPrice}</Text>
                     <Text style={styles.priceUnit}>/qtl</Text>
                 </View>
@@ -67,7 +65,7 @@ const PriceCard = ({ item }) => {
                 <View style={styles.priceVDivider} />
 
                 <View style={styles.priceBlock}>
-                    <Text style={styles.priceLabel}>Max Price</Text>
+                    <Text style={styles.priceLabel}>{t('cropPrices.maxPrice')}</Text>
                     <Text style={styles.priceAmt}>₹{item.maxPrice}</Text>
                     <Text style={styles.priceUnit}>/qtl</Text>
                 </View>
@@ -76,7 +74,7 @@ const PriceCard = ({ item }) => {
 
                 <View style={[styles.priceBlock, styles.highlightBlock]}>
                     <Text style={[styles.priceLabel, { color: 'rgba(255,255,255,0.65)' }]}>
-                        Modal Price
+                        {t('cropPrices.modalPrice')}
                     </Text>
                     <Text style={[styles.priceAmt, { color: '#fff', fontSize: 18 }]}>
                         ₹{item.modalPrice}
@@ -97,17 +95,18 @@ const ListHeader = ({
     onSearch, 
     setMapVisible, 
     geocoding, 
-    lastUpdated 
+    lastUpdated,
+    t
 }) => (
     <>
         <View style={styles.formBox}>
-            <Text style={styles.fieldLabel}>District / Region</Text>
+            <Text style={styles.fieldLabel}>{t('cropPrices.districtRegion')}</Text>
             <View style={styles.inputRow}>
                 <TextInput
                     style={[styles.input, { flex: 1 }]}
-                    placeholder="Enter district or region"
+                    placeholder={t('cropPrices.enterDistrict')}
                     placeholderTextColor="#aaa"
-                    value={geocoding ? 'Detecting location…' : searchDistrict}
+                    value={geocoding ? t('cropPrices.detectingLocation') : searchDistrict}
                     onChangeText={setSearchDistrict}
                     editable={!geocoding}
                 />
@@ -122,12 +121,12 @@ const ListHeader = ({
                     }
                 </TouchableOpacity>
             </View>
-            <Text style={styles.fieldHint}>Type your district or pick on map</Text>
+            <Text style={styles.fieldHint}>{t('cropPrices.districtHint')}</Text>
 
-            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>Crop / Seed Type</Text>
+            <Text style={[styles.fieldLabel, { marginTop: 16 }]}>{t('cropPrices.cropSeedType')}</Text>
             <TextInput
                 style={styles.input}
-                placeholder="e.g. Wheat, Soybean, Cotton"
+                placeholder={t('cropPrices.cropPlaceholder')}
                 placeholderTextColor="#aaa"
                 value={searchCrop}
                 onChangeText={setSearchCrop}
@@ -138,15 +137,15 @@ const ListHeader = ({
                 onPress={onSearch}
                 activeOpacity={0.85}
             >
-                <Text style={styles.searchBtnText}>🔍  Search Prices</Text>
+                <Text style={styles.searchBtnText}>{t('cropPrices.searchPrices')}</Text>
             </TouchableOpacity>
         </View>
 
         <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>Market Prices</Text>
+            <Text style={styles.sectionTitle}>{t('cropPrices.marketPrices')}</Text>
             {lastUpdated && (
                 <Text style={styles.sectionSub}>
-                    Updated{' '}
+                    {t('cropPrices.updated')}{' '}
                     {lastUpdated.toLocaleTimeString('en-IN', {
                         day: '2-digit', month: 'short',
                         hour: '2-digit', minute: '2-digit',
@@ -159,6 +158,7 @@ const ListHeader = ({
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 export default function CropPriceScreen() {
+    const { t } = useTranslation();
     const [prices, setPrices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchDistrict, setSearchDistrict] = useState('Nagpur');
@@ -179,7 +179,7 @@ export default function CropPriceScreen() {
                 setPrices([]);
             } else {
                 const errMsg = error?.response?.data?.message || error.message || 'Unknown error';
-                Alert.alert('Search Error', `Could not fetch prices: ${errMsg}`);
+                Alert.alert(t('cropPrices.searchError'), `${errMsg}`);
             }
         } finally {
             setLoading(false);
@@ -198,7 +198,7 @@ export default function CropPriceScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: PRIMARY_GREEN }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                <Header title="Live Crop Prices" />
+                <Header title={t('cropPrices.title')} />
 
                 <View style={styles.body}>
                     {loading ? (
@@ -212,17 +212,18 @@ export default function CropPriceScreen() {
                                 setMapVisible={setMapVisible}
                                 geocoding={geocoding}
                                 lastUpdated={lastUpdated}
+                                t={t}
                             />
                             <View style={styles.loaderWrap}>
                                 <ActivityIndicator size="large" color={PRIMARY_GREEN} />
-                                <Text style={styles.loaderText}>Fetching prices…</Text>
+                                <Text style={styles.loaderText}>{t('cropPrices.fetching')}</Text>
                             </View>
                         </>
                     ) : (
                         <FlatList
                             data={prices}
                             keyExtractor={(item) => item._id?.toString() ?? String(Math.random())}
-                            renderItem={({ item }) => <PriceCard item={item} />}
+                            renderItem={({ item }) => <PriceCard item={item} t={t} />}
                             ListHeaderComponent={
                                 <ListHeader 
                                     searchDistrict={searchDistrict}
@@ -233,13 +234,14 @@ export default function CropPriceScreen() {
                                     setMapVisible={setMapVisible}
                                     geocoding={geocoding}
                                     lastUpdated={lastUpdated}
+                                    t={t}
                                 />
                             }
                             ListEmptyComponent={
                                 <View style={styles.emptyWrap}>
-                                    <Text style={styles.emptyTitle}>No specific results</Text>
+                                    <Text style={styles.emptyTitle}>{t('cropPrices.noResults')}</Text>
                                     <Text style={styles.emptySubTitle}>
-                                        Try searching for a different district or crop.
+                                        {t('cropPrices.noResultsDesc')}
                                     </Text>
                                 </View>
                             }
@@ -247,7 +249,7 @@ export default function CropPriceScreen() {
                                 prices.length > 0 ? (
                                     <View style={styles.footerNote}>
                                         <Text style={styles.footerNoteText}>
-                                            ℹ️  Prices are indicative. Fallback results may show nearby regions.
+                                            {t('cropPrices.footerNote')}
                                         </Text>
                                     </View>
                                 ) : null
@@ -276,217 +278,64 @@ const BLACK = '#111111';
 const WHITE = '#ffffff';
 
 const styles = StyleSheet.create({
-    body: {
-        flex: 1,
-        backgroundColor: '#f4f4f4',
-    },
+    body: { flex: 1, backgroundColor: '#f4f4f4' },
     formBox: {
-        backgroundColor: WHITE,
-        margin: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#d1d5db',
-        padding: 16,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        backgroundColor: WHITE, margin: 14, borderRadius: 12,
+        borderWidth: 1, borderColor: '#d1d5db', padding: 16,
+        elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1, shadowRadius: 4,
     },
     fieldLabel: {
-        fontSize: 11,
-        fontWeight: '800',
-        color: PRIMARY_GREEN,
-        letterSpacing: 0.6,
-        textTransform: 'uppercase',
-        marginBottom: 7,
+        fontSize: 11, fontWeight: '800', color: PRIMARY_GREEN,
+        letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 7,
     },
-    fieldHint: {
-        fontSize: 11,
-        color: '#94a3b8',
-        marginTop: 5,
-    },
-    inputRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
+    fieldHint: { fontSize: 11, color: '#94a3b8', marginTop: 5 },
+    inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     input: {
-        borderWidth: 1.5,
-        borderColor: '#f1f5f9',
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        fontSize: 14,
-        color: BLACK,
-        backgroundColor: '#f8fafc',
+        borderWidth: 1.5, borderColor: '#f1f5f9', borderRadius: 8,
+        paddingHorizontal: 12, paddingVertical: 12, fontSize: 14,
+        color: BLACK, backgroundColor: '#f8fafc',
     },
     mapBtn: {
-        width: 50,
-        height: 50,
-        borderWidth: 1.5,
-        borderColor: PRIMARY_GREEN,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: WHITE,
+        width: 50, height: 50, borderWidth: 1.5, borderColor: PRIMARY_GREEN,
+        borderRadius: 8, justifyContent: 'center', alignItems: 'center', backgroundColor: WHITE,
     },
-    mapBtnIcon: {
-        fontSize: 22,
-    },
-    searchBtn: {
-        marginTop: 18,
-        backgroundColor: PRIMARY_GREEN,
-        borderRadius: 8,
-        paddingVertical: 14,
-        alignItems: 'center',
-    },
-    searchBtnText: {
-        color: WHITE,
-        fontSize: 15,
-        fontWeight: '800',
-        letterSpacing: 0.5,
-    },
+    mapBtnIcon: { fontSize: 22 },
+    searchBtn: { marginTop: 18, backgroundColor: PRIMARY_GREEN, borderRadius: 8, paddingVertical: 14, alignItems: 'center' },
+    searchBtnText: { color: WHITE, fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
     sectionRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 14,
-        marginBottom: 10,
-        marginTop: 2,
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        paddingHorizontal: 14, marginBottom: 10, marginTop: 2,
     },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '900',
-        color: BLACK,
-    },
-    sectionSub: {
-        fontSize: 11,
-        color: '#64748b',
-        fontWeight: '600',
-    },
+    sectionTitle: { fontSize: 16, fontWeight: '900', color: BLACK },
+    sectionSub: { fontSize: 11, color: '#64748b', fontWeight: '600' },
     card: {
-        backgroundColor: WHITE,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderRadius: 12,
-        marginHorizontal: 14,
-        marginBottom: 12,
-        overflow: 'hidden',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
+        backgroundColor: WHITE, borderWidth: 1, borderColor: '#e2e8f0',
+        borderRadius: 12, marginHorizontal: 14, marginBottom: 12, overflow: 'hidden',
+        elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05, shadowRadius: 2,
     },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        padding: 14,
-        paddingBottom: 12,
-    },
-    cardCrop: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: BLACK,
-    },
-    cardLocation: {
-        fontSize: 12,
-        color: '#64748b',
-        marginTop: 3,
-    },
-    dateBadge: {
-        backgroundColor: '#f1f5f9',
-        borderRadius: 6,
-        paddingHorizontal: 9,
-        paddingVertical: 5,
-    },
-    dateBadgeText: {
-        color: '#475569',
-        fontSize: 10,
-        fontWeight: '700',
-    },
-    cardDivider: {
-        height: 1,
-        backgroundColor: '#f1f5f9',
-    },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'stretch',
-    },
-    priceBlock: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 4,
-    },
-    highlightBlock: {
-        backgroundColor: PRIMARY_GREEN,
-    },
-    priceLabel: {
-        fontSize: 9,
-        fontWeight: '800',
-        color: '#94a3b8',
-        letterSpacing: 0.5,
-        textTransform: 'uppercase',
-        marginBottom: 4,
-    },
-    priceAmt: {
-        fontSize: 16,
-        fontWeight: '900',
-        color: BLACK,
-    },
-    priceUnit: {
-        fontSize: 10,
-        color: '#94a3b8',
-        fontWeight: '600',
-        marginTop: 1,
-    },
-    priceVDivider: {
-        width: 1,
-        backgroundColor: '#f1f5f9',
-        alignSelf: 'stretch',
-    },
-    loaderWrap: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loaderText: {
-        marginTop: 10,
-        color: '#64748b',
-        fontSize: 13,
-        fontWeight: '600',
-    },
-    emptyWrap: {
-        alignItems: 'center',
-        paddingTop: 48,
-        paddingHorizontal: 32,
-    },
-    emptyTitle: {
-        fontSize: 16,
-        fontWeight: '800',
-        color: BLACK,
-        marginBottom: 6,
-    },
-    emptySubTitle: {
-        fontSize: 13,
-        color: '#64748b',
-        textAlign: 'center',
-    },
+    cardHeader: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, paddingBottom: 12 },
+    cardCrop: { fontSize: 15, fontWeight: '800', color: BLACK },
+    cardLocation: { fontSize: 12, color: '#64748b', marginTop: 3 },
+    dateBadge: { backgroundColor: '#f1f5f9', borderRadius: 6, paddingHorizontal: 9, paddingVertical: 5 },
+    dateBadgeText: { color: '#475569', fontSize: 10, fontWeight: '700' },
+    cardDivider: { height: 1, backgroundColor: '#f1f5f9' },
+    priceRow: { flexDirection: 'row', alignItems: 'stretch' },
+    priceBlock: { flex: 1, alignItems: 'center', paddingVertical: 14, paddingHorizontal: 4 },
+    highlightBlock: { backgroundColor: PRIMARY_GREEN },
+    priceLabel: { fontSize: 9, fontWeight: '800', color: '#94a3b8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 },
+    priceAmt: { fontSize: 16, fontWeight: '900', color: BLACK },
+    priceUnit: { fontSize: 10, color: '#94a3b8', fontWeight: '600', marginTop: 1 },
+    priceVDivider: { width: 1, backgroundColor: '#f1f5f9', alignSelf: 'stretch' },
+    loaderWrap: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    loaderText: { marginTop: 10, color: '#64748b', fontSize: 13, fontWeight: '600' },
+    emptyWrap: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 32 },
+    emptyTitle: { fontSize: 16, fontWeight: '800', color: BLACK, marginBottom: 6 },
+    emptySubTitle: { fontSize: 13, color: '#64748b', textAlign: 'center' },
     footerNote: {
-        marginHorizontal: 14,
-        marginTop: 6,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#e2e8f0',
-        borderRadius: 8,
-        backgroundColor: '#f8fafc',
+        marginHorizontal: 14, marginTop: 6, padding: 12,
+        borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, backgroundColor: '#f8fafc',
     },
-    footerNoteText: {
-        fontSize: 11,
-        color: '#64748b',
-        textAlign: 'center',
-        lineHeight: 17,
-    },
+    footerNoteText: { fontSize: 11, color: '#64748b', textAlign: 'center', lineHeight: 17 },
 });

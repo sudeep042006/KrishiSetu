@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { View, Text, StyleSheet } from 'react-native';
 import { ThemeContext } from '../../context/ThemeContext';
@@ -26,6 +27,7 @@ const Drawer = createDrawerNavigator();
 
 function CustomBuyerDrawerContent(props) {
     const { isDarkMode } = React.useContext(ThemeContext);
+    const { t } = useTranslation();
     const theme = {
         primary: '#1e3a8a', // Deep Professional Blue for Offtakers
         bg: isDarkMode ? '#0f172a' : '#ffffff',
@@ -48,13 +50,13 @@ function CustomBuyerDrawerContent(props) {
             {/* Minimalist Blue Header */}
             <View style={[styles.header, { backgroundColor: theme.primary }]}>
                 <Text style={styles.headerTitle}>KrishiSetu</Text>
-                <Text style={styles.headerSubtitle}>Procurement Portal</Text>
+                <Text style={styles.headerSubtitle}>{t('nav.procurementPortal')}</Text>
             </View>
 
             <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 10 }}>
                 <View style={styles.drawerItemsSection}>
                     <DrawerItem
-                        label="Marketplace"
+                        label={t('nav.marketplace')}
                         onPress={() => navigation.navigate('BuyerMainTabs')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -63,7 +65,7 @@ function CustomBuyerDrawerContent(props) {
                         focused={isActive('BuyerMainTabs')}
                     />
                     <DrawerItem
-                        label="Explore Crops"
+                        label={t('nav.exploreCrops')}
                         onPress={() => navigation.navigate('CropsPage')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -72,7 +74,7 @@ function CustomBuyerDrawerContent(props) {
                         focused={isActive('CropsPage')}
                     />
                     <DrawerItem
-                        label="Market Prices"
+                        label={t('nav.marketPrices')}
                         onPress={() => navigation.navigate('CropPriceScreen')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -81,7 +83,7 @@ function CustomBuyerDrawerContent(props) {
                         focused={isActive('CropPriceScreen')}
                     />
                     <DrawerItem
-                        label="Post Buy Request"
+                        label={t('nav.postBuyRequest')}
                         onPress={() => navigation.navigate('PostRequest')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -90,7 +92,7 @@ function CustomBuyerDrawerContent(props) {
                         focused={isActive('PostRequest')}
                     />
                     <DrawerItem
-                        label="Active Orders"
+                        label={t('nav.activeOrders')}
                         onPress={() => navigation.navigate('OfftakerOrders')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -99,7 +101,7 @@ function CustomBuyerDrawerContent(props) {
                         focused={isActive('OfftakerOrders')}
                     />
                     <DrawerItem
-                        label="Wallet & Billing"
+                        label={t('nav.walletBilling')}
                         onPress={() => navigation.navigate('Wallet')}
                         labelStyle={styles.drawerLabel}
                         activeTintColor={theme.primary}
@@ -113,7 +115,7 @@ function CustomBuyerDrawerContent(props) {
             {/* Bottom Section */}
             <View style={[styles.bottomSection, { borderTopColor: theme.border }]}>
                 <DrawerItem
-                    label="User Profile"
+                    label={t('nav.userProfile')}
                     onPress={() => navigation.navigate('Profile')}
                     labelStyle={styles.drawerLabel}
                     activeTintColor={theme.primary}
@@ -122,7 +124,7 @@ function CustomBuyerDrawerContent(props) {
                     focused={isActive('Profile')}
                 />
                 <DrawerItem
-                    label="Settings"
+                    label={t('nav.settings')}
                     onPress={() => navigation.navigate('Settings')}
                     labelStyle={styles.drawerLabel}
                     activeTintColor={theme.primary}

@@ -3,8 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image, Sta
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Phone, Briefcase, Calendar, Star, ShieldCheck, Mail, Globe } from 'lucide-react-native';
 import { getUserOrProfile } from '../../../../services/chatApi';
+import { useTranslation } from 'react-i18next';
 
 export default function OfftakerProfileWindow({ navigation, route }) {
+    const { t } = useTranslation();
     const { offtaker: initialOfftaker, userId } = route.params || {};
     const [offtaker, setOfftaker] = useState(initialOfftaker || null);
     const [loading, setLoading] = useState(!initialOfftaker);
@@ -40,12 +42,12 @@ export default function OfftakerProfileWindow({ navigation, route }) {
     if (!offtaker) {
         return (
             <View className="flex-1 bg-[#123524] justify-center items-center p-6">
-                <Text className="text-white text-lg text-center mb-4">Profile not found or unavailable.</Text>
+                <Text className="text-white text-lg text-center mb-4">{t("profileWindow.profileNotFound")}</Text>
                 <TouchableOpacity 
                     onPress={() => navigation.goBack()}
                     className="bg-white/10 px-8 py-3 rounded-full border border-white/20"
                 >
-                    <Text className="text-white font-bold">Go Back</Text>
+                    <Text className="text-white font-bold">{t("profileWindow.goBack")}</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -66,7 +68,7 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                     >
                         <ChevronLeft size={24} color="#fff" />
                     </TouchableOpacity>
-                    <Text className="text-white text-xl font-bold ml-4">Offtaker Profile</Text>
+                    <Text className="text-white text-xl font-bold ml-4">{t("profileWindow.offtakerProfile")}</Text>
                 </View>
 
                 <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -100,7 +102,7 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                     <View className="bg-white rounded-t-[40px] flex-1 px-6 pt-8 pb-20">
                         <View className="flex-row justify-between mb-8">
                             <View className="items-center flex-1">
-                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">Rating</Text>
+                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">{t("marketplace.rating")}</Text>
                                 <View className="flex-row items-center">
                                     <Star size={16} color="#fbbf24" fill="#fbbf24" />
                                     <Text className="text-gray-900 font-bold text-lg ml-1">
@@ -110,25 +112,25 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                             </View>
                             <View className="w-[1px] h-10 bg-gray-100" />
                             <View className="items-center flex-1">
-                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">Experience</Text>
+                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">{t("profileWindow.experience")}</Text>
                                 <Text className="text-gray-900 font-bold text-lg">
                                     {offtaker.yearsInBusiness || "5+"} Yrs
                                 </Text>
                             </View>
                             <View className="w-[1px] h-10 bg-gray-100" />
                             <View className="items-center flex-1">
-                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">Status</Text>
-                                <Text className="text-emerald-600 font-bold text-lg">Active</Text>
+                                <Text className="text-gray-400 text-xs font-bold uppercase mb-1">{t("profileWindow.status")}</Text>
+                                <Text className="text-emerald-600 font-bold text-lg">{t("status.active")}</Text>
                             </View>
                         </View>
 
-                        <Text className="text-gray-900 text-lg font-bold mb-4">About the Company</Text>
+                        <Text className="text-gray-900 text-lg font-bold mb-4">{t("profileWindow.aboutCompany")}</Text>
                         <Text className="text-gray-500 leading-6 mb-8">
                             {offtaker.description || `${offtaker.companyName || userDetails.name} is a leading agri-procurement firm specializing in bulk commodity trading and direct farmer sourcing across India.`}
                         </Text>
 
                         {/* Business Details */}
-                        <Text className="text-gray-900 text-lg font-bold mb-4">Business Information</Text>
+                        <Text className="text-gray-900 text-lg font-bold mb-4">{t("profileWindow.businessInfo")}</Text>
                         <View className="space-y-4">
                             <View className="flex-row items-center bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-3">
                                 <View className="w-10 h-10 bg-emerald-100 rounded-xl items-center justify-center mr-4">
@@ -157,7 +159,7 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                                     <Briefcase size={20} color="#7c3aed" />
                                 </View>
                                 <View>
-                                    <Text className="text-gray-400 text-[10px] font-bold uppercase">Procurement Capacity</Text>
+                                    <Text className="text-gray-400 text-[10px] font-bold uppercase">{t("profileWindow.procurementCapacity")}</Text>
                                     <Text className="text-gray-900 font-semibold">
                                         {offtaker.procurementCapacity ? `${offtaker.procurementCapacity} ${offtaker.procurementUnit || 'Tons'}/month` : "100+ Tons Monthly"}
                                     </Text>
@@ -165,7 +167,7 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                             </View>
                         </View>
 
-                        <Text className="text-gray-900 text-lg font-bold mt-8 mb-4">Interested Crops</Text>
+                        <Text className="text-gray-900 text-lg font-bold mt-8 mb-4">{t("profileWindow.interestedCrops")}</Text>
                         <View className="flex-row flex-wrap">
                             {(offtaker.preferredCrops || ['Wheat', 'Rice', 'Cotton', 'Soybean']).map((crop, index) => (
                                 <View key={index} className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full mr-2 mb-2">
@@ -175,7 +177,7 @@ export default function OfftakerProfileWindow({ navigation, route }) {
                         </View>
                         
                         <TouchableOpacity className="w-full bg-[#123524] py-4 rounded-2xl items-center justify-center mt-10 shadow-lg shadow-emerald-900/40">
-                            <Text className="text-white font-bold text-lg">Send Business Proposal</Text>
+                            <Text className="text-white font-bold text-lg">{t("profileWindow.sendProposal")}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

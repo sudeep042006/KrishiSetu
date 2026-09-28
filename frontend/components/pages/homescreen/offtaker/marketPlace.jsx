@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Mic, Filter, SlidersHorizontal, Users, Zap, Locate, Layers, Star, CheckCircle2, Sprout, ChevronDown, Maximize2, X, Phone, MessageSquare, ShieldCheck, TrendingUp, MapPin } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 import { offtakerService } from '../../service/api';
 import { createOrGetChat } from '../../../../services/chatApi';
 import { ThemeContext } from '../../../../context/ThemeContext';
@@ -247,10 +248,10 @@ const BuyerDetailModal = memo(({ item, onClose, onChat }) => {
                             </View>
                         </View>
 
-                        <Text className="text-lg font-bold text-slate-900 mb-2">About</Text>
+                        <Text className="text-lg font-bold text-slate-900 mb-2">{t("offtaker.marketplace.about")}</Text>
                         <Text className="text-slate-600 leading-6 mb-6">{item.description}</Text>
 
-                        <Text className="text-lg font-bold text-slate-900 mb-2">Primary Commodities</Text>
+                        <Text className="text-lg font-bold text-slate-900 mb-2">{t("offtaker.marketplace.primaryCommodities")}</Text>
                         <View className="flex-row flex-wrap mb-8" style={{ gap: 8 }}>
                             {item.crops.map((c, i) => (
                                 <View key={i} className="bg-blue-50 px-4 py-2 rounded-xl flex-row items-center" style={{ gap: 6 }}>
@@ -274,7 +275,7 @@ const BuyerDetailModal = memo(({ item, onClose, onChat }) => {
                             style={{ gap: 8 }}
                         >
                             <Phone size={20} color="#fff" />
-                            <Text className="text-white font-bold text-lg">Contact Now</Text>
+                            <Text className="text-white font-bold text-lg">{t("offtaker.marketplace.contactNow")}</Text>
                         </TouchableOpacity>
                     </View>
                 </Pressable>
@@ -284,6 +285,7 @@ const BuyerDetailModal = memo(({ item, onClose, onChat }) => {
 });
 
 export default function OfftakerMarketplace({ navigation }) {
+    const { t } = useTranslation();
     const { isDarkMode } = useContext(ThemeContext);
     const [realBuyers, setRealBuyers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -343,7 +345,7 @@ export default function OfftakerMarketplace({ navigation }) {
     const handleChat = async (buyer) => {
         try {
             if (buyer.id.startsWith('d')) {
-                Alert.alert("Demo Business", "This is a dummy business for demonstration. Real messaging is available for registered entities.");
+                Alert.alert(t("offtaker.marketplace.demoBusiness"), t("offtaker.marketplace.demoBusinessMsg"));
                 return;
             }
 

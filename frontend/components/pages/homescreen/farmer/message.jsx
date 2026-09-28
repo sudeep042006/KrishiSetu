@@ -14,8 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/Header';
 import { getUserChats, deleteChat } from '../../../../services/chatApi';
 import { Trash2, Search, MessageSquare } from 'lucide-react-native';
-
-const FILTERS = ['All', 'Farmers', 'Buyers', 'Orders'];
+import { useTranslation } from 'react-i18next';
 
 // Avatar placeholder
 function AvatarPlaceholder({ name, size = 48 }) {
@@ -35,7 +34,7 @@ function AvatarPlaceholder({ name, size = 48 }) {
     );
 }
 
-function ChatItem({ item, onPress, onLongPress, currentUserId }) {
+function ChatItem({ item, onPress, onLongPress, currentUserId, t }) {
     // Determine the OTHER participant
     const otherUser = item.participants.find(p => p._id !== currentUserId) || item.participants[0];
     
@@ -58,14 +57,14 @@ function ChatItem({ item, onPress, onLongPress, currentUserId }) {
             {/* Content */}
             <View className="flex-1">
                 <View className="flex-row justify-between items-center mb-0.5">
-                    <Text className="text-base font-semibold text-gray-900">{otherUser?.name || "Unknown"}</Text>
+                    <Text className="text-base font-semibold text-gray-900">{otherUser?.name || t('messages.unknown')}</Text>
                     <Text className="text-xs text-gray-400">
                         {new Date(item.updatedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                     </Text>
                 </View>
                 <View className="flex-row justify-between items-center">
                     <Text className="text-sm text-gray-500 flex-1 mr-2" numberOfLines={1}>
-                        {item.lastMessage || "Started a conversation"}
+                        {item.lastMessage || t('messages.startedConversation')}
                     </Text>
                 </View>
             </View>
@@ -74,7 +73,14 @@ function ChatItem({ item, onPress, onLongPress, currentUserId }) {
 }
 
 export default function MessageScreen({ navigation }) {
-    const [activeFilter, setActiveFilter] = useState('All');
+    const { t } = useTranslation();
+    const FILTERS = [
+        t('messages.filterAll'),
+        t('messages.filterFarmers'),
+        t('messages.filterBuyers'),
+        t('messages.filterOrders'),
+    ];
+    const [activeFilter, setActiveFilter] = useState(FILTERS[0]);
     const [searchText, setSearchText] = useState('');
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -112,12 +118,12 @@ export default function MessageScreen({ navigation }) {
 
     const handleDeleteChat = (chat, otherUser) => {
         Alert.alert(
-            "Delete Conversation",
-            `Are you sure you want to delete your conversation with ${otherUser?.name || "this user"}? This will also delete all messages.`,
+            t('messages.deleteConversation'),
+            t('messages.deleteConfirm', { name: otherUser?.name || t('messages.thisUser') }),
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t('common.cancel'), style: "cancel" },
                 { 
-                    text: "Delete", 
+                    text: t('messages.delete'), 
                     style: "destructive",
                     onPress: async () => {
                         try {
@@ -126,7 +132,7 @@ export default function MessageScreen({ navigation }) {
                                 setChats(prev => prev.filter(c => c._id !== chat._id));
                             }
                         } catch (error) {
-                            Alert.alert("Error", "Could not delete conversation.");
+                            Alert.alert(t('common.error'), t('messages.deleteError'));
                         }
                     }
                 }
@@ -140,9 +146,9 @@ export default function MessageScreen({ navigation }) {
                               chat.lastMessage?.toLowerCase().includes(searchText.toLowerCase());
 
         const matchesFilter =
-            activeFilter === 'All' ||
-            (activeFilter === 'Farmers' && otherUser?.role === 'farmer') ||
-            (activeFilter === 'Buyers' && (otherUser?.role === 'buyer' || otherUser?.role === 'offtaker'));
+            activeFilter === FILTERS[0] ||
+            (activeFilter === FILTERS[1] && otherUser?.role === 'farmer') ||
+            (activeFilter === FILTERS[2] && (otherUser?.role === 'buyer' || otherUser?.role === 'offtaker'));
 
         return matchesSearch && matchesFilter;
     });
@@ -150,7 +156,7 @@ export default function MessageScreen({ navigation }) {
     return (
         <View className="flex-1 bg-[#123524]">
             <SafeAreaView edges={['top']} className="flex-1">
-                <Header title="Message" />
+                <Header title={t('messages.title')} />
 
                 <View className="flex-1 bg-[#f6f8f5]">
                     {/* Search Bar */}
@@ -159,7 +165,7 @@ export default function MessageScreen({ navigation }) {
                             <Search size={18} color="#9CA3AF" className="mr-2" />
                             <TextInput
                                 className="flex-1 text-sm text-gray-700 ml-2"
-                                placeholder="Search chats..."
+                                placeholder={t('messages.searchPlaceholder')}
                                 placeholderTextColor="#9CA3AF"
                                 value={searchText}
                                 onChangeText={setSearchText}
@@ -207,6 +213,7 @@ export default function MessageScreen({ navigation }) {
                                     <ChatItem
                                         item={item}
                                         currentUserId={currentUserId}
+                                        t={t}
                                         onPress={(chat, otherUser) =>
                                             navigation.navigate('MessageWindow', { chatId: chat._id, chatTitle: otherUser.name, otherUserId: otherUser._id })
                                         }
@@ -216,7 +223,7 @@ export default function MessageScreen({ navigation }) {
                                 ListEmptyComponent={
                                     <View className="flex-1 justify-center items-center py-20">
                                         <MessageSquare size={48} color="#9CA3AF" className="mb-3" />
-                                        <Text className="text-gray-500 text-base mt-2">No chats found</Text>
+                                        <Text className="text-gray-500 text-base mt-2">{t('messages.noChats')}</Text>
                                     </View>
                                 }
                             />
@@ -226,4 +233,4 @@ export default function MessageScreen({ navigation }) {
             </SafeAreaView>
         </View>
     );
-} 
+}

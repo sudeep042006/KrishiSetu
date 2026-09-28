@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, SafeAreaView, Platform } from 'react-native';
 import { WifiOff, AlertTriangle } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 const NetworkStatus = () => {
+    const { t } = useTranslation();
     const [isOffline, setIsOffline] = useState(false);
     const [animation] = useState(new Animated.Value(-100)); // Start off-screen
 
@@ -58,9 +60,9 @@ const NetworkStatus = () => {
             <SafeAreaView>
                 <View style={styles.content}>
                     <WifiOff size={18} color="#fff" />
-                    <Text style={styles.text}>No Internet Connection</Text>
+                    <Text style={styles.text}>{t('common.noInternet')}</Text>
                     <View style={styles.badge}>
-                        <Text style={styles.badgeText}>Offline Mode</Text>
+                        <Text style={styles.badgeText}>{t('common.offlineMode')}</Text>
                     </View>
                 </View>
             </SafeAreaView>

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/Header';
+import { useTranslation } from 'react-i18next';
 import { offtakerService } from '../../service/api';
 import { createOrGetChat } from '../../../../services/chatApi';
 
@@ -24,6 +25,7 @@ function AvatarPlaceholder({ name = "Unknown", size = 48 }) {
 }
 
 export default function OfftakerProfilesScreen({ navigation }) {
+    const { t } = useTranslation();
     const [offtakers, setOfftakers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState(null);

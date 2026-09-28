@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { X, Map as MapIcon } from 'lucide-react-native';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 import { farmerService } from '../../service/api';
 import { Map, Camera, Marker } from '@maplibre/maplibre-react-native';
 import { ThemeContext } from '../../../../context/ThemeContext';
@@ -90,16 +91,16 @@ const FarmerCard = React.memo(({ item, onPress }) => (
             {/* Stats + Button */}
             <View className="flex-row items-center justify-between">
                 <View className="flex-row gap-x-4">
-                    <StatBlock icon="🌱" value={`${item.farmSize} Ac`} label="Farm Size" />
+                    <StatBlock icon="🌱" value={`${item.farmSize} Ac`} label={t("farmersDirectory.farmSize")} />
                     <View className="w-px bg-gray-200 mx-1" />
-                    <StatBlock icon="🧺" value={`${item.monthlySupply} kg`} label="Monthly" />
+                    <StatBlock icon="🧺" value={`${item.monthlySupply} kg`} label={t("farmersDirectory.monthly")} />
                 </View>
 
                 <TouchableOpacity
                     onPress={() => onPress?.(item)}
                     className="bg-[#1e4a3b] rounded-xl px-4 py-2 active:opacity-80"
                 >
-                    <Text className="text-white text-xs font-semibold">View Profile</Text>
+                    <Text className="text-white text-xs font-semibold">{t("farmersDirectory.viewProfile")}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -113,7 +114,7 @@ const SearchBar = ({ value, onChangeText, onFilterPress }) => (
             <Text className="text-gray-400 mr-2 text-base">🔍</Text>
             <TextInput
                 className="flex-1 text-sm text-gray-700"
-                placeholder="Search by name, crop, or location"
+                placeholder={t("farmersDirectory.searchPlaceholder")}
                 placeholderTextColor="#9ca3af"
                 value={value}
                 onChangeText={onChangeText}
@@ -126,7 +127,7 @@ const SearchBar = ({ value, onChangeText, onFilterPress }) => (
             className="bg-white border border-gray-200 rounded-2xl h-11 px-4 flex-row items-center shadow-sm gap-x-1 active:opacity-70"
         >
             <Text className="text-emerald-700 text-sm">⚡</Text>
-            <Text className="text-emerald-700 text-sm font-semibold">Filter</Text>
+            <Text className="text-emerald-700 text-sm font-semibold">{t("common.filter")}</Text>
         </TouchableOpacity>
     </View>
 );
@@ -137,11 +138,11 @@ const ListHeader = ({ query, onChangeText, onFilterPress, total }) => (
         <SearchBar value={query} onChangeText={onChangeText} onFilterPress={onFilterPress} />
         <View className="flex-row items-center justify-between px-5 pb-2">
             <Text className="text-xs text-gray-400">
-                Showing <Text className="font-semibold text-gray-600">{total}</Text> farmers
+                {t("farmersDirectory.showingFarmers", { count: total })}
             </Text>
             <View className="flex-row items-center gap-x-1">
                 <View className="w-2 h-2 rounded-full bg-emerald-500" />
-                <Text className="text-xs text-gray-400">Verified available</Text>
+                <Text className="text-xs text-gray-400">{t("farmersDirectory.verifiedAvailable")}</Text>
             </View>
         </View>
     </View>
@@ -153,13 +154,13 @@ const ListFooter = ({ loading, hasMore }) => {
         return (
             <View className="py-6 items-center">
                 <ActivityIndicator size="small" color="#1e4a3b" />
-                <Text className="text-xs text-gray-400 mt-2">Loading more farmers…</Text>
+                <Text className="text-xs text-gray-400 mt-2">{t("farmersDirectory.loadingMore")}</Text>
             </View>
         );
     if (!hasMore)
         return (
             <View className="py-6 items-center">
-                <Text className="text-xs text-gray-400">— All farmers loaded —</Text>
+                <Text className="text-xs text-gray-400">{t("farmersDirectory.allLoaded")}</Text>
             </View>
         );
     return null;
@@ -169,9 +170,9 @@ const ListFooter = ({ loading, hasMore }) => {
 const EmptyState = ({ query }) => (
     <View className="flex-1 items-center justify-center py-24 px-8">
         <Text className="text-5xl mb-4">🌾</Text>
-        <Text className="text-lg font-bold text-[#1e4a3b] mb-1 text-center">No farmers found</Text>
+        <Text className="text-lg font-bold text-[#1e4a3b] mb-1 text-center">{t("farmersDirectory.noFarmers")}</Text>
         <Text className="text-sm text-gray-400 text-center">
-            {query ? `No results for "${query}". Try a different name or crop.` : 'No farmers available right now.'}
+            {query ? `No results for "${query}". Try a different name or crop.` : '{t("farmersDirectory.noFarmersSub")}'}
         </Text>
     </View>
 );
@@ -297,7 +298,7 @@ export default function FarmerProfiles() {
         <View style={{ flex: 1, backgroundColor: bg }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
                 <Header 
-                    title="Farmer Profiles" 
+                    title={t("farmersDirectory.title")} 
                     rightIcon={
                         <TouchableOpacity 
                             onPress={() => setIsMapVisible(true)}

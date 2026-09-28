@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 import { getUserChats, deleteChat } from '../../../../services/chatApi';
 import { Trash2, Search, MessageSquare, ChevronRight } from 'lucide-react-native';
 import { ThemeContext } from '../../../../context/ThemeContext';
@@ -110,6 +111,7 @@ function ChatItem({ item, onPress, onLongPress, currentUserId, isDark }) {
 }
 
 export default function MessageScreen({ navigation }) {
+    const { t } = useTranslation();
     const { isDarkMode } = useContext(ThemeContext);
     const [activeFilter, setActiveFilter] = useState('All');
     const [searchText, setSearchText] = useState('');

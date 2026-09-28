@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../../../../App';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { offtakerService } from '../../service/api';
@@ -38,6 +39,7 @@ import {
 import { ThemeContext } from '../../../../context/ThemeContext';
 
 export default function OfftakerProfileScreen() {
+    const { t } = useTranslation();
     const authContext = useContext(AuthContext);
     const { isDarkMode } = useContext(ThemeContext);
     const navigation = useNavigation();
@@ -113,9 +115,9 @@ export default function OfftakerProfileScreen() {
                 setProfileImage(uri);
                 try {
                     await offtakerService.uploadPhoto(uri);
-                    Alert.alert('Success', 'Profile photo updated');
+                    Alert.alert(t('common.success'), t('offtaker.profile.profilePhotoUpdated'));
                 } catch (error) {
-                    Alert.alert('Upload Failed', 'Could not upload photo at this time.');
+                    Alert.alert(t('common.error'), t('offtaker.profile.uploadFailed'));
                 }
             }
         });
@@ -123,7 +125,7 @@ export default function OfftakerProfileScreen() {
 
     const handleSaveProfile = async () => {
         if (!profileData.companyName || !profileData.companyPhone) {
-            Alert.alert('Incomplete Info', 'Please provide Company Name and Phone.');
+            Alert.alert(t('offtaker.profile.incompleteInfo'), t('offtaker.profile.incompleteInfoMsg'));
             return;
         }
 
@@ -131,12 +133,12 @@ export default function OfftakerProfileScreen() {
             setSaving(true);
             const response = await offtakerService.updateProfile(profileData);
             if (response.success) {
-                Alert.alert('Success', 'Business profile updated successfully!');
+                Alert.alert(t('common.success'), t('offtaker.profile.profileSavedSuccess'));
                 setModalVisible(false);
                 setProfileData(response.data);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to update business profile.');
+            Alert.alert(t('common.error'), t('offtaker.profile.profileSaveError'));
             console.error(error);
         } finally {
             setSaving(false);
@@ -175,7 +177,7 @@ export default function OfftakerProfileScreen() {
     return (
         <View style={{ flex: 1, backgroundColor: bg }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                <Header title="Business Profile" />
+                <Header title={t("offtaker.profile.title")} />
 
                 <ScrollView style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40 }} showsVerticalScrollIndicator={false}>
                     {/* Hero Section */}

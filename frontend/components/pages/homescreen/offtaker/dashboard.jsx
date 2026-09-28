@@ -14,6 +14,7 @@ import { TrendingUp, Package, Users, Activity, Target, Clock } from 'lucide-reac
 import Header from '../../../common/BHeader';
 import { ThemeContext } from '../../../../context/ThemeContext';
 import { farmerService, ProposalService } from '../../service/api';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 const CHART_HEIGHT = 120; // Fixed visual height in px for the tallest bar
@@ -21,6 +22,7 @@ const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function OfftakerDashboard() {
     const { isDarkMode } = useContext(ThemeContext);
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [farmerCount, setFarmerCount] = useState(0);
@@ -119,7 +121,7 @@ export default function OfftakerDashboard() {
                     </View>
                     <View style={[styles.badge, { backgroundColor: ss.bg }]}>
                         <Text style={[styles.badgeText, { color: ss.text }]}>
-                            {(item.status || 'pending').toUpperCase()}
+                            {t(`status.${(item.status || 'pending').toLowerCase()}`).toUpperCase()}
                         </Text>
                     </View>
                 </View>
@@ -143,7 +145,7 @@ export default function OfftakerDashboard() {
         <View style={{ paddingHorizontal: 20, paddingTop: 24 }}>
 
             {/* Title */}
-            <Text style={[styles.screenTitle, { color: title }]}>Procurement Center</Text>
+            <Text style={[styles.screenTitle, { color: title }]}>{t('offtaker.dashboard.title')}</Text>
 
             {/* Metric cards */}
             <View style={styles.metricsRow}>
@@ -152,11 +154,11 @@ export default function OfftakerDashboard() {
                     <View style={[styles.iconBox, { backgroundColor: '#eff6ff' }]}>
                         <Package color="#3b82f6" size={22} />
                     </View>
-                    <Text style={[styles.metricLabel, { color: sub }]}>Total Orders</Text>
+                    <Text style={[styles.metricLabel, { color: sub }]}>{t('offtaker.dashboard.totalOrders')}</Text>
                     <Text style={[styles.metricValue, { color: title }]}>{recentOrders.length}</Text>
                     <View style={styles.metricFooter}>
                         <TrendingUp size={11} color="#10b981" />
-                        <Text style={styles.metricFooterText}>Real‑time</Text>
+                        <Text style={styles.metricFooterText}>{t('offtaker.dashboard.realtime')}</Text>
                     </View>
                 </View>
 
@@ -165,11 +167,11 @@ export default function OfftakerDashboard() {
                     <View style={[styles.iconBox, { backgroundColor: '#eef2ff' }]}>
                         <Users color="#6366f1" size={22} />
                     </View>
-                    <Text style={[styles.metricLabel, { color: sub }]}>Farmers Connected</Text>
+                    <Text style={[styles.metricLabel, { color: sub }]}>{t('offtaker.dashboard.farmersConnected')}</Text>
                     <Text style={[styles.metricValue, { color: title }]}>{farmerCount}</Text>
                     <View style={styles.metricFooter}>
                         <Activity size={11} color="#6366f1" />
-                        <Text style={[styles.metricFooterText, { color: '#6366f1' }]}>Active</Text>
+                        <Text style={[styles.metricFooterText, { color: '#6366f1' }]}>{t('offtaker.dashboard.active')}</Text>
                     </View>
                 </View>
             </View>
@@ -178,12 +180,12 @@ export default function OfftakerDashboard() {
             <View style={[styles.chartCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
                 <View style={styles.chartHeader}>
                     <View>
-                        <Text style={[styles.chartTitle, { color: title }]}>Order Volume</Text>
-                        <Text style={[styles.chartSub, { color: sub }]}>LAST 7 DAYS · BY DAY OF WEEK</Text>
+                        <Text style={[styles.chartTitle, { color: title }]}>{t('offtaker.dashboard.orderVolume')}</Text>
+                        <Text style={[styles.chartSub, { color: sub }]}>{t('offtaker.dashboard.last7Days')}</Text>
                     </View>
                     <View style={styles.livePill}>
                         <View style={styles.liveDot} />
-                        <Text style={styles.liveText}>LIVE</Text>
+                        <Text style={styles.liveText}>{t('offtaker.dashboard.live')}</Text>
                     </View>
                 </View>
 
@@ -194,7 +196,6 @@ export default function OfftakerDashboard() {
                         const isPeak   = idx === peakDay && isActive;
                         return (
                             <View key={idx} style={styles.barCol}>
-                                {/* Value label on top of bar */}
                                 {/* The bar */}
                                 <View
                                     style={[
@@ -222,7 +223,7 @@ export default function OfftakerDashboard() {
                     <View style={styles.chartLegend}>
                         <View style={[styles.legendDot, { backgroundColor: '#2563eb' }]} />
                         <Text style={[styles.legendText, { color: title }]}>
-                            Peak: {DAY_LABELS[peakDay]}
+                            {t('offtaker.dashboard.peak')} {DAY_LABELS[peakDay]}
                         </Text>
                     </View>
                 )}
@@ -232,7 +233,7 @@ export default function OfftakerDashboard() {
             <View style={styles.healthCard}>
                 <View style={styles.cardRow}>
                     <Target size={18} color="#fff" />
-                    <Text style={styles.healthTitle}>Procurement Health</Text>
+                    <Text style={styles.healthTitle}>{t('offtaker.dashboard.procurementHealth')}</Text>
                 </View>
                 <Text style={styles.healthBody}>
                     Supply chain linked with {farmerCount} active farmer{farmerCount !== 1 ? 's' : ''}.{' '}
@@ -242,7 +243,7 @@ export default function OfftakerDashboard() {
 
             {/* Section title */}
             {recentOrders.length > 0 && (
-                <Text style={[styles.sectionTitle, { color: title }]}>Recent Orders</Text>
+                <Text style={[styles.sectionTitle, { color: title }]}>{t('offtaker.dashboard.recentOrders')}</Text>
             )}
         </View>
     );
@@ -253,7 +254,7 @@ export default function OfftakerDashboard() {
             <View style={[styles.center, { backgroundColor: bg }]}>
                 <ActivityIndicator size="large" color="#93c5fd" />
                 <Text style={{ color: '#93c5fd', marginTop: 12, fontWeight: '600' }}>
-                    Loading procurement data…
+                    {t('offtaker.dashboard.loading')}
                 </Text>
             </View>
         );
@@ -263,7 +264,7 @@ export default function OfftakerDashboard() {
     return (
         <View style={{ flex: 1, backgroundColor: bg }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                <Header title="Procurement Dashboard" />
+                <Header title={t('offtaker.dashboard.procurementDashboard')} />
                 <View style={[styles.body, { backgroundColor: bodyBg }]}>
                     <FlatList
                         data={recentOrders}
@@ -282,7 +283,7 @@ export default function OfftakerDashboard() {
                         ListEmptyComponent={
                             <View style={styles.empty}>
                                 <Package size={44} color={sub} />
-                                <Text style={[styles.emptyText, { color: sub }]}>No orders yet</Text>
+                                <Text style={[styles.emptyText, { color: sub }]}>{t('offtaker.dashboard.noOrders')}</Text>
                             </View>
                         }
                     />
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     chartArea: {
         flexDirection: 'row',
         alignItems: 'flex-end',
-        height: CHART_HEIGHT + 24, // bar area + day label space
+        height: CHART_HEIGHT + 24,
         justifyContent: 'space-between',
         paddingHorizontal: 4,
     },

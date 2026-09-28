@@ -6,9 +6,11 @@ import Header from '../../../common/BHeader';
 import { ThemeContext } from '../../../../context/ThemeContext';
 import RazorpayCheckout from 'react-native-razorpay';
 import { paymentService } from '../../service/api';
+import { useTranslation } from 'react-i18next';
 
 export default function OfftakerWallet() {
     const { isDarkMode } = useContext(ThemeContext);
+    const { t } = useTranslation();
 
     const bg = isDarkMode ? '#0a0f1e' : '#102a43';
     const bodyBg = isDarkMode ? '#0d1117' : '#f8fafc';
@@ -43,166 +45,194 @@ export default function OfftakerWallet() {
 
     const handleDeposit = async () => {
         try {
-            const amount = 5000; // Hardcoded 5000 for test demo
+            const amount = 5000;
             const orderRes = await paymentService.createOrder({
                 amount: amount,
                 type: 'deposit'
             });
 
-            if (!orderRes.success) return Alert.alert("Error", "Could not create order");
+            if (!orderRes.success) return Alert.alert(t('common.error'), "Could not create order");
 
             const options = {
-                description: 'Add Funds to Wallet',
+                description: t('offtaker.wallet.addFunds'),
                 image: 'https://cdn-icons-png.flaticon.com/512/10041/10041178.png',
                 currency: 'INR',
                 key: 'rzp_test_ShTlQNZMXMnxb6',
                 amount: amount * 100,
                 name: 'KrishiSetu',
                 order_id: orderRes.order.id,
-                theme: { color: isDarkMode ? '#1d4ed8' : '#1e4e8c' }
+                prefill: {
+                    email: 'buyer@krishisetu.com',
+                    contact: '9876543210',
+                    name: 'KrishiSetu Offtaker'
+                },
+                theme: { color: '#1e4e8c' }
             };
 
             RazorpayCheckout.open(options).then(async (data) => {
-                const verifyRes = await paymentService.verifyPayment(data);
-                if (verifyRes.success) {
-                    Alert.alert("Success", `₹${amount} added to your wallet!`);
-                    fetchWalletData();
-                }
+                await paymentService.verifyPayment({
+                    ...data,
+                    orderId: orderRes.paymentRecord._id
+                });
+                Alert.alert(t('common.success'), "Funds added successfully!");
+                fetchWalletData();
             }).catch((error) => {
-                Alert.alert("Payment Failed", `Payment cancelled or failed.`);
+                console.log("Payment Error:", error);
+                Alert.alert(t('common.error'), error.description || "Payment cancelled or failed");
             });
         } catch (error) {
-            console.error(error);
-            Alert.alert("Error", "Something went wrong during payment setup");
+            console.error("Deposit error:", error);
+            Alert.alert(t('common.error'), "Could not initiate payment");
         }
-    };
-
-    const handlePayout = () => {
-        Alert.alert("Payout", "Payout functionality will be processed to your linked bank account.");
     };
 
     return (
         <View style={{ flex: 1, backgroundColor: bg }}>
             <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-                <Header title="Finance" />
-                <View style={{ flex: 1, backgroundColor: bodyBg, borderTopLeftRadius: 40, borderTopRightRadius: 40, overflow: 'hidden' }}>
-                    <ScrollView showsVerticalScrollIndicator={false} style={{ padding: 20 }}>
+                <Header title={t('offtaker.wallet.title')} />
 
-                        {/* Balance Card */}
-                        <View style={[styles.balanceCard, { backgroundColor: walletCardBg }]}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-                                <View>
-                                    <Text style={styles.balanceLabel}>Available Balance</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
-                                        <Text style={styles.balanceAmount}>₹{wallet ? wallet.availableBalance.toLocaleString('en-IN') : '0'}</Text>
-                                        <Text style={styles.balanceDecimal}>.00</Text>
-                                    </View>
-                                </View>
-                                <View style={styles.walletIconBox}>
-                                    <Wallet color="#60a5fa" size={28} />
-                                </View>
-                            </View>
-
-                            <View style={{ flexDirection: 'row', gap: 12 }}>
-                                <TouchableOpacity style={styles.walletAction} onPress={handleDeposit}>
-                                    <ArrowUpRight color="#4ade80" size={18} />
-                                    <Text style={styles.walletActionText}>Test Deposit</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.walletAction} onPress={handlePayout}>
-                                    <ArrowDownLeft color="#f87171" size={18} />
-                                    <Text style={styles.walletActionText}>Payout</Text>
-                                </TouchableOpacity>
-                            </View>
+                <ScrollView style={{ flex: 1, backgroundColor: bodyBg }} showsVerticalScrollIndicator={false}>
+                    {/* Wallet Card */}
+                    <View style={[styles.walletCard, { backgroundColor: walletCardBg }]}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text style={{ color: '#94a3b8', fontSize: 13, fontWeight: '700' }}>
+                                {t('offtaker.wallet.balance')}
+                            </Text>
+                            <Wallet size={20} color="#60a5fa" />
                         </View>
 
-                        <Text style={{ color: titleColor, fontWeight: '900', fontSize: 18, marginBottom: 16 }}>Recent Transactions</Text>
-                        
+                        <Text style={styles.balanceText}>
+                            ₹{wallet ? wallet.balance?.toLocaleString('en-IN') : '0.00'}
+                        </Text>
+
+                        <View style={styles.actionRow}>
+                            <TouchableOpacity onPress={handleDeposit} style={styles.actionBtn}>
+                                <ArrowDownLeft size={18} color="#ffffff" />
+                                <Text style={styles.actionBtnText}>{t('offtaker.wallet.addFunds')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Transactions Section */}
+                    <View style={styles.txSection}>
+                        <Text style={[styles.sectionTitle, { color: titleColor }]}>
+                            {t('offtaker.wallet.transactions')}
+                        </Text>
+
                         {loading ? (
-                            <ActivityIndicator size="large" color="#3b82f6" style={{ marginTop: 20 }} />
+                            <ActivityIndicator size="small" color="#3b82f6" style={{ marginTop: 20 }} />
                         ) : transactions.length === 0 ? (
-                            <Text style={{ color: subTextColor, textAlign: 'center', marginTop: 20 }}>No transactions yet.</Text>
+                            <View style={[styles.emptyCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                                <History size={36} color={subTextColor} />
+                                <Text style={{ color: subTextColor, marginTop: 10, fontSize: 13, fontWeight: 'bold' }}>
+                                    {t('offtaker.wallet.noTransactions')}
+                                </Text>
+                            </View>
                         ) : (
-                            transactions.map((tx) => (
-                                <View key={tx._id} style={[styles.txCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
+                            transactions.map((tx, idx) => (
+                                <View key={tx._id || idx} style={[styles.txCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
                                     <View style={[styles.txIcon, { backgroundColor: txIconBg }]}>
-                                        <History size={20} color={isDarkMode ? '#475569' : '#64748b'} />
+                                        {tx.type === 'deposit' ? (
+                                            <ArrowDownLeft size={20} color="#10b981" />
+                                        ) : (
+                                            <ArrowUpRight size={20} color="#ef4444" />
+                                        )}
                                     </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ color: titleColor, fontWeight: '700', fontSize: 14 }}>
-                                            {tx.type === 'deposit' ? 'Wallet Deposit' : tx.type === 'purchase' ? 'Crop Purchase' : 'Transaction'}
+
+                                    <View style={{ flex: 1, marginLeft: 14 }}>
+                                        <Text style={[styles.txTitle, { color: titleColor }]}>
+                                            {tx.type === 'deposit' ? t('wallet.addedFunds') : t('wallet.transaction')}
                                         </Text>
-                                        <Text style={{ color: subTextColor, fontSize: 10, marginTop: 4 }}>
-                                            {new Date(tx.createdAt).toLocaleDateString()} • {tx.status}
+                                        <Text style={{ color: subTextColor, fontSize: 11, marginTop: 2 }}>
+                                            {new Date(tx.createdAt).toLocaleDateString()}
                                         </Text>
                                     </View>
-                                    <Text style={{ color: tx.type === 'deposit' ? '#4ade80' : '#f87171', fontWeight: '700' }}>
-                                        {tx.type === 'deposit' ? '+' : '-'}₹{tx.amount.toLocaleString('en-IN')}
+
+                                    <Text style={[styles.txAmount, { color: tx.type === 'deposit' ? '#10b981' : '#ef4444' }]}>
+                                        {tx.type === 'deposit' ? '+' : '-'}₹{tx.amount?.toLocaleString('en-IN')}
                                     </Text>
                                 </View>
                             ))
                         )}
-                    </ScrollView>
-                </View>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    balanceCard: {
-        borderRadius: 32,
+    walletCard: {
+        margin: 20,
+        borderRadius: 28,
         padding: 24,
-        marginBottom: 32,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 6,
     },
-    balanceLabel: {
-        color: 'rgba(255,255,255,0.5)',
-        fontSize: 11,
-        fontWeight: '900',
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    balanceAmount: {
+    balanceText: {
         color: '#ffffff',
-        fontSize: 32,
+        fontSize: 34,
         fontWeight: '900',
+        marginTop: 12,
+        marginBottom: 20,
     },
-    balanceDecimal: {
-        color: 'rgba(255,255,255,0.4)',
-        fontSize: 14,
-    },
-    walletIconBox: {
-        backgroundColor: 'rgba(96,165,250,0.15)',
-        padding: 12,
-        borderRadius: 18,
-    },
-    walletAction: {
-        flex: 1,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        padding: 16,
-        borderRadius: 16,
-        alignItems: 'center',
+    actionRow: {
         flexDirection: 'row',
-        justifyContent: 'center',
+        gap: 12,
+    },
+    actionBtn: {
+        backgroundColor: '#2563eb',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 8,
     },
-    walletActionText: {
+    actionBtnText: {
         color: '#ffffff',
-        fontWeight: '700',
-        fontSize: 14,
+        fontSize: 13,
+        fontWeight: 'bold',
+    },
+    txSection: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        marginBottom: 16,
+    },
+    emptyCard: {
+        borderRadius: 24,
+        padding: 30,
+        alignItems: 'center',
+        borderWidth: 1,
     },
     txCard: {
-        borderRadius: 16,
+        borderRadius: 20,
         padding: 16,
         marginBottom: 12,
-        borderWidth: 1,
         flexDirection: 'row',
         alignItems: 'center',
+        borderWidth: 1,
     },
     txIcon: {
-        padding: 12,
-        borderRadius: 12,
-        marginRight: 16,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    txTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    txAmount: {
+        fontSize: 16,
+        fontWeight: '900',
     },
 });

@@ -33,11 +33,13 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import BuyerBottomTabs from '../../../navigation/BuyerBottomTabs';
 import Header from '../../../common/BHeader';
+import { useTranslation } from 'react-i18next';
 import { Animated, Modal as RNModal } from 'react-native';
 
 import { offtakerService } from '../../service/api';
 
 export default function OfftakerHome() {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const [user, setUser] = useState(null);
     const [profilePhoto, setProfilePhoto] = useState('');
@@ -221,7 +223,7 @@ export default function OfftakerHome() {
 
                         <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                             <View className="ml-3">
-                                <Text className="text-white/70 text-xs font-medium uppercase tracking-wider">Offtaker Portal</Text>
+                                <Text className="text-white/70 text-xs font-medium uppercase tracking-wider">{t("offtaker.home.portalTitle")}</Text>
                                 <Text className="text-white text-base font-bold">
                                     {user?.name || 'Authorized Buyer'}
                                 </Text>
@@ -263,10 +265,10 @@ export default function OfftakerHome() {
                                 <View className="p-5 w-full h-full justify-between">
                                     <View>
                                         <View className="bg-blue-500/20 self-start px-2 py-1 rounded-md mb-2">
-                                            <Text className="text-blue-300 text-[10px] font-bold tracking-widest">PROCUREMENT</Text>
+                                            <Text className="text-blue-300 text-[10px] font-bold tracking-widest">{t("offtaker.home.procurement")}</Text>
                                         </View>
                                         <Text className="text-white text-2xl font-black">1,240 <Text className="text-xs font-normal">Tons</Text></Text>
-                                        <Text className="text-white/50 text-xs mt-1">Sourced this quarter</Text>
+                                        <Text className="text-white/50 text-xs mt-1">{t("offtaker.home.sourcedThisQuarter")}</Text>
                                     </View>
                                     <View className="flex-row items-center justify-between">
                                         <Package color="#60a5fa" size={28} />
@@ -304,7 +306,7 @@ export default function OfftakerHome() {
                     {/* Operations Center */}
                     <View className="bg-[#f8fafc] dark:bg-[#121212] flex-1 pt-8 px-5 rounded-t-[48px] min-h-screen">
                         <View className="flex-row items-center justify-between mb-6">
-                            <Text className="text-slate-900 dark:text-gray-100 text-lg font-black tracking-tight">Operations Center</Text>
+                            <Text className="text-slate-900 dark:text-gray-100 text-lg font-black tracking-tight">{t("offtaker.home.operationsCenter")}</Text>
                             <TouchableOpacity>
                                 <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">Customize</Text>
                             </TouchableOpacity>
@@ -317,24 +319,24 @@ export default function OfftakerHome() {
                                 <View className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-3xl mb-3">
                                     <PlusSquare color={isDarkMode ? "#fbbf24" : "#f59e0b"} size={28} />
                                 </View>
-                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">Post Req</Text>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Buy newer crops</Text>
+                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">{t("offtaker.home.postReq")}</Text>
+                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">{t("offtaker.home.buyNewerCrops")}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={() => navigation.navigate('Marketplace')} className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
                                 <View className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-3xl mb-3">
                                     <MapPin color={isDarkMode ? "#60a5fa" : "#3b82f6"} size={28} />
                                 </View>
-                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">Nearby Farms</Text>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Locate sellers</Text>
+                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">{t("offtaker.home.nearbyFarms")}</Text>
+                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">{t("offtaker.home.locateSellers")}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={() => navigation.navigate('CropPriceScreen')} className="w-[48%] bg-white dark:bg-[#1e1e1e] p-5 rounded-[32px] mb-4 shadow-sm border border-slate-50 dark:border-gray-800 items-center">
                                 <View className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-3xl mb-3">
                                     <BarChart2 color={isDarkMode ? "#34d399" : "#10b981"} size={28} />
                                 </View>
-                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">Market Rate</Text>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Price analytics</Text>
+                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">{t("offtaker.home.marketRate")}</Text>
+                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">{t("offtaker.home.priceAnalytics")}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity 
@@ -344,15 +346,15 @@ export default function OfftakerHome() {
                                 <View className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-3xl mb-3">
                                     <Truck color={isDarkMode ? "#a78bfa" : "#8b5cf6"} size={28} />
                                 </View>
-                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">Logistics</Text>
-                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">Manage fleet</Text>
+                                <Text className="text-slate-900 dark:text-gray-200 font-bold text-sm">{t("offtaker.home.logistics")}</Text>
+                                <Text className="text-slate-400 dark:text-gray-500 text-[10px] mt-1 text-center">{t("offtaker.home.manageFleet")}</Text>
                             </TouchableOpacity>
                         </View>
 
 
                         {/* Industrial Ads Grid */}
                         <View className="flex-row items-center justify-between mb-4 mt-4">
-                            <Text className="text-slate-900 dark:text-gray-100 text-lg font-black tracking-tight">Industrial & Logistics</Text>
+                            <Text className="text-slate-900 dark:text-gray-100 text-lg font-black tracking-tight">{t("offtaker.home.industrialLogistics")}</Text>
                             <TouchableOpacity>
                                 <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">View All</Text>
                             </TouchableOpacity>
