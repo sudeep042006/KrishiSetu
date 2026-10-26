@@ -1,0 +1,38 @@
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git & OS artifacts
+.git/
+.gitignore
+.DS_Store
+Thumbs.db
+
+# Environment variables & secrets
+.env
+.env.*
+
+# Logs
+*.log
+
+# Docker
+Dockerfile
+.dockerignore
+

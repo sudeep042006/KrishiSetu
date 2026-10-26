@@ -7,7 +7,9 @@ import {
     updateProject, 
     deleteProject, 
     getProjectByLocation, 
-    getProjectByCropName 
+    getProjectByCropName ,
+    getProjectByOfftaker,
+    getMyProjectByFarmers
 } from "../controllers/project.controller.js";
 import upload from "../middlewares/multer.js";
 import authenticate from "../middlewares/auth.middleware.js";
@@ -31,5 +33,8 @@ router.post("/deleteProject/:id", authenticate, deleteProject);
 // Search routes
 router.get("/getProjectByLocation", getProjectByLocation);
 router.get("/getProjectByCropName", getProjectByCropName);
+
+router.get("/my", authenticate, getMyProjectByFarmers); // Farmer calls this
+router.get("/get", authenticate, getProjectByOfftaker);    // Buyer calls this
 
 export default router;

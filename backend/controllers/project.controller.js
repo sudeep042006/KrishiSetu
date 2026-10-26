@@ -229,3 +229,24 @@ export const getProjectByLocation = async( req, res ) => {
         return res.status(500).json({message: "Error fetching projects"});
     }
 }
+
+// 1. FOR FARMER: Fetch only their own listings
+export const getMyProjectByFarmers = async (req, res) => {
+    try {
+        const userId = req.user._id || req.user.id;
+        const projects = await Project.find({ createdBy: userId });
+        return res.status(200).json({ message: "My listings fetched", projects });
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching listings" });
+    }
+};
+
+// 2. FOR BUYERS: Fetch all open crop postings
+export const getProjectByOfftaker = async (req, res) => {
+    try {
+        const projects = await Project.find({ creatorRole: "farmer" }).populate('createdBy', 'name email');
+        return res.status(200).json({ message: "All projects fetched", projects });
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching projects" });
+    }
+};
