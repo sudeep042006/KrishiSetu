@@ -104,9 +104,18 @@ export const uploadProjectPhoto = async (req, res) => {
             return res.status(404).json({ success: false, message: "Project not found" });
         }
 
+        const userId = req.user._id || req.user.id;
+        if (project.createdBy.toString() !== userId.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: "Unauthorized: You can only upload photos for your own projects" });
+        }
+
         // Delete old profile photo if it exists
-        if (project.cropPhotoPublicId) {
-            await cloudinary.uploader.destroy(project.cropPhotoPublicId);
+        if (project.cropPhotoPublicId && project.cropPhotoPublicId !== "pending") {
+            try {
+                await cloudinary.uploader.destroy(project.cropPhotoPublicId);
+            } catch (cloudErr) {
+                console.warn("Failed to delete previous Cloudinary photo:", cloudErr.message);
+            }
         }
 
         // Upload new photo to Cloudinary
@@ -189,9 +198,15 @@ export const getProjectByCropName = async (req,res) =>{
 
 export const updateProject = async (req, res) =>{
     try{
-        const {id} = req.params;
+        const project = await Project.findById(id);
+        if (!project) return res.status(404).json({message: "Project not found"});
+
+        const userId = req.user._id || req.user.id;
+        if (project.createdBy.toString() !== userId.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({message: "Unauthorized: You can only update your own projects"});
+        }
+
         const updatedProject = await Project.findByIdAndUpdate(id, req.body, {new: true});
-        if (!updatedProject) return res.status(404).json({message: "Project not found"});
         return res.status(200).json({message:"Project updated successfully", project: updatedProject});
     }catch(error){
         console.log("Error in updating project",error);
@@ -199,11 +214,29 @@ export const updateProject = async (req, res) =>{
     }
 }
 
- export const deleteProject = async (req,res) =>{
+export const deleteProject = async (req,res) =>{
     try{
         const {id} = req.params;
-        const deletedProject = await Project.findByIdAndDelete(id);
-        if (!deletedProject) return res.status(404).json({message: "Project not found"});
+        const userId = req.user._id || req.user.id;
+
+        const project = await Project.findById(id);
+        if (!project) return res.status(404).json({message: "Project not found"});
+
+        // Enforce ownership: only the farmer who created the project (or an admin) can delete it
+        if (project.createdBy.toString() !== userId.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({message: "Unauthorized: You can only delete your own projects"});
+        }
+
+        // Clean up Cloudinary photo if exists
+        if (project.cropPhotoPublicId && project.cropPhotoPublicId !== "pending") {
+            try {
+                await cloudinary.uploader.destroy(project.cropPhotoPublicId);
+            } catch (cloudErr) {
+                console.warn("Failed to delete Cloudinary photo:", cloudErr.message);
+            }
+        }
+
+        await Project.findByIdAndDelete(id);
         return res.status(200).json({message:"Project deleted successfully"});
     }catch(error){
         console.log("Error in deleting project",error);

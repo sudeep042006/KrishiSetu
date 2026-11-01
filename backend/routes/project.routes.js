@@ -23,18 +23,20 @@ router.post("/create", authenticate, upload.single("photo"), CreateProject);
 router.post("/upload-photo", authenticate, upload.single("photo"), uploadProjectPhoto);
 
 // Get projects
-router.get("/get", authenticate, getProject);
+router.get("/my", authenticate, getMyProjectByFarmers);    // Farmer fetches their own listings
+router.get("/get", authenticate, getProjectByOfftaker);     // Offtaker/Marketplace fetches open farmer crops
+router.get("/all", authenticate, getProject);              // General fetch all projects
 router.get("/getPhoto/:id", authenticate, getProjectPhotoById);
 
-// Update/Delete - should ideally be protected
+// Update/Delete (protected with ownership validation in controller)
 router.post("/update/:id", authenticate, updateProject);
+router.put("/update/:id", authenticate, updateProject);
 router.post("/deleteProject/:id", authenticate, deleteProject);
+router.delete("/deleteProject/:id", authenticate, deleteProject);
+router.delete("/:id", authenticate, deleteProject);
 
 // Search routes
 router.get("/getProjectByLocation", getProjectByLocation);
 router.get("/getProjectByCropName", getProjectByCropName);
-
-router.get("/my", authenticate, getMyProjectByFarmers); // Farmer calls this
-router.get("/get", authenticate, getProjectByOfftaker);    // Buyer calls this
 
 export default router;

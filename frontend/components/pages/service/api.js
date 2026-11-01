@@ -210,6 +210,31 @@ export const farmerService = {
   getProfilePhotobyId: async (farmerId) => {
     const response = await apiClient.get(`farmer/profile-photo/${farmerId}`);
     return response.data;
+  },
+
+  detectCropDisease: async (imageUri, fileType = 'image/jpeg', fileName = 'leaf.jpg') => {
+    const formData = new FormData();
+    formData.append('photo', {
+      uri: imageUri,
+      type: fileType,
+      name: fileName,
+    });
+
+    const token = await AsyncStorage.getItem('authToken');
+    const response = await fetch(`${BASE_URL}/farmer/detect-disease`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Disease analysis failed: ${errorText}`);
+    }
+
+    return await response.json();
   }
 };
 
@@ -263,6 +288,11 @@ export const offtakerService = {
 // PROJECT SERVICES
 // ---------------------------------------------------------
 export const CropService = {
+  getMyProjects: async () => {
+    const response = await apiClient.get('project/my');
+    return response.data;
+  },
+
   getProjects: async () => {
     const response = await apiClient.get('project/get');
     return response.data;
@@ -377,6 +407,14 @@ export const paymentService = {
   },
   addBankDetails: async (bankData) => {
     const response = await apiClient.post('payment/bank', bankData);
+    return response.data;
+  },
+  withdraw: async (amount) => {
+    const response = await apiClient.post('payment/withdraw', { amount });
+    return response.data;
+  },
+  payWithWallet: async (projectId, amount) => {
+    const response = await apiClient.post('payment/pay-with-wallet', { projectId, amount });
     return response.data;
   }
 };

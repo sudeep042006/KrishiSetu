@@ -97,10 +97,22 @@ export default function WalletScreen() {
             return;
         }
 
-        // Simulating withdrawal process
-        setShowWithdrawModal(false);
-        setWithdrawAmount('');
-        Alert.alert("Withdrawal Initiated", `₹${withdrawAmount} is being processed to your ${walletData.linkedBankAccount.bankName} account.`);
+        try {
+            setLoading(true);
+            const res = await paymentService.withdraw(Number(withdrawAmount));
+            if (res && res.success) {
+                setShowWithdrawModal(false);
+                setWithdrawAmount('');
+                Alert.alert("Withdrawal Successful", `₹${withdrawAmount} is transferred to your ${walletData.linkedBankAccount.bankName} account.`);
+                fetchWalletData();
+            } else {
+                Alert.alert("Withdrawal Failed", res.message || "Failed to process withdrawal.");
+            }
+        } catch (err) {
+            Alert.alert("Withdrawal Error", err.response?.data?.message || err.message || "Failed to process withdrawal.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleLinkBank = async () => {

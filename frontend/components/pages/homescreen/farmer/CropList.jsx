@@ -49,7 +49,7 @@ export default function CropListScreen({ navigation }) {
     // ── Fetch ──────────────────────────────────────────────────────────
     const fetchListings = async () => {
         try {
-            const res = await CropService.getProjects();
+            const res = await CropService.getMyProjects();
             const data = res.projects || [];
 
             const formattedData = data.map(item => {
@@ -142,7 +142,7 @@ export default function CropListScreen({ navigation }) {
                         Alert.alert('Success', 'Listing removed successfully');
                     } catch (e) {
                         console.error('Error deleting project:', e);
-                        Alert.alert('Error', 'Could not remove the listing.');
+                        Alert.alert('Error', e.response?.data?.message || 'Could not remove the listing.');
                     }
                 },
             },
